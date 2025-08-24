@@ -3,7 +3,7 @@ channels:
   - pytorch
   - anaconda
   - conda-forge
-  - https://levinthal:paradox@conda.graylab.jhu.edu
+  - https://USERNAME:PASSWORD@conda.graylab.jhu.edu
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
