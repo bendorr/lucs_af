@@ -1,0 +1,11 @@
+2025-06-13 21:57:13,482 Running on GPU
+2025-06-13 21:57:13,491 Found 2 citations for tools or databases
+2025-06-13 21:57:13,491 Query 1/1: FTAF2linker99PCT_model2_8tnm_6248f_0 (length 136)
+2025-06-13 21:58:12,216 alphafold2_ptm_model_2_seed_000 recycle=0 pLDDT=80.7 pTM=0.699
+2025-06-13 21:58:13,631 alphafold2_ptm_model_2_seed_000 recycle=1 pLDDT=91.6 pTM=0.842 tol=0.88
+2025-06-13 21:58:15,037 alphafold2_ptm_model_2_seed_000 recycle=2 pLDDT=90.6 pTM=0.837 tol=0.246
+2025-06-13 21:58:16,454 alphafold2_ptm_model_2_seed_000 recycle=3 pLDDT=92.5 pTM=0.854 tol=0.179
+2025-06-13 21:58:16,454 alphafold2_ptm_model_2_seed_000 took 20.6s (3 recycles)
+2025-06-13 21:58:16,487 reranking models by 'plddt' metric
+2025-06-13 21:58:16,487 rank_001_alphafold2_ptm_model_2_seed_000 pLDDT=92.5 pTM=0.854
+2025-06-13 21:58:16,888 Done
