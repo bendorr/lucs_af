@@ -1,2 +1,6 @@
 .DS_Store
-*/.DS_Store
+alphafold_finetune/.DS_Store
+degree_of_reshaping/.DS_Store
+env/.DS_Store
+ft_models/.DS_Store
+helix_vectors/.DS_Store
