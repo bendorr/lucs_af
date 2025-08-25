@@ -12,6 +12,7 @@ Code for AF2 fine-tuning and structural analysis can be found at github.com/bend
 
 ## Directory structure
 
+```text
 ├── data/
 │   ├── README.md/
 │   ├── dataframes/
@@ -113,7 +114,7 @@ Code for AF2 fine-tuning and structural analysis can be found at github.com/bend
 │           ├── of_preds/
 │           ├── rf2_preds/
 │           └── rgn2_preds/
-
+```
 
 ## Data for each figure in the manuscript
 
