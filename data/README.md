@@ -11,7 +11,6 @@ Data files can be found on zenodo at DOI: 10.5281/zenodo.16938925
 Code for AF2 fine-tuning and structural analysis can be found at github.com/bendorr/lucs_af
 
 ## Directory structure
-
 ```text
 ├── data/
 │   ├── README.md/
