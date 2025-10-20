@@ -25,9 +25,12 @@ Instructions for running inference with the fine-tuned AF2 models using Google C
 Alternatively, inference can be run with the fine-tuned AF2 models using a local installation of [localcolabfold](https://github.com/YoshitakaMo/localcolabfold).
 
 First, download the model parameters from [zenodo](https://zenodo.org/records/15580792) or using the command line with the following commands:
- - wget https://zenodo.org/records/15580792/files/StableStructSplit_params_model_2_ptm.npz
- - wget https://zenodo.org/records/15580792/files/Stable_params_model_2_ptm.npz
- - wget https://zenodo.org/records/15580792/files/StableUnstable_params_model_2_ptm.npz
+
+```
+wget https://zenodo.org/records/15580792/files/StableStructSplit_params_model_2_ptm.npz
+wget https://zenodo.org/records/15580792/files/Stable_params_model_2_ptm.npz
+wget https://zenodo.org/records/15580792/files/StableUnstable_params_model_2_ptm.npz
+```
 
 The fine-tuned AF2 models are fine-tuned versions of AF2 model_2_ptm. To run inference with a fine-tuned AF2 model using localcolabfold, rename the fine-tuned parameters to model_2_ptm.npz (from a name like StableStructSplit_params_model_2_ptm.npz; this is because AF2 expects parameter files with names like model_2_ptm.npz), move this renamed file to the --data_dir (localcolabfold installs AF2 parameters into a subdirectory named "params"), and pass this --data_dir argument to localcolabfold. To run the fine-tuned model alone (and not models 1, 3, 4, or 5), provide the arguments --num_models 1 --model_order [2]. These steps are described in more detail below:
 
