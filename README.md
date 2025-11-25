@@ -4,4 +4,4 @@ Authors: Benjamin Orr*, Stephanie E. Crilly*, Deniz Akpinaroglu, Eleanor Zhu, Mi
 
 Data for this manuscript can be found on [zenodo](https://zenodo.org/records/16938925).
 
-See instructions for running fine-tuned AF2 models in ft_models/
+See instructions for running fine-tuned AF2 models in ft_models/ or on [zenodo](https://zenodo.org/records/15580792).
