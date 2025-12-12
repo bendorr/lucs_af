@@ -374,7 +374,7 @@ if __name__ == "__main__":
 				af_paths = utils.get_colabfold_struct_paths(args, af_dir, af_design_id)
 				af_path = af_paths[0]
 			else:
-				## I believe I don't need this, as af_paths is loaded.
+				## No longer need this as af_paths is loaded above
 				# if args.is_af3_linux:
 				# 	results_fnames = af_paths
 				# if args.af_is_cif:
