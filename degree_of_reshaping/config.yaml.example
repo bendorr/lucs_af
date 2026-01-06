@@ -1,0 +1,90 @@
+# LUCS AlphaFold Analysis Configuration
+# ======================================
+# Copy this file to config.yaml and customize for your environment
+
+# File Paths
+# ----------
+paths:
+  # Path to the starting structure PDB file
+  starting_structure_path: "/path/to/starting_structure.pdb"
+
+  # Path to the insertion points JSON file
+  starting_structure_insertion_points: "/path/to/insertion_points.json"
+
+  # Base directory for input data
+  data_dir: "./data"
+
+  # Base directory for output files
+  output_dir: "./output"
+
+# Analysis Parameters
+# -------------------
+analysis:
+  # Filter designs by required subsequence (empty string = no filter)
+  filter_by_subsequence: ""
+
+  # Starting residue index for the starting structure (usually 1)
+  start_struct_res_start_idx: 1
+
+  # Enable verbose output
+  verbose: false
+
+  # Number of parallel tasks for job distribution
+  num_tasks: 1
+
+  # Current task ID (1-indexed) for parallel execution
+  task_id: 1
+
+# AlphaFold Configuration
+# -----------------------
+alphafold:
+  # AlphaFold model type: 'af2' or 'af3'
+  model_type: "af2"
+
+  # Whether to analyze only the best ranked model
+  use_best_model_only: false
+
+  # pLDDT threshold for confidence filtering (0-100)
+  confidence_threshold: 70.0
+
+# Environment Variable Overrides
+# -------------------------------
+# You can override any configuration value with environment variables:
+#
+#   LUCS_START_STRUCT=/custom/path.pdb
+#   LUCS_DATA_DIR=/custom/data
+#   LUCS_OUTPUT_DIR=/custom/output
+#   LUCS_VERBOSE=true
+#   LUCS_NUM_TASKS=10
+#   LUCS_TASK_ID=1
+#   LUCS_AF_MODEL_TYPE=af3
+#
+# Example usage:
+#   export LUCS_START_STRUCT=/wynton/home/kortemme/borr/structures/2lv8.pdb
+#   python degree_reshaped.py --config config.yaml
+#
+# Environment variables take precedence over values in config.yaml
+
+# Common Use Cases
+# ----------------
+#
+# 1. Wynton cluster (UCSF):
+#    paths:
+#      starting_structure_path: "/wynton/home/kortemme/borr/thesis/local_protein_sequence_design/test_inputs/2lv8_inputs/2lv8_cleaned.pdb"
+#      starting_structure_insertion_points: "/wynton/home/kortemme/borr/thesis/local_protein_sequence_design/test_inputs/2lv8_inputs/2lv8_insertion_points.json"
+#      data_dir: "/wynton/group/kortemme/borr/lucs_designs"
+#      output_dir: "/wynton/group/kortemme/borr/analysis_output"
+#
+# 2. Local development:
+#    paths:
+#      starting_structure_path: "./test_data/2lv8_cleaned.pdb"
+#      starting_structure_insertion_points: "./test_data/2lv8_insertion_points.json"
+#      data_dir: "./data"
+#      output_dir: "./output"
+#    analysis:
+#      verbose: true
+#
+# 3. Parallel job array (e.g., SGE, SLURM):
+#    Set via environment variables in your job script:
+#      export LUCS_NUM_TASKS=100
+#      export LUCS_TASK_ID=$SGE_TASK_ID  # or $SLURM_ARRAY_TASK_ID

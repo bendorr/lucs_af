@@ -1,4 +1,5 @@
 """
+<<<<<<< HEAD
 utils_degree_reshaped.py
 
 Ben Orr
@@ -6,6 +7,34 @@ Ben Orr
 
 Utility functions for calculating degree_of_reshaping and 
 AF confidence metrics for LUCS designs.
+=======
+Provides utility functions for analyzing LUCS designs and AlphaFold predictions.
+
+Author: Ben Orr
+Date: 8.21.23
+
+This module provides comprehensive tools for analyzing Loop-Helix-Loop Unit
+Combinatorial Sampling (LUCS) designs, with particular focus on:
+
+- Calculating degree of reshaping between designed and predicted structures
+- Computing AlphaFold confidence metrics (pLDDT scores)
+- Structural alignment and RMSD calculations
+- Helix geometry analysis (angles, displacements, directions)
+- Secondary structure element analysis (helices, sheets)
+- TM-score calculations for structural similarity
+- Structure file I/O and format conversions (PDB, CIF)
+- Integration with PyRosetta for structural manipulation
+
+The primary use case is evaluating how well AlphaFold predictions match the
+intended LUCS designs by quantifying structural deviations in backbone-remodeled
+regions and secondary structure elements.
+
+Dependencies
+------------
+- BioPython: PDB/CIF parsing, DSSP secondary structure
+- PyRosetta: Structure manipulation, alignment, RMSD calculations
+- tmtools: TM-score calculations
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 """
 
 import argparse
@@ -58,7 +87,39 @@ from tmtools.io import get_structure, get_residue_data
 from tmtools.testing import get_pdb_path
 from tmtools import tm_align
 
+<<<<<<< HEAD
 def find_lucs_dir(args, design_id):
+=======
+def find_lucs_dir(args: argparse.Namespace, design_id: str) -> str:
+	"""
+	Find the LUCS directory for a given design ID.
+
+	Searches through parent directories and subdirectories to locate the LUCS
+	design directory. Supports both flat and nested subdirectory structures
+	depending on the args.lucs_data_subdir_split flag.
+
+	Parameters
+	----------
+	args : argparse.Namespace
+		Command-line arguments containing:
+		- lucs_data : list of str
+			Parent directories to search
+		- lucs_data_subdir_split : bool
+			If True, search in nested subdirectories (parent/subdir/design_id)
+			If False, search in flat subdirectories (parent/design_id)
+	design_id : str
+		The design identifier to search for
+
+	Returns
+	-------
+	str or None
+		Full path to the LUCS directory if found, None otherwise
+
+	Notes
+	-----
+	Prints a warning message if no LUCS directory is found.
+	"""
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	found = False
 	if args.lucs_data_subdir_split == True:
 		for parent_dir in args.lucs_data:
@@ -84,7 +145,39 @@ def find_lucs_dir(args, design_id):
 		print('\nWarning: No LUCS directory found!\n')
 		return None
 
+<<<<<<< HEAD
 def find_original_lucs_dir(args, design_id):
+=======
+def find_original_lucs_dir(args: argparse.Namespace, design_id: str) -> str:
+	"""
+	Find the original LUCS directory or file for a given design ID.
+
+	Searches for the original LUCS design structure in various directory
+	configurations, including compatible LHL formats and nested subdirectories.
+
+	Parameters
+	----------
+	args : argparse.Namespace
+		Command-line arguments containing:
+		- original_lucs_data : str
+			Parent directory containing original LUCS data
+		- original_LUCS_data_compatible_LHLs : bool
+			If True, uses model_{design_id}.pdb naming convention
+		- original_lucs_data_subdir_split : bool
+			If True, search in nested subdirectories
+	design_id : str
+		The design identifier to search for
+
+	Returns
+	-------
+	str or None
+		Full path to the original LUCS directory/file if found, None otherwise
+
+	Notes
+	-----
+	Prints a warning message if no LUCS directory is found.
+	"""
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	found = False
 	if args.original_LUCS_data_compatible_LHLs:
 		lucs_path = os.path.join(args.original_lucs_data, f'model_{design_id}.pdb')
@@ -111,11 +204,45 @@ def find_original_lucs_dir(args, design_id):
 		print('\nWarning: No LUCS directory found!\n')
 		return None
 
+<<<<<<< HEAD
 def pdb_to_seq(pdb_path):
 	"""
 	Return the protein sequence in a PDB file.
 
 	TODO: Handle .cif files
+=======
+def pdb_to_seq(pdb_path: str) -> tuple[str, str]:
+	"""
+	Extract the protein sequence from a PDB file.
+
+	Parses ATOM records from a PDB file and converts three-letter amino acid
+	codes to single-letter sequence. Returns the sequence and chain ID.
+
+	Parameters
+	----------
+	pdb_path : str
+		Path to the PDB file
+
+	Returns
+	-------
+	tuple[str, str]
+		A tuple containing:
+		- seq : str
+			The protein sequence in single-letter amino acid code
+		- chain_id : str
+			The chain identifier (assumes single chain)
+
+	Notes
+	-----
+	- Currently only handles PDB format, not CIF files (TODO)
+	- Assumes the PDB file contains only one chain
+	- Reads all ATOM records regardless of chain ID
+	- Handles non-standard residue numbering by tracking unique residue numbers
+
+	TODO
+	----
+	Handle .cif files
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	"""
 	aa_dict = {'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
 		'ILE': 'I', 'PRO': 'P', 'THR': 'T', 'PHE': 'F', 'ASN': 'N', 
@@ -142,9 +269,40 @@ def pdb_to_seq(pdb_path):
 	f.close()
 	return seq, chain_ids[0] # Assumes that the PDB contains only one chain
 
+<<<<<<< HEAD
 def load_af2_structs(af_dir, header='unrelaxed', suffix='_ptm.pdb'):
 	"""
 	Load the 5 AF2 structures contained in the provided subdirectory
+=======
+def load_af2_structs(af_dir: str, header: str = 'unrelaxed', suffix: str = '_ptm.pdb') -> tuple:
+	"""
+	Load the 5 AlphaFold2 structures from a directory.
+
+	Loads all 5 AF2 model predictions as PyRosetta Pose objects from the
+	specified directory using standard AF2 naming conventions.
+
+	Parameters
+	----------
+	af_dir : str
+		Directory containing AlphaFold2 prediction files
+	header : str, optional
+		Filename prefix for AF2 models (default: 'unrelaxed')
+	suffix : str, optional
+		Filename suffix for AF2 models (default: '_ptm.pdb')
+
+	Returns
+	-------
+	tuple
+		A tuple containing:
+		- af_struct_1 through af_struct_5 : pyrosetta.Pose
+			PyRosetta Pose objects for models 1-5
+		- af_paths : list of str
+			List of file paths to the 5 models
+
+	Notes
+	-----
+	Expected filename format: {header}_model_{i}{suffix} where i is 1-5
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	"""
 	af_struct_1 = pose_from_file(
 		os.path.join(af_dir,f'{header}_model_1{suffix}'))
@@ -159,11 +317,44 @@ def load_af2_structs(af_dir, header='unrelaxed', suffix='_ptm.pdb'):
 	af_paths = [os.path.join(af_dir,f'{header}_model_{i}{suffix}') for i in range(1,6)]
 	return af_struct_1, af_struct_2, af_struct_3, af_struct_4, af_struct_5, af_paths
 
+<<<<<<< HEAD
 def load_af3_structs(af_dir, design_id=''):
 	"""
 	Load the 5 AF3 structures contained in the provided subdirectory
 
 	Convert the AF3 files from CIF to PDB files if they haven't already been converted.
+=======
+def load_af3_structs(af_dir: str, design_id: str = '') -> tuple:
+	"""
+	Load the 5 AlphaFold3 structures from AlphaFold Server output.
+
+	Loads AF3 model predictions as PyRosetta Pose objects, converting CIF
+	files to PDB format if necessary. Works with the output format from the
+	AlphaFold Server.
+
+	Parameters
+	----------
+	af_dir : str
+		Directory containing AlphaFold3 prediction files
+	design_id : str, optional
+		Design identifier used in filenames (default: '')
+
+	Returns
+	-------
+	tuple
+		A tuple containing:
+		- af_struct_1 through af_struct_5 : pyrosetta.Pose
+			PyRosetta Pose objects for models 0-4
+		- af_pdb_paths : list of str
+			List of PDB file paths for the 5 models
+
+	Notes
+	-----
+	- Automatically converts CIF files to PDB format if PDB files don't exist
+	- Expected CIF filename format: {design_id}_model_{i}.cif where i is 0-4
+	- Generated PDB filename format: {design_id}_model_{i}.pdb where i is 0-4
+	- Prints conversion messages during CIF to PDB conversion
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 
 	Works for AF3 predictions in the format output by the AlphaFold Server
 	"""
@@ -190,11 +381,49 @@ def load_af3_structs(af_dir, design_id=''):
 
 	return af_struct_1, af_struct_2, af_struct_3, af_struct_4, af_struct_5, af_pdb_paths
 
+<<<<<<< HEAD
 def load_af3_linux_structs(args, af_dir, design_id=''):
 	"""
 	Load the 5 AF3 structures contained in the provided subdirectory
 
 	Convert the AF3 files from CIF to PDB files if they haven't already been converted.
+=======
+def load_af3_linux_structs(args: argparse.Namespace, af_dir: str, design_id: str = '') -> tuple:
+	"""
+	Load the 5 AlphaFold3 structures from Linux installation output.
+
+	Loads AF3 model predictions as PyRosetta Pose objects from the directory
+	structure produced by UCSF Wynton's AlphaFold3 Linux installation. Converts
+	CIF files to PDB format if necessary.
+
+	Parameters
+	----------
+	args : argparse.Namespace
+		Command-line arguments containing:
+		- is_af3_linux : bool
+			Flag indicating AF3 Linux installation format
+	af_dir : str
+		Directory containing AlphaFold3 prediction subdirectories
+	design_id : str, optional
+		Design identifier used in output filenames (default: '')
+
+	Returns
+	-------
+	tuple
+		A tuple containing:
+		- af_struct_1 through af_struct_5 : pyrosetta.Pose
+			PyRosetta Pose objects for models 0-4
+		- af_pdb_paths : list of str
+			List of PDB file paths for the 5 models
+
+	Notes
+	-----
+	- Automatically converts CIF files to PDB format if PDB files don't exist
+	- Expected directory structure: seed-1_sample-{n}/model.cif for n=0-4
+	- Generated PDB filename format: {design_id}_model_{i}.pdb where i is 0-4
+	- Currently hard-coded to use random seed 1
+	- Prints conversion messages during CIF to PDB conversion
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 
 	Works for AF3 predictions in the format output by UCSF Wynton's AlphaFold3 installation
 	"""
@@ -230,9 +459,46 @@ def load_af3_linux_structs(args, af_dir, design_id=''):
 
 	return af_struct_1, af_struct_2, af_struct_3, af_struct_4, af_struct_5, af_pdb_paths
 
+<<<<<<< HEAD
 def load_colabfold_structs(args, af_dir, design_id):
 	"""
 	Load the 5 AF2 structures from a Colabfold output folder.
+=======
+def load_colabfold_structs(args: argparse.Namespace, af_dir: str, design_id: str) -> tuple:
+	"""
+	Load the 5 AlphaFold2 structures from a ColabFold output folder.
+
+	Loads ColabFold AF2 model predictions as PyRosetta Pose objects. Identifies
+	structures by design ID prefix and model number suffix.
+
+	Parameters
+	----------
+	args : argparse.Namespace
+		Command-line arguments containing:
+		- verbose : bool
+			If True, print detailed file information
+	af_dir : str
+		Directory containing ColabFold prediction files
+	design_id : str
+		Design identifier used as filename prefix
+
+	Returns
+	-------
+	tuple
+		A tuple containing:
+		- af_struct_1 through af_struct_5 : pyrosetta.Pose
+			PyRosetta Pose objects for models 1-5
+		- af_paths : list of str
+			List of file paths to the 5 models
+
+	Notes
+	-----
+	- Provide a design ID that uniquely identifies exactly 5 AF2 predictions
+	- For example, use '123_mpnnSeq1' not '123' if '123_mpnnSeq2' also exists
+	- Files are identified by design_id prefix and model number suffix (1-5)
+	- Verbose mode prints current directory and found PDB files
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Get the 5 structures by their design ID.
 
 	Provide a design ID that is found only its 5 AF2 predictions. For example, provide
@@ -260,8 +526,40 @@ def load_colabfold_structs(args, af_dir, design_id):
 	af_paths = [os.path.join(af_dir, [f for f in pdb_files if f.split('.')[0].split('_')[-1] == str(i)][0]) for i in range(1,6)]
 	return af_struct_1, af_struct_2, af_struct_3, af_struct_4, af_struct_5, af_paths
 
+<<<<<<< HEAD
 def get_colabfold_struct_paths(args, af_dir, design_id):
 	"""
+=======
+def get_colabfold_struct_paths(args: argparse.Namespace, af_dir: str, design_id: str) -> list[str]:
+	"""
+	Get file paths for ColabFold structures in model order.
+
+	Returns a list of full file paths to the 5 ColabFold prediction files,
+	ordered by AF2 model number (1-5).
+
+	Parameters
+	----------
+	args : argparse.Namespace
+		Command-line arguments containing:
+		- verbose : bool
+			If True, print found prediction files
+	af_dir : str
+		Directory containing ColabFold prediction files
+	design_id : str
+		Design identifier used as filename prefix
+
+	Returns
+	-------
+	list of str
+		List of 5 file paths ordered by AF2 model number (1-5)
+
+	Notes
+	-----
+	- Provide a design ID that uniquely identifies exactly 5 AF2 predictions
+	- For example, use '123_mpnnSeq1' not '123' if '123_mpnnSeq2' also exists
+	- Verbose mode prints list of found ColabFold predictions
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Return a list (in order of AF2 model) of Colabfold structure filenames.
 
 	Provide a design ID that is found only its 5 AF2 predictions. For example, provide
@@ -284,7 +582,47 @@ def get_colabfold_struct_paths(args, af_dir, design_id):
 
 	return [path1, path2, path3, path4, path5]
 
+<<<<<<< HEAD
 def load_af_plddts(af_dir, args, design_id=''):
+=======
+def load_af_plddts(af_dir: str, args: argparse.Namespace, design_id: str = '') -> list:
+	"""
+	Load pLDDT confidence scores from AlphaFold predictions.
+
+	Loads pLDDT (predicted Local Distance Difference Test) scores for all 5
+	AlphaFold models. Handles different AF2/AF3 output formats based on args.
+
+	Parameters
+	----------
+	af_dir : str
+		Directory containing AlphaFold prediction files
+	args : argparse.Namespace
+		Command-line arguments containing:
+		- is_af3_linux : bool
+			If True, load from AF3 Linux installation format
+		- is_af3 : bool
+			If True, load from AF3 Server format; if False, load AF2 format
+	design_id : str, optional
+		Design identifier used in filenames for AF3 Server format (default: '')
+
+	Returns
+	-------
+	list
+		List of 5 pLDDT arrays (one per model), where each array contains
+		per-residue confidence scores
+
+	Notes
+	-----
+	- AF3 Linux format: Reads from seed-1_sample-{n}/confidences.json
+	- AF2 format: Reads from result_model_{i}_ptm.pkl files
+	- AF3 Server format: Reads from {design_id}_full_data_{i}.json files
+	- pLDDT scores range from 0-100, with higher values indicating higher confidence
+
+	See Also
+	--------
+	load_colabfold_plddts : Load pLDDT scores from ColabFold output
+	"""
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 
 	if args.is_af3_linux: # AF3 outputs from AlphaFold3 linux installation
 
@@ -325,9 +663,39 @@ def load_af_plddts(af_dir, args, design_id=''):
 		return results_plddts
 
 
+<<<<<<< HEAD
 def load_colabfold_plddts(af_dir,design_id):
 	"""
 	Load the <design_id>_unrelaxed_rank_?_model_?_scores.json files into 
+=======
+def load_colabfold_plddts(af_dir: str, design_id: str) -> list:
+	"""
+	Load pLDDT confidence scores from ColabFold predictions.
+
+	Loads pLDDT scores from ColabFold score JSON files and returns them
+	ordered by AF2 model number (1-5).
+
+	Parameters
+	----------
+	af_dir : str
+		Directory containing ColabFold prediction files
+	design_id : str
+		Design identifier used as filename prefix
+
+	Returns
+	-------
+	list
+		List of 5 pLDDT arrays (one per model), ordered by model number,
+		where each array contains per-residue confidence scores
+
+	Notes
+	-----
+	- Expected filename format: {design_id}_unrelaxed_rank_?_model_?_scores.json
+	- Files are sorted by model number (1-5) before extracting pLDDT scores
+	- pLDDT scores range from 0-100, with higher values indicating higher confidence
+
+	Load the <design_id>_unrelaxed_rank_?_model_?_scores.json files into
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	dictionaries
 	"""
 	files = []
@@ -350,10 +718,49 @@ def load_colabfold_plddts(af_dir,design_id):
 		results_plddts.append(result['plddt'])
 	return results_plddts
 
+<<<<<<< HEAD
 def get_lhl_plddt_values(results_plddts, lhl_residues):
 	# Returns a num_models (len(results_plddts)) x num_lhls x num_res list of lists
 	# Get a subset of plddt values
 	# Load the sub_dict with lists of lists of plddt values.
+=======
+def get_lhl_plddt_values(results_plddts: list, lhl_residues: list) -> tuple[np.ndarray, np.ndarray]:
+	"""
+	Extract pLDDT values for LHL regions and non-backbone-remodeled regions.
+
+	Subsets pLDDT confidence scores into LHL (Loop-Helix-Loop) regions and
+	remaining non-backbone-remodeled regions for all models.
+
+	Parameters
+	----------
+	results_plddts : list
+		List of pLDDT arrays, one per model (length = num_models)
+	lhl_residues : list of list of int
+		List of residue lists defining LHL regions, where each inner list
+		contains 1-indexed residue numbers for one LHL unit
+
+	Returns
+	-------
+	tuple of np.ndarray
+		A tuple containing:
+		- all_lhl_plddts : np.ndarray (object dtype)
+			Shape: (num_models, num_lhls, variable_num_res)
+			pLDDT values for each LHL region in each model
+		- all_non_bb_rem_plddts : np.ndarray (object dtype)
+			Shape: (num_models, variable_num_res)
+			pLDDT values for non-LHL residues in each model
+
+	Notes
+	-----
+	- Returns a num_models x num_lhls x num_res structure for LHL plddts
+	- Residue indices in lhl_residues are 1-indexed
+	- Non-backbone-remodeled regions include all residues not in any LHL
+
+	Returns a num_models (len(results_plddts)) x num_lhls x num_res list of lists
+	Get a subset of plddt values
+	Load the sub_dict with lists of lists of plddt values.
+	"""
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	all_lhl_plddts = []
 	all_non_bb_rem_plddts = []
 	for plddts in results_plddts: # num_models
@@ -374,8 +781,51 @@ def get_lhl_plddt_values(results_plddts, lhl_residues):
 
 	return np.array(all_lhl_plddts, dtype=object), np.array(all_non_bb_rem_plddts, dtype=object)
 
+<<<<<<< HEAD
 def load_plddts_into_subdict(sub_dict, results_plddts, all_lhl_plddts, all_non_bb_rem_plddts):
 	"""
+=======
+def load_plddts_into_subdict(sub_dict: dict, results_plddts: list,
+                              all_lhl_plddts: np.ndarray,
+                              all_non_bb_rem_plddts: np.ndarray) -> dict:
+	"""
+	Populate dictionary with pLDDT statistics for all AF models.
+
+	Computes and stores 4 pLDDT summary statistics for each of the 5 AlphaFold
+	models: overall mean, LHL mean, non-backbone-remodeled mean, and full array.
+
+	Parameters
+	----------
+	sub_dict : dict
+		Dictionary to populate with pLDDT values (modified in place)
+	results_plddts : list
+		List of 5 pLDDT arrays, one per AF model
+	all_lhl_plddts : np.ndarray
+		Array of shape (5, num_lhls, variable_num_res) containing pLDDT
+		values for LHL regions
+	all_non_bb_rem_plddts : np.ndarray
+		Array of shape (5, variable_num_res) containing pLDDT values for
+		non-backbone-remodeled regions
+
+	Returns
+	-------
+	dict
+		The input sub_dict populated with pLDDT statistics for each model:
+		- '{model}_mean_plddt' : float
+			Mean pLDDT across all residues
+		- '{model}_mean_lhl_plddt' : float
+			Mean pLDDT across LHL regions
+		- '{model}_mean_non_bb_rem_plddt' : float
+			Mean pLDDT across non-backbone-remodeled regions
+		- '{model}_plddts' : list
+			Full pLDDT array for all residues
+
+	Notes
+	-----
+	- Modifies sub_dict in place and also returns it
+	- model names are 'af_model1' through 'af_model5'
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Load the sub dict with 4 values for each of the 5 AF2/AF3 models.
 	"""
 	af_models = ['af_model1','af_model2','af_model3','af_model4','af_model5']
@@ -400,9 +850,49 @@ def load_plddts_into_subdict(sub_dict, results_plddts, all_lhl_plddts, all_non_b
 
 	return sub_dict
 
+<<<<<<< HEAD
 def get_biopython_atoms_with_ins_pts(struct, res_start_idx, atom_types, ins_pt1_start, \
 	ins_pt1_stop, ins_pt2_start, ins_pt2_stop):
 	"""
+=======
+def get_biopython_atoms_with_ins_pts(struct, res_start_idx: int, atom_types: list[str],
+                                      ins_pt1_start: int, ins_pt1_stop: int,
+                                      ins_pt2_start: int, ins_pt2_stop: int) -> list:
+	"""
+	Extract BioPython atoms from non-backbone-remodeled regions.
+
+	Returns BioPython atom objects for specified atom types from residues
+	outside two insertion point (backbone-remodeled) regions.
+
+	Parameters
+	----------
+	struct : Bio.PDB.Structure
+		BioPython structure object
+	res_start_idx : int
+		Starting residue index (in case PDB numbering doesn't begin at 1)
+	atom_types : list of str
+		List of atom types to extract (e.g., ['CA'], ['N', 'CA', 'C'])
+	ins_pt1_start : int
+		Start index of first insertion point region
+	ins_pt1_stop : int
+		Stop index of first insertion point region (inclusive)
+	ins_pt2_start : int
+		Start index of second insertion point region
+	ins_pt2_stop : int
+		Stop index of second insertion point region (inclusive)
+
+	Returns
+	-------
+	list
+		List of BioPython Atom objects from non-backbone-remodeled regions
+
+	Notes
+	-----
+	- Assumes chain A
+	- Insertion point indices are adjusted by res_start_idx
+	- Atoms are extracted only from residues outside both insertion regions
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Return biopython atoms within the 2 insertion point ranges from the
 	provided biopython structure object.
 
@@ -435,8 +925,36 @@ def get_biopython_atoms_with_ins_pts(struct, res_start_idx, atom_types, ins_pt1_
 	return ss_atoms
 
 ## Writing my own function to calculate RMSD
+<<<<<<< HEAD
 def calc_RMSD(ref_coords, coords):
 	"""
+=======
+def calc_RMSD(ref_coords: np.ndarray, coords: np.ndarray) -> float:
+	"""
+	Calculate Root Mean Square Deviation between two sets of coordinates.
+
+	Computes RMSD as the square root of the mean squared Euclidean distance
+	between corresponding points in two coordinate arrays.
+
+	Parameters
+	----------
+	ref_coords : np.ndarray
+		Reference coordinates, shape (num_points, num_dims)
+	coords : np.ndarray
+		Comparison coordinates, shape (num_points, num_dims)
+
+	Returns
+	-------
+	float
+		Root Mean Square Deviation between the two coordinate sets
+
+	Notes
+	-----
+	- Typically used with 3D coordinates (num_dims=3)
+	- Arrays must have same shape
+	- No alignment is performed; points are compared in given order
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Takes num_points x num_dims (num_dims=3 for 3d coords) arrays, calculates the
 	displacement between each pair of points, then divides the sum of these
 	displacements by the number of points to get the RMSD
@@ -451,8 +969,37 @@ def calc_RMSD(ref_coords, coords):
 	total_disp = total_disp**(1/2)
 	return total_disp
 
+<<<<<<< HEAD
 def find_avg_helix_direction(resis, resis_idxs):
 	"""
+=======
+def find_avg_helix_direction(resis: list, resis_idxs: list) -> np.ndarray:
+	"""
+	Calculate average helix direction vector from consecutive residue triplets.
+
+	Computes helix direction from all valid consecutive triplets of residues
+	and returns their mean direction vector.
+
+	Parameters
+	----------
+	resis : list of dict
+		List of residue dictionaries, each containing keys 'N', 'CA', 'C'
+		with NumPy array coordinates as values
+	resis_idxs : list of int
+		List of residue indices corresponding to resis
+
+	Returns
+	-------
+	np.ndarray
+		Average helix direction vector (3D)
+
+	Notes
+	-----
+	- Only uses consecutive triplets (res_i, res_i+1, res_i+2)
+	- Each triplet must have contiguous residue indices
+	- Direction is computed from peptide bond frame rotations
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Pass every set of 3 residues to the helix_direction function and return
 	the average helix direction.
 	Resis, currently, is a list of resi dictionaries. I can make my own
@@ -469,11 +1016,46 @@ def find_avg_helix_direction(resis, resis_idxs):
 				))
 	return np.array(direction_vectors).mean(axis=0)
 
+<<<<<<< HEAD
 def helix_direction(res1, res2, res3):
 	'''
 	Get the helix direction from 3 consecutive residues.
 	Takes 3 dictionaries, containing keys=n,c,ca and value=np_coordinates
 	'''
+=======
+def helix_direction(res1: dict, res2: dict, res3: dict) -> np.ndarray:
+	"""
+	Calculate helix direction from three consecutive residues.
+
+	Computes the helix direction vector by analyzing the rotation between
+	two consecutive peptide bond frames.
+
+	Parameters
+	----------
+	res1 : dict
+		First residue dictionary with keys 'N', 'CA', 'C' mapping to
+		NumPy coordinate arrays
+	res2 : dict
+		Second residue dictionary with keys 'N', 'CA', 'C' mapping to
+		NumPy coordinate arrays
+	res3 : dict
+		Third residue dictionary with keys 'N', 'CA', 'C' mapping to
+		NumPy coordinate arrays
+
+	Returns
+	-------
+	np.ndarray
+		Helix direction vector (3D)
+
+	Notes
+	-----
+	- Creates coordinate frames from peptide bond geometry
+	- Direction derived from rotation axis between consecutive frames
+
+	Get the helix direction from 3 consecutive residues.
+	Takes 3 dictionaries, containing keys=n,c,ca and value=np_coordinates
+	"""
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 
 	# Get the peptide bond frames
 	frame1 = create_frame_from_three_points(
@@ -484,28 +1066,116 @@ def helix_direction(res1, res2, res3):
 	return rotation_matrix_to_axis_and_angle(
 		np.dot(np.transpose(frame2), frame1))[0]
 
+<<<<<<< HEAD
 def normalize(v):
 	'''Normalize a vector based on its 2 norm.'''
+=======
+def normalize(v: np.ndarray) -> np.ndarray:
+	"""
+	Normalize a vector to unit length using L2 norm.
+
+	Parameters
+	----------
+	v : np.ndarray
+		Input vector
+
+	Returns
+	-------
+	np.ndarray
+		Normalized vector (unit length) or original vector if norm is zero
+
+	Notes
+	-----
+	Returns original vector unchanged if its norm is zero to avoid division by zero
+
+	Normalize a vector based on its 2 norm.
+	"""
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	if 0 == np.linalg.norm(v):
 		return v
 	return v / np.linalg.norm(v)
 
+<<<<<<< HEAD
 def create_frame_from_three_points(p1, p2, p3):
 	'''Create a left-handed coordinate frame from 3 points. 
 	The p2 is the origin; the y-axis is the vector from p2 to p3; 
+=======
+def create_frame_from_three_points(p1: np.ndarray, p2: np.ndarray, p3: np.ndarray) -> np.ndarray:
+	"""
+	Create a left-handed coordinate frame from three points.
+
+	Constructs an orthonormal coordinate system with p2 as the origin.
+
+	Parameters
+	----------
+	p1 : np.ndarray
+		First point (3D coordinates)
+	p2 : np.ndarray
+		Second point, used as origin (3D coordinates)
+	p3 : np.ndarray
+		Third point (3D coordinates)
+
+	Returns
+	-------
+	np.ndarray
+		3x3 matrix where rows are the x, y, z axis unit vectors
+
+	Notes
+	-----
+	- p2 is the origin
+	- y-axis is the normalized vector from p2 to p3
+	- z-axis is the normalized cross product of (p1-p2) and y-axis
+	- x-axis is the cross product of y and z
+
+	Create a left-handed coordinate frame from 3 points.
+	The p2 is the origin; the y-axis is the vector from p2 to p3;
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	the z-axis is the cross product of the vector from p2 to p1
 	and the y-axis.
 
 	Return a matrix where the axis vectors are the rows.
+<<<<<<< HEAD
 	'''
+=======
+	"""
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 
 	y = normalize(p3 - p2)
 	z = normalize(np.cross(p1 - p2, y))
 	x = np.cross(y, z)
 	return np.array([x, y, z])
 
+<<<<<<< HEAD
 def rotation_matrix_to_axis_and_angle(M):
 	'''Calculate the axis and angle of a rotation matrix.'''
+=======
+def rotation_matrix_to_axis_and_angle(M: np.ndarray) -> tuple[np.ndarray, float]:
+	"""
+	Calculate rotation axis and angle from a rotation matrix.
+
+	Extracts the axis of rotation and rotation angle from a 3x3 rotation matrix.
+
+	Parameters
+	----------
+	M : np.ndarray
+		3x3 rotation matrix
+
+	Returns
+	-------
+	tuple[np.ndarray, float]
+		A tuple containing:
+		- axis : np.ndarray
+			Normalized rotation axis vector (3D)
+		- angle : float
+			Rotation angle in radians
+
+	Notes
+	-----
+	Uses Rodrigues' rotation formula to extract axis and angle
+
+	Calculate the axis and angle of a rotation matrix.
+	"""
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	u = np.array([M[2][1] - M[1][2],
 		M[0][2] - M[2][0],
 		M[1][0] - M[0][1]])
@@ -516,8 +1186,34 @@ def rotation_matrix_to_axis_and_angle(M):
 	return normalize(u), np.arctan2(sin_theta, cos_theta)
 
 # Write a function here to calculate the average point in a helix
+<<<<<<< HEAD
 def centroid_of_residues(resis):
 	"""
+=======
+def centroid_of_residues(resis: list) -> tuple[float, float, float]:
+	"""
+	Calculate the geometric centroid of residue backbone atoms.
+
+	Computes the average x, y, z coordinates across all backbone atoms
+	in the provided residues.
+
+	Parameters
+	----------
+	resis : list of dict
+		List of residue dictionaries, each containing backbone atom keys
+		('N', 'CA', 'C', etc.) mapped to 3D coordinate arrays
+
+	Returns
+	-------
+	tuple of float
+		(x, y, z) coordinates of the centroid
+
+	Notes
+	-----
+	- Includes all atoms present in residue dictionaries
+	- Useful for calculating helix displacement to reference points
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Add the x, y, and z coordinates for each residue's backbone atoms
 	then return the average value for each dimension (in a tuple).
 	"""
@@ -579,8 +1275,35 @@ def get_helical_residues_from_stretch(model, model_pdb_path, start_idx, stop_idx
 
 	return helical_residues[-1], helical_residues[0]
 
+<<<<<<< HEAD
 def angle_between(v1, v2):
 	"""
+=======
+def angle_between(v1: np.ndarray, v2: np.ndarray) -> float:
+	"""
+	Calculate angle between two vectors in degrees.
+
+	Computes the angle using the dot product of normalized vectors,
+	ensuring numerical stability with clipping.
+
+	Parameters
+	----------
+	v1 : np.ndarray
+		First vector (n-dimensional)
+	v2 : np.ndarray
+		Second vector (n-dimensional, same dimension as v1)
+
+	Returns
+	-------
+	float
+		Angle between vectors in degrees (range: 0-180)
+
+	Notes
+	-----
+	- Uses arccos with clipping to avoid numerical errors
+	- Result is always positive (undirected angle)
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Takes two n-dim vectors and returns the angle between them in degrees
 	"""
 	v1_u = v1 / np.linalg.norm(v1)
@@ -589,7 +1312,32 @@ def angle_between(v1, v2):
 	angle_in_degrees = angle_in_radians * 180 / np.pi
 	return angle_in_degrees
 
+<<<<<<< HEAD
 def displacement_between_centroids(c1, c2):
+=======
+def displacement_between_centroids(c1: tuple, c2: tuple) -> float:
+	"""
+	Calculate Euclidean distance between two centroids.
+
+	Computes the L2 norm (Euclidean distance) between two points.
+
+	Parameters
+	----------
+	c1 : tuple of float
+		First centroid coordinates (x, y, z)
+	c2 : tuple of float
+		Second centroid coordinates (x, y, z)
+
+	Returns
+	-------
+	float
+		Euclidean distance between the centroids
+
+	Notes
+	-----
+	Works with n-dimensional coordinates, not just 3D
+	"""
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	disp = 0
 	for i in range(len(c1)):
 		disp += (c1[i] - c2[i])**2
@@ -1067,8 +1815,40 @@ def add_best_af_metrics_to_df(df, df_col_prefix_values, \
 
 	return df
 
+<<<<<<< HEAD
 def calc_TM_score(pdb_path_1, pdb_path_2):
 	"""
+=======
+def calc_TM_score(pdb_path_1: str, pdb_path_2: str) -> float:
+	"""
+	Calculate TM-score between two PDB structures.
+
+	Uses tmtools to compute the Template Modeling score, a metric for
+	assessing structural similarity between two protein structures.
+
+	Parameters
+	----------
+	pdb_path_1 : str
+		Path to first PDB file
+	pdb_path_2 : str
+		Path to second PDB file
+
+	Returns
+	-------
+	float
+		TM-score normalized by the length of chain 1 (range: 0-1)
+
+	Notes
+	-----
+	- TM-score > 0.5 generally indicates same fold
+	- TM-score > 0.17 is better than random
+	- Uses the first chain from each structure
+
+	See Also
+	--------
+	get_TM_score : Calculate TM-score from pre-loaded chain objects
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Use tmtools to calculate the TM score between two PDB structures.
 	"""
 	tm_s1 = get_structure(pdb_path_1)
@@ -1077,8 +1857,40 @@ def calc_TM_score(pdb_path_1, pdb_path_2):
 	tm_s2_chain = next(tm_s2.get_chains())
 	return get_TM_score(tm_s1_chain, tm_s2_chain)
 
+<<<<<<< HEAD
 def get_TM_score(chain_1, chain_2):
 	"""
+=======
+def get_TM_score(chain_1, chain_2) -> float:
+	"""
+	Calculate TM-score between two pre-loaded tmtools chain objects.
+
+	Computes Template Modeling score from tmtools chain objects that have
+	already been loaded from PDB structures.
+
+	Parameters
+	----------
+	chain_1 : tmtools chain object
+		First protein chain
+	chain_2 : tmtools chain object
+		Second protein chain
+
+	Returns
+	-------
+	float
+		TM-score normalized by the length of chain 1 (range: 0-1)
+
+	Notes
+	-----
+	- Extracts coordinates and sequences from chain objects
+	- Performs TM-align algorithm to compute score
+	- TM-score is length-independent and normalized to [0,1]
+
+	See Also
+	--------
+	calc_TM_score : Calculate TM-score directly from PDB file paths
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Use tmtools to calculate and return the TM score between two tmtools chains.
 	"""
 	coords_1, seq_1 = get_residue_data(chain_1)
@@ -2007,8 +2819,39 @@ def get_design_to_ss_aligned_residues(args, fd_path):
 
 	return align_residues
 
+<<<<<<< HEAD
 def convert_pdb_to_pose_resnums(pose, pdb_res_list, verbose=False):
 	"""
+=======
+def convert_pdb_to_pose_resnums(pose, pdb_res_list: list[int], verbose: bool = False) -> list[int]:
+	"""
+	Convert PDB residue numbers to PyRosetta pose numbering.
+
+	Maps residue indices from PDB file numbering to PyRosetta's internal
+	pose numbering system, which may differ due to chain breaks or non-standard
+	numbering in PDB files.
+
+	Parameters
+	----------
+	pose : pyrosetta.Pose
+		PyRosetta Pose object
+	pdb_res_list : list of int
+		List of residue numbers in PDB numbering
+	verbose : bool, optional
+		If True, print conversion details (default: False)
+
+	Returns
+	-------
+	list of int
+		List of residue numbers in PyRosetta pose numbering
+
+	Notes
+	-----
+	- Residues that cannot be mapped (convert to 0) are excluded
+	- Uses the chain ID from the first residue to determine the chain
+	- Prints warnings for excluded residues if verbose=True
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Convert a list of PDB residue numbers to PyRosetta pose numbering
 	"""
 	# Ex. pose.pdb_info().pdb2pose('A', 601) # -> int
@@ -2023,7 +2866,11 @@ def convert_pdb_to_pose_resnums(pose, pdb_res_list, verbose=False):
 
 		if pose_res_num == 0:
 			if verbose:
+<<<<<<< HEAD
 			print(f'PDB res {pdb_res_num} converted to {pose_res_num}. Excluding this residue.')
+=======
+				print(f'PDB res {pdb_res_num} converted to {pose_res_num}. Excluding this residue.')
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 		else:
 			pose_res_list.append(pose_res_num)
 
@@ -2032,8 +2879,34 @@ def convert_pdb_to_pose_resnums(pose, pdb_res_list, verbose=False):
 
 	return pose_res_list
 
+<<<<<<< HEAD
 def get_residue_list_from_pdb(pdb_path):
 	"""
+=======
+def get_residue_list_from_pdb(pdb_path: str) -> list[int]:
+	"""
+	Extract all residue numbers from a PDB file.
+
+	Parses ATOM records to find all unique residue numbers present in the
+	PDB file.
+
+	Parameters
+	----------
+	pdb_path : str
+		Path to the PDB file
+
+	Returns
+	-------
+	list of int
+		Sorted list of unique residue numbers found in the PDB file
+
+	Notes
+	-----
+	- Only parses ATOM records (not HETATM)
+	- Maintains order of first occurrence
+	- Residue numbers extracted from columns 23-26 of PDB format
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Find the residue numbers that exist in the pdb file
 	"""
 	resnums = []
@@ -2325,10 +3198,43 @@ def steph_get_shared_helical_resn(input_pose,
 #####
 
 
+<<<<<<< HEAD
 def split_contiguous_residues(res_list):
 	"""
 	Split a list of contiguous residue numbers into separate lists.
 
+=======
+def split_contiguous_residues(res_list: list[int]) -> list[list[int]]:
+	"""
+	Split a list of contiguous residue numbers into separate lists.
+
+	Divides a list of residue numbers into sublists where each sublist
+	contains only consecutive (contiguous) residue numbers.
+
+	Parameters
+	----------
+	res_list : list of int
+		List of residue numbers (can be non-contiguous)
+
+	Returns
+	-------
+	list of list of int
+		List of sublists, where each sublist contains contiguous residues
+
+	Examples
+	--------
+	>>> split_contiguous_residues([1,2,3,5,6,7,8,10])
+	[[1,2,3], [5,6,7,8], [10]]
+
+	>>> split_contiguous_residues([1,2,3,4,5])
+	[[1,2,3,4,5]]
+
+	Notes
+	-----
+	- Assumes input list is sorted
+	- Useful for identifying separate secondary structure elements
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 	Example:
 	[1,2,3,5,6,7,8,10] -> [[1,2,3], [5,6,7,8], [10]]
 	"""

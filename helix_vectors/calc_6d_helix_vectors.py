@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """
+<<<<<<< HEAD
 calc_6d_helix_vectors.py
 
 Ben Orr
@@ -11,12 +12,82 @@ Given a directory containing subdirectories, one subdir for each LUCS design,
 this script loops through the subdirectories, finds a PBD file in each subdir,
 and uses this PDB file to calculate that structure's 6D helix coordinates with
 respect to a reference frame defined by the structure's beta sheet residues.
+=======
+Computes 6D helix direction vectors for protein structures.
+
+Author: Ben Orr
+Date: 9.9.22
+Adapted from: XingJie Pan's get_6d_helix_vectors.py
+
+This module computes 6-dimensional helix vectors for protein structures, where each
+vector consists of 3D spatial coordinates (x, y, z) representing the helix centroid
+position and 3D direction components (v_x, v_y, v_z) representing the helix direction.
+
+The 6D representation combines:
+    - 3D position: Average position of helix residue CA atoms (helix centroid)
+    - 3D direction: Sum and normalization of backbone C->O (carbonyl) vectors
+
+All coordinates are calculated with respect to a reference frame defined by the
+structure's beta sheet residues or user-specified projection residues.
+
+Usage
+-----
+Command line execution for batch processing LUCS designs:
+
+    python calc_6d_helix_vectors.py \
+        --ref_pdb reference.pdb \
+        --ref_insertion_points insertion_points.json \
+        --designs_df_path designs.csv \
+        --output_dir ./output \
+        --output_df_name results.csv \
+        --num_lhls 2
+
+Module import for programmatic use:
+
+    from calc_6d_helix_vectors import project_a_helix_to_frame
+
+    helix_6d = project_a_helix_to_frame(
+        pose, (start_res, end_res),
+        project_point, project_frame
+    )
+
+Parameters
+----------
+ref_pdb : str
+    Path to reference structure (PDB file) for alignment
+ref_insertion_points : str
+    Path to insertion_points.json file for reference structure
+designs_df_path : str
+    Path to DataFrame (.csv) with design_id and lucs_location columns
+output_dir : str
+    Directory for output files (dataframes, helix_coords, sheet_coords)
+output_df_name : str
+    Name for output DataFrame with helix_coords columns
+
+Returns
+-------
+The script generates several outputs:
+    - CSV dataframes with helix coordinate columns
+    - JSON files with helix coordinate dictionaries
+    - JSON files with reference structure sheet coordinates
+    - Optional: Aligned PDB files
+
+Notes
+-----
+This script is designed for processing LUCS (Loop-Helix-Loop Unit Combinatorial
+Sampling) protein designs and calculating their helix vectors relative
+to a reference frame.
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 """
 
 import os
 import json
 import glob
 import argparse
+<<<<<<< HEAD
+=======
+from typing import List, Tuple, Dict, Optional, Any, Union
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 
 import numpy as np
 import pandas as pd
@@ -27,6 +98,7 @@ import pyrosetta
 from pyrosetta import rosetta
 pyrosetta.init()
 
+<<<<<<< HEAD
 def xyz_to_np_array(xyz):
     '''Convert an xyz vector to a numpy array.'''
     return np.array([xyz.x, xyz.y, xyz.z])
@@ -38,11 +110,69 @@ def project_point_to_frame(point, vector, project_point, project_frame):
 
     diff = point - project_point
     
+=======
+def xyz_to_np_array(xyz: Any) -> np.ndarray:
+    """
+    Convert a PyRosetta xyz vector to a numpy array.
+
+    Parameters
+    ----------
+    xyz : rosetta.numeric.xyzVector
+        PyRosetta xyz vector object with x, y, z attributes
+
+    Returns
+    -------
+    np.ndarray
+        1D numpy array of shape (3,) containing [x, y, z] coordinates
+    """
+    return np.array([xyz.x, xyz.y, xyz.z])
+
+def project_point_to_frame(
+    point: np.ndarray,
+    vector: np.ndarray,
+    project_point: Any,
+    project_frame: List[np.ndarray]
+) -> np.ndarray:
+    """
+    Project a point and its attached vector onto a reference frame.
+
+    This function transforms both a spatial point and a direction vector into
+    coordinates relative to a specified reference frame, creating a 6D representation.
+
+    Parameters
+    ----------
+    point : np.ndarray
+        3D coordinates of the point to project, shape (3,)
+    vector : np.ndarray
+        3D direction vector attached to the point, shape (3,)
+    project_point : rosetta.numeric.xyzVector or np.ndarray
+        Origin point of the reference frame
+    project_frame : List[np.ndarray]
+        List of three orthonormal basis vectors [x_axis, y_axis, z_axis],
+        each with shape (3,)
+
+    Returns
+    -------
+    np.ndarray
+        6D array [x, y, z, v_x, v_y, v_z] where:
+        - x, y, z: coordinates of the point in the reference frame
+        - v_x, v_y, v_z: components of the vector in the reference frame
+
+    Notes
+    -----
+    The projection transforms coordinates from the global frame to the local
+    reference frame defined by project_point and project_frame.
+    """
+    # Project the point
+    diff = point - project_point
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     x = np.dot(diff, project_frame[0])
     y = np.dot(diff, project_frame[1])
     z = np.dot(diff, project_frame[2])
 
     # Project the attached vector
+<<<<<<< HEAD
     
     v_x = np.dot(vector, project_frame[0])
     v_y = np.dot(vector, project_frame[1])
@@ -53,6 +183,46 @@ def project_point_to_frame(point, vector, project_point, project_frame):
 def get_project_point_and_frame(args, pose):
     """
     Get the projection point and reference frame for a given pose
+=======
+    v_x = np.dot(vector, project_frame[0])
+    v_y = np.dot(vector, project_frame[1])
+    v_z = np.dot(vector, project_frame[2])
+
+    return np.array([x, y, z, v_x, v_y, v_z])
+
+def get_project_point_and_frame(
+    args: argparse.Namespace,
+    pose: Any
+) -> Tuple[Any, List[np.ndarray]]:
+    """
+    Get the projection point and reference frame for a given pose.
+
+    Constructs an orthonormal reference frame using two projection residues.
+    The frame is defined by:
+    - Origin: CA atom of the first projection residue
+    - Z-axis: CA->CB direction of the first projection residue
+    - Y-axis: Direction from first to second projection residue CA
+    - X-axis: Orthogonal to Y and Z (via cross product)
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Command line arguments containing projection_residues string
+    pose : rosetta.core.pose.Pose
+        PyRosetta pose object of the protein structure
+
+    Returns
+    -------
+    project_point : rosetta.numeric.xyzVector
+        Origin point of the reference frame (CA of first projection residue)
+    project_frame : List[np.ndarray]
+        List of three orthonormal basis vectors [x, y, z], each shape (3,)
+
+    Notes
+    -----
+    If the first projection residue is GLY (lacking CB), it is temporarily
+    mutated to ALA to enable CB-based frame construction.
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     projection_residues = [int(n) for n in args.projection_residues.split(',')]
 
@@ -74,6 +244,7 @@ def get_project_point_and_frame(args, pose):
     return project_point, project_frame
 
 
+<<<<<<< HEAD
 def project_a_helix_to_frame(pose, helix, project_point, project_frame):
     '''Project A helix to a frame.
     The helix is defined as a pair (start, stop).
@@ -83,6 +254,45 @@ def project_a_helix_to_frame(pose, helix, project_point, project_frame):
     calculate the helix centroids, and sum and normalize the
     C->O (backbone carbonyl) vectors to get the helix directions.
     '''
+=======
+def project_a_helix_to_frame(
+    pose: Any,
+    helix: Tuple[int, int],
+    project_point: Any,
+    project_frame: List[np.ndarray]
+) -> np.ndarray:
+    """
+    Project a helix to a reference frame and return 6D helix coordinates.
+
+    The helix is represented by its centroid position and direction vector.
+    Centroid is calculated as the average CA atom position, and direction
+    is the normalized sum of backbone C->O (carbonyl) vectors.
+
+    Parameters
+    ----------
+    pose : rosetta.core.pose.Pose
+        PyRosetta pose object of the protein structure
+    helix : Tuple[int, int]
+        Helix definition as (start_residue, stop_residue) inclusive
+    project_point : rosetta.numeric.xyzVector
+        Origin point of the reference frame
+    project_frame : List[np.ndarray]
+        List of three orthonormal basis vectors [x, y, z], each shape (3,)
+
+    Returns
+    -------
+    np.ndarray
+        6D helix coordinates [x, y, z, v_x, v_y, v_z] where:
+        - x, y, z: helix centroid position in reference frame
+        - v_x, v_y, v_z: helix direction in reference frame
+
+    Notes
+    -----
+    Take the average position of helix residue CA atoms to
+    calculate the helix centroids, and sum and normalize the
+    C->O (backbone carbonyl) vectors to get the helix directions.
+    """
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     helix_cas = [xyz_to_np_array(pose.residue(i).xyz('CA')) for i in range(helix[0], helix[1] + 1)]
     helix_dirs = [xyz_to_np_array(pose.residue(i).xyz('O') - pose.residue(i).xyz('C'))
             for i in range(helix[0], min(helix[1] + 1, pose.size()))]
@@ -93,6 +303,7 @@ def project_a_helix_to_frame(pose, helix, project_point, project_frame):
 
     return project_point_to_frame(center, center_dir, project_point, project_frame)
 
+<<<<<<< HEAD
 def convert_pdb_to_pose_resnums(pose, pdb_res_list):
 	"""
 	Convert a list of PDB residue numbers to PyRosetta pose numbering
@@ -121,6 +332,91 @@ def get_all_helix_coords_for_one_design_by_ins_pts(args, pose, pdb_file, \
     insertion_points is a tuple of the start and stop residues of the helix.
     """
 
+=======
+def convert_pdb_to_pose_resnums(pose: Any, pdb_res_list: List[int]) -> List[int]:
+    """
+    Convert a list of PDB residue numbers to PyRosetta pose numbering.
+
+    Parameters
+    ----------
+    pose : rosetta.core.pose.Pose
+        PyRosetta pose object with PDB information
+    pdb_res_list : List[int]
+        List of residue numbers in PDB numbering
+
+    Returns
+    -------
+    List[int]
+        List of residue numbers in PyRosetta pose numbering
+
+    Notes
+    -----
+    Ex. pose.pdb_info().pdb2pose('A', 601) # -> int
+    To convert from pose to PDB: pose.pdb_info().pose2pdb(24) # -> '47 A ' Res num, chain ID
+    Residues that convert to 0 (not found) are excluded from the output list.
+    """
+    pose_res_list = []
+    for pdb_res_num in pdb_res_list:
+
+        chain = pose.pdb_info().pose2pdb(1).split()[1].strip()
+
+        # Pose to PDB
+        pose_res_num = int(pose.pdb_info().pdb2pose(chain, pdb_res_num))
+
+        if pose_res_num == 0:
+            print(f'PDB res {pdb_res_num} converted to {pose_res_num}. Excluding this residue.')
+        else:
+            pose_res_list.append(pose_res_num)
+
+    return pose_res_list
+
+def get_all_helix_coords_for_one_design_by_ins_pts(
+    args: argparse.Namespace,
+    pose: Any,
+    pdb_file: str,
+    insertion_points: Tuple[int, int],
+    project_point: Any,
+    project_frame: List[np.ndarray],
+    lhl_id: Optional[int] = None,
+    is_ref_struct: bool = False
+) -> List[np.ndarray]:
+    """
+    Get all coordinates for remodeled helices for one design.
+
+    Uses DSSP to identify helical residues within the insertion points region,
+    or assumes all insertion point residues are helical based on arguments.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Command line arguments
+    pose : rosetta.core.pose.Pose
+        PyRosetta pose object of the protein structure
+    pdb_file : str
+        Path to the PDB file (currently unused but kept for compatibility)
+    insertion_points : Tuple[int, int]
+        Start and stop residues of the helix (inclusive)
+    project_point : rosetta.numeric.xyzVector
+        Origin point of the reference frame
+    project_frame : List[np.ndarray]
+        List of three orthonormal basis vectors
+    lhl_id : Optional[int], default=None
+        Loop-Helix-Loop identifier
+    is_ref_struct : bool, default=False
+        Whether this is a reference structure
+
+    Returns
+    -------
+    List[np.ndarray]
+        List containing one 6D helix coordinate array
+
+    Notes
+    -----
+    The function uses DSSP to identify helical regions unless ins_pts_all_helical
+    is set. If fewer than 4 helical residues are found, assumes the helix is in
+    the central region (5 residues from each end of insertion points).
+    """
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     dssp_str = rosetta.core.scoring.dssp.Dssp(pose).get_dssp_secstruct()
 
     if args.verbose:
@@ -139,7 +435,11 @@ def get_all_helix_coords_for_one_design_by_ins_pts(args, pose, pdb_file, \
     if args.ins_pts_all_helical and not is_ref_struct:
         h_start = insertion_points[0]
         h_stop = insertion_points[1]
+<<<<<<< HEAD
     else:    
+=======
+    else:
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
         for i in range(insertion_points[0], insertion_points[1] + 1):
             if dssp_str[i - 1] == 'H':
                 if i < h_start:
@@ -174,9 +474,40 @@ def get_all_helix_coords_for_one_design_by_ins_pts(args, pose, pdb_file, \
 
     return helix_coords
 
+<<<<<<< HEAD
 def get_all_helix_coords_for_data_set(data_path, project_point, project_frame, lhl_id=None):
     """
     Get all coordinates for remodeled helices in a data set.
+=======
+def get_all_helix_coords_for_data_set(
+    data_path: str,
+    project_point: Any,
+    project_frame: List[np.ndarray],
+    lhl_id: Optional[int] = None
+) -> List[np.ndarray]:
+    """
+    Get all coordinates for remodeled helices in a data set.
+
+    Parameters
+    ----------
+    data_path : str
+        Path to directory containing PDB files and insertion point JSON files
+    project_point : rosetta.numeric.xyzVector
+        Origin point of the reference frame
+    project_frame : List[np.ndarray]
+        List of three orthonormal basis vectors
+    lhl_id : Optional[int], default=None
+        Loop-Helix-Loop identifier
+
+    Returns
+    -------
+    List[np.ndarray]
+        List of 6D helix coordinate arrays for all designs in the dataset
+
+    Notes
+    -----
+    Expects files named 'model_###.pdb' and 'insertion_points_###.json'.
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     # Get all pdb files and insertion files
     pdb_files = []
@@ -185,7 +516,11 @@ def get_all_helix_coords_for_data_set(data_path, project_point, project_frame, l
 
     for f in sorted(os.listdir(data_path)):
         if f.endswith('.pdb.gz') or f.endswith('.pdb'):
+<<<<<<< HEAD
             pdb_id = f.split('.')[0][6:] # gets rid of 'model_' in 'model_###.pdb'
+=======
+            pdb_id = f.split('.')[0][6:]  # gets rid of 'model_' in 'model_###.pdb'
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
 
             insertion_file = os.path.join(data_path, 'insertion_points_{0}.json'.format(pdb_id))
 
@@ -198,6 +533,7 @@ def get_all_helix_coords_for_data_set(data_path, project_point, project_frame, l
     helix_coords = []
 
     for i in range(len(pdb_files)):
+<<<<<<< HEAD
         helix_coords += get_all_helix_coords_for_one_design(pdb_files[i], insertion_files[i], project_point, project_frame, lhl_id=lhl_id) 
 
     return helix_coords
@@ -205,6 +541,40 @@ def get_all_helix_coords_for_data_set(data_path, project_point, project_frame, l
 def get_all_helix_dicts_for_data_set(data_path, project_point, project_frame, lhl_id=None):
     """
     Get all coordinates for remodeled helices in a data set.
+=======
+        helix_coords += get_all_helix_coords_for_one_design(pdb_files[i], insertion_files[i], project_point, project_frame, lhl_id=lhl_id)
+
+    return helix_coords
+
+def get_all_helix_dicts_for_data_set(
+    data_path: str,
+    project_point: Any,
+    project_frame: List[np.ndarray],
+    lhl_id: Optional[int] = None
+) -> List[Dict[str, Any]]:
+    """
+    Get all coordinates for remodeled helices in a data set as dictionaries.
+
+    Parameters
+    ----------
+    data_path : str
+        Path to directory containing PDB files and insertion point JSON files
+    project_point : rosetta.numeric.xyzVector
+        Origin point of the reference frame
+    project_frame : List[np.ndarray]
+        List of three orthonormal basis vectors
+    lhl_id : Optional[int], default=None
+        Loop-Helix-Loop identifier
+
+    Returns
+    -------
+    List[Dict[str, Any]]
+        List of dictionaries, each with keys 'design_id' and 'helix{lhl_id}_coords'
+
+    Notes
+    -----
+    helix_dicts is a list of dictionaries, each with keys=design_id and helix_coords
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     # Get all pdb files and insertion files
     pdb_files = []
@@ -213,8 +583,13 @@ def get_all_helix_dicts_for_data_set(data_path, project_point, project_frame, lh
 
     for f in sorted(os.listdir(data_path)):
         if f.endswith('.pdb.gz') or f.endswith('.pdb'):
+<<<<<<< HEAD
             pdb_id = f.split('.')[0][6:] # gets rid of 'model_' in 'model_###.pdb'
             
+=======
+            pdb_id = f.split('.')[0][6:]  # gets rid of 'model_' in 'model_###.pdb'
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
             insertion_file = os.path.join(data_path, 'insertion_points_{0}.json'.format(pdb_id))
 
             if os.path.exists(insertion_file):
@@ -236,9 +611,36 @@ def get_all_helix_dicts_for_data_set(data_path, project_point, project_frame, lh
 
     return helix_dicts
 
+<<<<<<< HEAD
 def get_ins_pts_from_design_info(design_info_path, lhl_id=None):
     """
     Infer the insertion points for a LUCS design from its backbone remodeled residues.
+=======
+def get_ins_pts_from_design_info(
+    design_info_path: str,
+    lhl_id: Optional[int] = None
+) -> Union[List[Tuple[int, int]], Tuple[int, int]]:
+    """
+    Infer the insertion points for a LUCS design from its backbone remodeled residues.
+
+    Parameters
+    ----------
+    design_info_path : str
+        Path to design_info.json file containing bb_remodeled_residues
+    lhl_id : Optional[int], default=None
+        Loop-Helix-Loop identifier. If None, returns all insertion points.
+
+    Returns
+    -------
+    Union[List[Tuple[int, int]], Tuple[int, int]]
+        If lhl_id is None: List of (start, stop) tuples for all contiguous regions
+        If lhl_id is specified: Single (start, stop) tuple for that specific LHL
+
+    Notes
+    -----
+    Identifies contiguous stretches of backbone remodeled residues and returns
+    their start and stop positions.
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     with open(design_info_path, 'r') as f:
         design_info = json.load(f)
@@ -261,10 +663,28 @@ def get_ins_pts_from_design_info(design_info_path, lhl_id=None):
         return [(contig[0], contig[-1]) for contig in sublists]
     else:
         return (sublists[lhl_id][0], sublists[lhl_id][-1])
+<<<<<<< HEAD
     
 def get_ins_pts(ins_pts_path):
     """
     Get insertion points from a json file.
+=======
+
+
+def get_ins_pts(ins_pts_path: str) -> List[Tuple[int, int]]:
+    """
+    Get insertion points from a JSON file.
+
+    Parameters
+    ----------
+    ins_pts_path : str
+        Path to JSON file containing insertion points with 'start' and 'stop' keys
+
+    Returns
+    -------
+    List[Tuple[int, int]]
+        List of (start, stop) tuples for each insertion point
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     with open(ins_pts_path, 'r') as f:
         ins_pts = json.load(f)
@@ -274,7 +694,24 @@ def get_ins_pts(ins_pts_path):
         ret.append((ip['start'], ip['stop']))
     return ret
 
+<<<<<<< HEAD
 def parse_termanal_scores(score_file_path):
+=======
+def parse_termanal_scores(score_file_path: str) -> List[Tuple[str, float]]:
+    """
+    Parse TERMANAL score file and extract residue-score pairs.
+
+    Parameters
+    ----------
+    score_file_path : str
+        Path to TERMANAL score file (.dsc50, .abd50, or .ssc50)
+
+    Returns
+    -------
+    List[Tuple[str, float]]
+        List of (residue_identifier, score) tuples
+    """
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     list_of_tuples = []
     with open(score_file_path, 'r') as f:
         lines = f.readlines()
@@ -283,8 +720,35 @@ def parse_termanal_scores(score_file_path):
             list_of_tuples.append(new_tuple)
     return list_of_tuples
 
+<<<<<<< HEAD
 def get_termanal_scores_for_res(termanal_scores, res_list):
     # Get TERMANAL scores for res_idxs in res_list
+=======
+
+def get_termanal_scores_for_res(
+    termanal_scores: List[Tuple[str, float]],
+    res_list: List[int]
+) -> List[float]:
+    """
+    Extract TERMANAL scores for specific residues.
+
+    Parameters
+    ----------
+    termanal_scores : List[Tuple[str, float]]
+        List of (residue_identifier, score) tuples from TERMANAL output
+    res_list : List[int]
+        List of residue indices to extract scores for
+
+    Returns
+    -------
+    List[float]
+        List of scores for the specified residues
+
+    Notes
+    -----
+    Get TERMANAL scores for res_idxs in res_list
+    """
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     res_scores = []
     for res_idx in res_list:
         for res_chn_idx, score in termanal_scores:
@@ -292,14 +756,46 @@ def get_termanal_scores_for_res(termanal_scores, res_list):
                 res_scores.append(score)
     return res_scores
 
+<<<<<<< HEAD
 def get_termanal_scores(termanal_folder, design_id, ins_pts):
     """
     Return the average termanal scores for the residues within the ins_pts range 
+=======
+
+def get_termanal_scores(
+    termanal_folder: str,
+    design_id: Union[str, int],
+    ins_pts: Tuple[int, int]
+) -> Tuple[Optional[float], Optional[float], Optional[float]]:
+    """
+    Return the average TERMANAL scores for the residues within the ins_pts range.
+
+    Parameters
+    ----------
+    termanal_folder : str
+        Path to folder containing TERMANAL output files
+    design_id : Union[str, int]
+        Design identifier
+    ins_pts : Tuple[int, int]
+        Insertion points (start, stop) defining the residue range
+
+    Returns
+    -------
+    Tuple[Optional[float], Optional[float], Optional[float]]
+        Average design score, abundance score, and structure score.
+        Returns (None, None, None) if scores not found.
+
+    Notes
+    -----
+    Some termanal outputs are written in separate subdirs, named by
+    design_id, in which case the termanal_output_path is termanal_folder+subdir
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     subdir = str(design_id)
 
     # Some termanal outputs are written in separate subdirs, named by
     # design_id, in which case the termanal_output_path is termanal_folder+subdir
+<<<<<<< HEAD
     if os.path.exists(os.path.join(termanal_folder,subdir+'.dsc50')):
         termanal_output_path = termanal_folder
     elif os.path.exists(os.path.join(termanal_folder,subdir,subdir+'.dsc50')):
@@ -312,12 +808,27 @@ def get_termanal_scores(termanal_folder, design_id, ins_pts):
     abundance_scores = parse_termanal_scores(os.path.join(termanal_output_path, subdir+'.abd50'))
     structure_scores = parse_termanal_scores(os.path.join(termanal_output_path, subdir+'.ssc50'))
     
+=======
+    if os.path.exists(os.path.join(termanal_folder, subdir + '.dsc50')):
+        termanal_output_path = termanal_folder
+    elif os.path.exists(os.path.join(termanal_folder, subdir, subdir + '.dsc50')):
+        termanal_output_path = os.path.join(termanal_folder, subdir)
+    else:
+        print('TERMANAL Scores not found for design %d. Skipping.' % design_id)
+        return None, None, None
+
+    design_scores = parse_termanal_scores(os.path.join(termanal_output_path, subdir + '.dsc50'))
+    abundance_scores = parse_termanal_scores(os.path.join(termanal_output_path, subdir + '.abd50'))
+    structure_scores = parse_termanal_scores(os.path.join(termanal_output_path, subdir + '.ssc50'))
+
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     design_scores = get_termanal_scores_for_res(design_scores, list(range(ins_pts[0], ins_pts[1])))
     abundance_scores = get_termanal_scores_for_res(abundance_scores, list(range(ins_pts[0], ins_pts[1])))
     structure_scores = get_termanal_scores_for_res(structure_scores, list(range(ins_pts[0], ins_pts[1])))
 
     return np.mean(design_scores), np.mean(abundance_scores), np.mean(structure_scores)
 
+<<<<<<< HEAD
 def get_design_to_ref_aligned_residues(args, design_path):
 	# Look in the design's folder for a {design_id}_align_residues.json file
 	design_align_res_file = design_path.replace('.pdb','_align_residues.json') 
@@ -439,10 +950,303 @@ def superimpose_poses_by_residues(pose_source, residues_source, pose_target, res
 
 def get_all_helix_dicts_for_dataframe(args, df, ref_pdb, termanal_folder=None, lhl_id=None,
     end_of_df_col=''):
+=======
+def get_design_to_ref_aligned_residues(
+    args: argparse.Namespace,
+    design_path: str
+) -> Optional[List[List[List[int]]]]:
+    """
+    Get alignment residue lists for design and reference structures.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Command line arguments containing ref_align_residues_file
+    design_path : str
+        Path to design PDB file
+
+    Returns
+    -------
+    Optional[List[List[List[int]]]]
+        List of two lists: [reference_residues, design_residues], where each
+        contains lists of residue indices for alignment. Returns None if files not found.
+
+    Notes
+    -----
+    Look in the design's folder for a {design_id}_align_residues.json file
+    Return a list of two lists, containing 1) the starting structure's and 2) the design's residues on which to align
+    """
+    # Look in the design's folder for a {design_id}_align_residues.json file
+    design_align_res_file = design_path.replace('.pdb', '_align_residues.json')
+
+    if not os.path.exists(design_align_res_file):
+        print(f'{design_align_res_file} not found. Not using align_residues.json file for structure alignment.')
+        return None
+
+    if not os.path.exists(args.ref_align_residues_file):
+        print(f'{args.ref_align_residues_file} not found. Not using align_residues.json file for structure alignment.')
+        return None
+
+    with open(design_align_res_file, 'r') as f:
+        design_align_res = json.load(f)
+
+    with open(args.ref_align_residues_file, 'r') as f:
+        ref_align_res = json.load(f)
+
+    # Return a list of two lists, containing 1) the starting structure's and 2) the design's residues on which to align
+    align_residues = [[], []]
+    for ref_res, des_res in zip(ref_align_res, design_align_res):
+        if len(ref_res) > len(des_res):
+            start_idx = (len(ref_res) - len(des_res)) // 2
+            ref_res = ref_res[start_idx:start_idx + len(des_res)]
+        elif len(des_res) > len(ref_res):
+            start_idx = (len(des_res) - len(ref_res)) // 2
+            des_res = des_res[start_idx:start_idx + len(ref_res)]
+
+        align_residues[0].append(ref_res)
+        align_residues[1].append(des_res)
+
+    return align_residues
+
+
+def xyzV_to_np_array(xyz: Any) -> np.ndarray:
+    """
+    Convert a PyRosetta xyzVector to a numpy array.
+
+    Parameters
+    ----------
+    xyz : rosetta.numeric.xyzVector
+        PyRosetta xyz vector object with x, y, z attributes
+
+    Returns
+    -------
+    np.ndarray
+        1D numpy array of shape (3,) containing [x, y, z] coordinates
+    """
+    return np.array([xyz.x, xyz.y, xyz.z])
+
+def get_backbone_points(
+    pose: Any,
+    residues: List[int],
+    atom_types: List[str] = ['N', 'CA', 'C']
+) -> List[np.ndarray]:
+    """
+    Get backbone points for residues in a pose.
+
+    Parameters
+    ----------
+    pose : rosetta.core.pose.Pose
+        PyRosetta pose object
+    residues : List[int]
+        List of residue indices
+    atom_types : List[str], default=['N', 'CA', 'C']
+        Backbone atom types to extract
+
+    Returns
+    -------
+    List[np.ndarray]
+        List of 3D coordinates for requested backbone atoms.
+        Missing atoms are represented as (-9999, -9999, -9999).
+    """
+    points = []
+
+    for res in residues:
+        for atom in atom_types:
+            try:
+                points.append(xyzV_to_np_array(pose.residue(res).xyz(atom)))
+            except:
+                print(f'Residue {res} not found in pose. Skipping alignment on this residue')
+                points.append((-9999, -9999, -9999))
+
+    return points
+
+
+def get_superimpose_transformation(
+    P1: List[np.ndarray],
+    P2: List[np.ndarray]
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Get the superimpose transformation that transforms a list of points P1 to another list of points P2.
+
+    Uses Kabsch algorithm for optimal rotation matrix calculation.
+
+    Parameters
+    ----------
+    P1 : List[np.ndarray]
+        Source point set
+    P2 : List[np.ndarray]
+        Target point set
+
+    Returns
+    -------
+    M : np.ndarray
+        Rotation matrix (3x3)
+    t : np.ndarray
+        Translation vector (3,)
+
+    Raises
+    ------
+    Exception
+        If P1 and P2 have different number of points
+    """
+    if len(P1) != len(P2):
+        raise Exception("Sets to be superimposed must have same number of points.")
+
+    com1 = np.mean(P1, axis=0)
+    com2 = np.mean(P2, axis=0)
+
+    R = np.dot(np.transpose(np.array(P1) - com1), np.array(P2) - com2)
+    V, S, W = np.linalg.svd(R)
+
+    if (np.linalg.det(V) * np.linalg.det(W)) < 0.0:
+        V[:, -1] = -V[:, -1]
+
+    M = np.transpose(np.array(np.dot(V, W)))
+
+    return M, com2 - np.dot(M, com1)
+
+
+def np_array_to_xyzV(a: np.ndarray) -> Any:
+    """
+    Convert numpy array to PyRosetta xyzVector.
+
+    Parameters
+    ----------
+    a : np.ndarray
+        1D array of shape (3,) with [x, y, z] coordinates
+
+    Returns
+    -------
+    rosetta.numeric.xyzVector_double_t
+        PyRosetta xyz vector
+    """
+    return rosetta.numeric.xyzVector_double_t(a[0], a[1], a[2])
+
+
+def np_array_to_xyzM(a: np.ndarray) -> Any:
+    """
+    Convert numpy array to PyRosetta xyzMatrix.
+
+    Parameters
+    ----------
+    a : np.ndarray
+        2D array of shape (3, 3) representing a rotation matrix
+
+    Returns
+    -------
+    rosetta.numeric.xyzMatrix_double_t
+        PyRosetta xyz matrix
+    """
+    return rosetta.numeric.xyzMatrix_double_t.rows(
+        a[0][0], a[0][1], a[0][2],
+        a[1][0], a[1][1], a[1][2],
+        a[2][0], a[2][1], a[2][2])
+
+def superimpose_poses_by_residues(
+    pose_source: Any,
+    residues_source: List[int],
+    pose_target: Any,
+    residues_target: List[int],
+    atom_types: List[str] = ['N', 'CA', 'C']
+) -> Tuple[Any, Any]:
+    """
+    Superimpose residues in a source pose onto residues in a target pose.
+
+    Only backbone atoms are used for the superimposition.
+
+    Parameters
+    ----------
+    pose_source : rosetta.core.pose.Pose
+        Source pose to be transformed
+    residues_source : List[int]
+        List of residue indices in source pose for alignment
+    pose_target : rosetta.core.pose.Pose
+        Target pose (remains unchanged)
+    residues_target : List[int]
+        List of residue indices in target pose for alignment
+    atom_types : List[str], default=['N', 'CA', 'C']
+        Backbone atom types to use for alignment
+
+    Returns
+    -------
+    Tuple[rosetta.core.pose.Pose, rosetta.core.pose.Pose]
+        Transformed source pose and unchanged target pose
+
+    Notes
+    -----
+    If these two residue lists are of different
+    lengths, trim the N-terminal residues of the longer sequence.
+    """
+    # If these two residue lists are of different
+    # lengths, trim the N-terminal residues of the longer sequence.
+    if len(residues_source) != len(residues_target):
+        min_len = min(len(residues_source), len(residues_target))
+        residues_source = residues_source[-1 * min_len:]
+        residues_target = residues_target[-1 * min_len:]
+
+    # Get the points to be superimposed
+    points_source_unfiltered = get_backbone_points(pose_source, residues_source, atom_types=atom_types)
+    points_target_unfiltered = get_backbone_points(pose_target, residues_target, atom_types=atom_types)
+
+    points_source, points_target = [], []
+    for ps, pt in zip(points_source_unfiltered, points_target_unfiltered):
+        if ps[0] == -9999 or pt[0] == -9999:
+            continue
+        else:
+            points_source.append(ps)
+            points_target.append(pt)
+
+    points_source = np.array(points_source)
+    points_target = np.array(points_target)
+
+    # Get the rigid body transformation
+    M, t = get_superimpose_transformation(points_source, points_target)
+
+    # Transform the source pose
+    pose_source.apply_transform_Rx_plus_v(np_array_to_xyzM(M),
+            np_array_to_xyzV(t))
+
+    return pose_source, pose_target
+
+def get_all_helix_dicts_for_dataframe(
+    args: argparse.Namespace,
+    df: pd.DataFrame,
+    ref_pdb: str,
+    termanal_folder: Optional[str] = None,
+    lhl_id: Optional[int] = None,
+    end_of_df_col: str = ''
+) -> Tuple[List[Dict[str, Any]], pd.DataFrame, Any, Any]:
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     For each design (row) in the dataframe, calculate a new reference frame
     and helix coordinates for the design, then return a list of dictionaries
     with these helix coordinates, design IDs, and other LUCS-AF metrics.
+<<<<<<< HEAD
+=======
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Command line arguments
+    df : pd.DataFrame
+        DataFrame with design information (design_id, lucs_location, etc.)
+    ref_pdb : str
+        Path to reference PDB file
+    termanal_folder : Optional[str], default=None
+        Path to TERMANAL scores folder (currently unused)
+    lhl_id : Optional[int], default=None
+        Loop-Helix-Loop identifier
+    end_of_df_col : str, default=''
+        Unused parameter kept for compatibility
+
+    Returns
+    -------
+    Tuple[List[Dict[str, Any]], pd.DataFrame, Any, Any]
+        helix_dicts: List of dictionaries with helix coordinates and design IDs
+        df: Updated dataframe with helix_coords columns
+        pose: Last processed design pose
+        ref_pose: Reference structure pose
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     helix_dicts = []
 
@@ -558,15 +1362,37 @@ def get_all_helix_dicts_for_dataframe(args, df, ref_pdb, termanal_folder=None, l
 
     return helix_dicts, df, pose, ref_pose
 
+<<<<<<< HEAD
 def get_helix_coords_from_helix_dicts(helix_dicts, lhl_id):
     """
     Return a list of lists, each sublist contains helix coordinates.
+=======
+def get_helix_coords_from_helix_dicts(
+    helix_dicts: List[Dict[str, Any]],
+    lhl_id: int
+) -> List[np.ndarray]:
+    """
+    Return a list of helix coordinate arrays extracted from helix dictionaries.
+
+    Parameters
+    ----------
+    helix_dicts : List[Dict[str, Any]]
+        List of dictionaries containing helix coordinates
+    lhl_id : int
+        Loop-Helix-Loop identifier
+
+    Returns
+    -------
+    List[np.ndarray]
+        Flattened list of helix coordinate arrays
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     helix_coords = []
     for design_dict in helix_dicts:
         helix_coords += design_dict[f'helix{lhl_id}_coords']
     return helix_coords
 
+<<<<<<< HEAD
 def dump_helix_coords(helix_coords, file_name):
     """
     Dump helix coordinates to a json file
@@ -579,24 +1405,91 @@ def dump_helix_coords(helix_coords, file_name):
 def dump_helix_dicts(helix_dicts, file_name, lhl_id):
     """
     Dump a list of helix dictionaries to a json file
+=======
+
+def dump_helix_coords(helix_coords: List[np.ndarray], file_name: str) -> None:
+    """
+    Dump helix coordinates to a JSON file.
+
+    Parameters
+    ----------
+    helix_coords : List[np.ndarray]
+        List of 6D helix coordinate arrays
+    file_name : str
+        Output JSON file path
+    """
+    h_coords_serial = [list(c) for c in helix_coords]
+
+    with open(file_name, 'w') as f:
+        json.dump(h_coords_serial, f)
+
+
+def dump_helix_dicts(
+    helix_dicts: List[Dict[str, Any]],
+    file_name: str,
+    lhl_id: int
+) -> None:
+    """
+    Dump a list of helix dictionaries to a JSON file.
+
+    Parameters
+    ----------
+    helix_dicts : List[Dict[str, Any]]
+        List of dictionaries containing design_id and helix coordinates
+    file_name : str
+        Output JSON file path
+    lhl_id : int
+        Loop-Helix-Loop identifier
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     for design_dict in helix_dicts:
         design_dict[f'helix{lhl_id}_coords'] = [list(c) for c in design_dict[f'helix{lhl_id}_coords']]
     with open(file_name, 'w') as f:
         json.dump(helix_dicts, f)
 
+<<<<<<< HEAD
 def load_helix_coords(file_name):
     """
     Load helix coordinates from a json file
+=======
+
+def load_helix_coords(file_name: str) -> List[np.ndarray]:
+    """
+    Load helix coordinates from a JSON file.
+
+    Parameters
+    ----------
+    file_name : str
+        Input JSON file path
+
+    Returns
+    -------
+    List[np.ndarray]
+        List of 6D helix coordinate arrays
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     with open(file_name, 'r') as f:
         h_coords_serial = json.load(f)
 
     return [np.array(c) for c in h_coords_serial]
 
+<<<<<<< HEAD
 def plot_helices(helix_coords, axis3d):
     """
     Plot the helix coordinates in 3D
+=======
+
+def plot_helices(helix_coords: List[np.ndarray], axis3d: Any) -> None:
+    """
+    Plot the helix coordinates in 3D as vectors.
+
+    Parameters
+    ----------
+    helix_coords : List[np.ndarray]
+        List of 6D helix coordinates [x, y, z, v_x, v_y, v_z]
+    axis3d : mpl_toolkits.mplot3d.Axes3D
+        Matplotlib 3D axis object for plotting
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     X = [h[0] for h in helix_coords]
     Y = [h[1] for h in helix_coords]
@@ -607,16 +1500,47 @@ def plot_helices(helix_coords, axis3d):
 
     axis3d.quiver(X, Y, Z, U, V, W, length=1)
 
+<<<<<<< HEAD
 def get_sheet_coords(pose, sheet_residues, project_point, project_frame):
     """
     Get all coordinates for beta sheet residues. sheet_residues is a list of
     lists, each sublist contains PDB-numbered residues for a single beta strand
+=======
+def get_sheet_coords(
+    pose: Any,
+    sheet_residues: List[List[int]],
+    project_point: Any,
+    project_frame: List[np.ndarray]
+) -> List[List[np.ndarray]]:
+    """
+    Get all coordinates for beta sheet residues.
+
+    Parameters
+    ----------
+    pose : rosetta.core.pose.Pose
+        PyRosetta pose object
+    sheet_residues : List[List[int]]
+        List of lists, each sublist contains PDB-numbered residues for a single beta strand
+    project_point : rosetta.numeric.xyzVector
+        Origin point of the reference frame
+    project_frame : List[np.ndarray]
+        List of three orthonormal basis vectors
+
+    Returns
+    -------
+    List[List[np.ndarray]]
+        Projected coordinates for each strand, each strand is a list of 3D points
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     sheet_coords = []
     for strand in sheet_residues:
         strand_coords = []
         for pdb_resnum in strand:
+<<<<<<< HEAD
             pyr_resnum = pose.pdb_info().pdb2pose('A',pdb_resnum)
+=======
+            pyr_resnum = pose.pdb_info().pdb2pose('A', pdb_resnum)
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
             strand_coords.append(pose.residue(pyr_resnum).xyz('N'))
             strand_coords.append(pose.residue(pyr_resnum).xyz('CA'))
             strand_coords.append(pose.residue(pyr_resnum).xyz('C'))
@@ -624,9 +1548,37 @@ def get_sheet_coords(pose, sheet_residues, project_point, project_frame):
 
     return project_strand_points_to_frame(sheet_coords, project_point, project_frame)
 
+<<<<<<< HEAD
 def project_strand_points_to_frame(sheet_coords, project_point, project_frame):
     """
     Project each coordinate in sheet_coords to the reference point and frame.
+=======
+
+def project_strand_points_to_frame(
+    sheet_coords: List[List[Any]],
+    project_point: Any,
+    project_frame: List[np.ndarray]
+) -> List[List[np.ndarray]]:
+    """
+    Project each coordinate in sheet_coords to the reference point and frame.
+
+    Parameters
+    ----------
+    sheet_coords : List[List[Any]]
+        List of lists, each sublist contains coordinates (xyzVectors) of a single beta strand
+    project_point : rosetta.numeric.xyzVector
+        Origin point of the reference frame
+    project_frame : List[np.ndarray]
+        List of three orthonormal basis vectors
+
+    Returns
+    -------
+    List[List[np.ndarray]]
+        Projected coordinates for each strand in the reference frame
+
+    Notes
+    -----
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     sheet_coords is a list of lists, each sublist contains coordinates (lists
     of length 3) of a single beta strand.
     """
@@ -638,25 +1590,65 @@ def project_strand_points_to_frame(sheet_coords, project_point, project_frame):
             x = np.dot(diff, project_frame[0])
             y = np.dot(diff, project_frame[1])
             z = np.dot(diff, project_frame[2])
+<<<<<<< HEAD
             projected_strand_coords.append(np.array([x,y,z]))
+=======
+            projected_strand_coords.append(np.array([x, y, z]))
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
         projected_sheet_coords.append(projected_strand_coords)
 
     return projected_sheet_coords
 
+<<<<<<< HEAD
 def dump_sheet_coords(sheet_coords, file_name):
     """
     Dump sheet coordinates to json files. Separate json file for each strand.
+=======
+
+def dump_sheet_coords(sheet_coords: List[List[np.ndarray]], file_name: str) -> None:
+    """
+    Dump sheet coordinates to JSON files. Separate JSON file for each strand.
+
+    Parameters
+    ----------
+    sheet_coords : List[List[np.ndarray]]
+        List of strands, each strand is a list of 3D coordinate arrays
+    file_name : str
+        Base file name, will be modified to include strand index
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     for i in range(len(sheet_coords)):
         strand = sheet_coords[i]
         s_coords_serial = [list(c) for c in strand]
 
         fname_final = file_name.replace('.json', f'_strand{i}.json')
+<<<<<<< HEAD
     
         with open(fname_final, 'w') as f:
             json.dump(s_coords_serial, f)
 
 def get_sheet_residues(ref_pdb):
+=======
+
+        with open(fname_final, 'w') as f:
+            json.dump(s_coords_serial, f)
+
+
+def get_sheet_residues(ref_pdb: str) -> List[List[int]]:
+    """
+    Use PyRosetta DSSP to find continuous beta strands in the reference structure.
+
+    Parameters
+    ----------
+    ref_pdb : str
+        Path to reference PDB file
+
+    Returns
+    -------
+    List[List[int]]
+        List of beta strand residue ranges, each strand is a list of residue indices
+    """
+>>>>>>> be02a1e (lucs_af refactor and cleanup)
     # Use pyrosetta DSSP to find continuous beta strands in the reference structure
     sheet_residues = []
     ref_pose = rosetta.core.import_pose.pose_from_file(ref_pdb)
