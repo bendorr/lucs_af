@@ -4,3 +4,14 @@ degree_of_reshaping/.DS_Store
 env/.DS_Store
 ft_models/.DS_Store
 helix_vectors/.DS_Store
+
+# Ignore Python byte-code files and __pycache__ directories
+__pycache__/
+alphafold_finetune/__pycache__/
+degree_of_reshaping/__pycache__/
+env/__pycache__/
+ft_models/__pycache__/
+helix_vectors/__pycache__/
+*.pyc
+*.pyo
+*.pyd
