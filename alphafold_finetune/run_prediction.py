@@ -5,7 +5,7 @@ Author: Ben Orr
 Date: 10.7.24
 Adapted from https://github.com/phbradley/alphafold_finetune
 
-Fine-tuned and Classic AF2 inference on target sequences.
+Fine-tuned and Classic AlphaFold2 inference on target sequences.
 
 Parameters
 ----------

@@ -5,7 +5,7 @@ Author: Ben Orr
 Date: 10.7.24
 Adapted from https://github.com/phbradley/alphafold_finetune
 
-Fine-tune AF2 on custom dataset.
+Fine-tune AlphaFold2 on a custom dataset.
 
 Parameters
 ----------
