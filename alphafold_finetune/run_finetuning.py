@@ -5,7 +5,155 @@ Author: Ben Orr
 Date: 10.7.24
 Adapted from https://github.com/phbradley/alphafold_finetune
 
-Fine-tune Alphafold2 on a custom dataset.
+Fine-tune AF2 on custom dataset.
+
+Parameters
+----------
+--data_dir : str, required
+    Location of AlphaFold params/ folder
+--train_dataset : str, required
+    tsv file listing the dataset training samples. See phbradley/alphafold_finetune 
+    github README for format.
+--valid_dataset : str, required
+    tsv file listing the dataset validation samples
+--outprefix : str
+    Prefix for output filenames
+--model_name : str
+    AlphaFold model name
+
+Binder Options:
+--plddt_binder : flag
+    Use pLDDT binder classifier
+--plddt_binder_slope : float
+    Slope for plddt-based binder head
+--pae_binder_slope : float
+    Slope for pae-based binder head
+--binder_loss_weight : float
+    Weight for binder classification loss
+--binder_intercepts : float+
+    Initial values for the switchpoint parameter in the logistic regression binder 
+    layer. This is the point where the prediction switches from binder to 
+    non-binder. Should be in values of 0.01*pLDDT or 0.1*PAE, where pLDDT ranges 
+    0-100 and PAE has values in the 2-20 ish range (domain is 0-31). See example 
+    command lines on the phbradley/alphafold_finetune github README.
+--freeze_binder : flag
+    Freeze binder model params
+--only_fit_binder : flag
+    Freeze alphafold model params
+--freeze_everything : flag
+    Dont apply the accumulated gradients
+
+Model Architecture:
+--crop_size : int
+    Max size of training example; set this as low as possible for memory and speed
+--extra_msa : int
+    Number of extra MSA sequences
+--msa_clusters : int
+    Number of MSA cluster sequences
+--num_evo_blocks : int
+    Number of evoformer blocks
+--struc_viol_weight : float
+    Structural violation weight
+
+Training:
+--num_epochs : int
+    Number of training epochs
+--batch_size : int
+    Batch size (only batch_size=1 tested)
+--num_cpus : int
+    Number of CPUs for multiprocessing
+--fake_native_weight : float
+    Weight to apply to structure loss when using a predicted structure as the 
+    ground truth
+--random_recycling : flag
+    if True, set num_iter_recycling randomly during training
+
+Optimization:
+--grad_norm_clip : float
+    Clip gradient L2 norm to this value per update
+--apply_every : int
+    Accumulate gradients from this many batches before applying
+--lr_coef : float
+    Coefficient to multiply the learning rate
+--no_ramp : flag
+    Turn off the learning rate ramp-up
+
+Checkpointing:
+--save_steps : int
+    Number of global_steps between model checkpoints
+--print_steps : int
+    Number of global_steps between printing averaged results
+--valid_steps : int
+    Number of global_steps between validation predictions
+--patience : int
+    Number of validation steps before early stopping. Training will terminate if 
+    validation loss does not decrease in <patience> validation epochs
+
+Resume Training:
+--resume_training : flag
+    Resume fine-tuning of a fine-tuned model
+--resume_params : str
+    Path to params.pkl file from which to continue model training
+--resume_train_step : int
+    Global_step at which to resume fine-tuning. Use previous loss values before this 
+    step for early stopping.
+--resume_train_loss : str
+    txt file containing training loss of the previously fine-tuned model
+--resume_valid_loss : str
+    txt file containing validation loss of the previously fine-tuned model
+
+Debugging:
+--test_load : flag
+    Loop through datasets to test loading
+--notrain : flag
+    Dont do training (debugging)
+--no_valid : flag
+    Skip validation steps
+--dump_pdbs : flag
+    Dump pdb files of modeled structures during training
+--verbose : flag
+    Verbose logging for debugging
+--debug : flag
+    Debug logging for debugging
+--no_random : flag
+    Set all random seeds to 0
+
+Usage
+-----
+python3 run_finetuning.py --data_dir /path/to/alphafold/params \\
+    --train_dataset train_samples.tsv --valid_dataset valid_samples.tsv \\
+    --outprefix my_finetune --model_name model_2_ptm --num_epochs 10
+
+Examples
+--------
+Basic fine-tuning:
+    python3 run_finetuning.py \\
+        --data_dir /data/alphafold/ \\
+        --train_dataset data/train.tsv \\
+        --valid_dataset data/valid.tsv \\
+        --outprefix lucs_finetune
+
+With binder training and custom architecture:
+    python3 run_finetuning.py \\
+        --data_dir /data/alphafold/ \\
+        --train_dataset data/train.tsv \\
+        --valid_dataset data/valid.tsv \\
+        --outprefix binder_model \\
+        --plddt_binder --binder_loss_weight 2.0 \\
+        --crop_size 256 --num_evo_blocks 32 \\
+        --num_epochs 20 --grad_norm_clip 0.5
+
+Resume previous training:
+    python3 run_finetuning.py \\
+        --data_dir /data/alphafold/ \\
+        --train_dataset data/train.tsv \\
+        --valid_dataset data/valid.tsv \\
+        --outprefix resumed_run \\
+        --resume_training \\
+        --resume_params outputs/checkpoint_params.pkl \\
+        --resume_train_step 5000 \\
+        --resume_train_loss outputs/train_loss.txt \\
+        --resume_valid_loss outputs/valid_loss.txt
 """
 
 import os
@@ -45,7 +193,7 @@ print('done importing') ; sys.stdout.flush()
 
 class PlddtBinderClassifier(hk.Module):
     """
-    Uses average pLDDT value over the peptide.
+    Avg pLDDT over peptide.
 
     Assumes we have defined in the input_features:
     * peptide_mask
@@ -97,7 +245,7 @@ class PlddtBinderClassifier(hk.Module):
 
 class PaeBinderClassifier(hk.Module):
     """
-    Uses average PAE value between peptide and MHC.
+    Avg PAE between peptide and MHC.
 
     Assumes we have, defined in the input_features:
     * partner1_mask
@@ -163,7 +311,7 @@ class PaeBinderClassifier(hk.Module):
 
 
 def softmax_cross_entropy(logits, labels):
-    """Computes softmax cross entropy given logits and one-hot class labels."""
+    """Softmax cross entropy from logits and one-hot labels."""
     loss = -jnp.sum(labels * jax.nn.log_softmax(logits), axis=-1)
     return jnp.asarray(loss), jax.nn.softmax(logits)
 
@@ -171,11 +319,10 @@ def softmax_cross_entropy(logits, labels):
 def get_loss_fn_only_fit_base_af2(af2_model_params,
         key, processed_feature_dict, structure_flag, binder_loss_weight):
     """
-    Calculate loss for base AlphaFold2 parameters only.
+    Loss for base AF2 params only.
 
-    Separates the gradients of the af2_model_params and binder_model_params,
-    so that the binder_model_params gradients are not backpropagated to the
-    rest of the AF2 model.
+    Separates af2_model_params and binder_model_params gradients to prevent
+    binder gradient backprop to AF2 model.
     """
     classifier_dict = {}
     binder_labels = jnp.array(processed_feature_dict['labels'], dtype=jnp.float32)
@@ -210,8 +357,7 @@ def train_step(af2_model_params, key, batch, structure_flag, binder_loss_weight)
     """
     Execute one training step.
 
-    Returns the gradients of the base AF2 params only.
-    The gradients for the binder_model_params are not returned.
+    Returns base AF2 param gradients only, excludes binder_model_params gradients.
     """
     (loss, (predicted_dict)), grads = jax.value_and_grad(
         get_loss_fn_only_fit_base_af2, has_aux=True)(
@@ -223,7 +369,7 @@ def train_step(af2_model_params, key, batch, structure_flag, binder_loss_weight)
 
 
 def norm_grads_per_example(grads, l2_norm_clip=0.1):
-    """Normalize gradients by clipping to L2 norm."""
+    """Normalize gradients by L2 norm clipping."""
     nonempty_grads, tree_def = jax.tree_util.tree_flatten(grads)
     total_grad_norm = jnp.linalg.norm(jnp.array([jnp.linalg.norm(neg.ravel()) for neg in nonempty_grads]))
     divisor = jnp.maximum(total_grad_norm / l2_norm_clip, 1.)
@@ -234,10 +380,10 @@ def norm_grads_per_example(grads, l2_norm_clip=0.1):
 
 def create_batch_from_dataset_row(row):
     """
-    Create a batch from a pandas DataFrame row.
+    Create batch from pandas DataFrame row.
 
     Required fields:
-      target_chainseq  ('/'-separated chain amino acid sequences)
+      target_chainseq  ('/'-separated chain AA seqs)
       templates_alignfile
       native_pdbfile
       native_alignstring (';'-separated intpairs eg '0:0;1:1;3:2;4:3')
@@ -246,10 +392,10 @@ def create_batch_from_dataset_row(row):
       native_exists (True or False or 0 or 1)
 
     Optional fields:
-      binder_class (needed if len(FLAGS.binder_intercepts)>1 )
-      target_trim_positions (used to subset the target for memory reasons)
-      native_identities (for debugging PDB IO)
-      native_len (for debugging PDB IO)
+      binder_class (needed if len(FLAGS.binder_intercepts)>1)
+      target_trim_positions (subset target for memory)
+      native_identities (debug PDB IO)
+      native_len (debug PDB IO)
     """
     debug = FLAGS.debug
     verbose = FLAGS.verbose
@@ -340,7 +486,7 @@ class CustomPandasDataset(torch.utils.data.Dataset):
 
 
 def collate(samples):
-    """Collate function for DataLoader."""
+    """Collate for DataLoader."""
     out_dict = {}
     for name in train_utils.list_a + train_utils.list_a_templates:
         values = [item[name][0,] for item in samples]
@@ -364,7 +510,7 @@ def collate(samples):
 
 
 def prep_batch_for_step(batch, training):
-    """Prepare batch for training/validation step."""
+    """Prep batch for training/validation step."""
     torsion_dict = atom37_to_torsion_angles(
         jnp.array(batch['aatype_']),
         jnp.array(batch['all_atom_positions']),
@@ -413,7 +559,7 @@ def prep_batch_for_step(batch, training):
 
 
 def protein_from_prediction(batch, predicted_dict, b_factors=None):
-    """Create Protein object from prediction."""
+    """Create Protein from prediction."""
     fold_output = predicted_dict['structure_module']
     if b_factors is None:
         b_factors = np.zeros_like(fold_output['final_atom_mask'][0,])
@@ -433,13 +579,13 @@ def compute_valid_stats(valid_loader, replicated_params, jax_key, binder_loss_we
     Parameters
     ----------
     valid_loader : torch.utils.data.DataLoader
-        Validation data loader.
+        Validation data loader
     replicated_params : dict
-        Replicated model parameters.
+        Replicated model parameters
     jax_key : jax.random.PRNGKey
-        JAX random key.
+        JAX random key
     binder_loss_weight : float
-        Weight for binder loss.
+        Weight for binder loss, default 1.0
 
     Returns
     -------
@@ -543,7 +689,7 @@ sample: {targetid}\n'
 
 
 def save_model(prefix, global_step, replicated_params, opt_state, model_config):
-    """Save the fine-tuned model's params, state, configuration, and loss values."""
+    """Save fine-tuned model params, state, config, and loss."""
     step_fname = f'{prefix}_global_step.npy'
     np.save(step_fname, global_step)
 
@@ -564,7 +710,7 @@ def save_model(prefix, global_step, replicated_params, opt_state, model_config):
 
 
 def load_finetuned_params_and_loss(FLAGS):
-    """Load a previous fine-tuned model's params and loss values."""
+    """Load previous fine-tuned model params and loss."""
     with open(FLAGS.resume_params, 'rb') as f:
         model_params = pickle.load(f)
 
@@ -636,12 +782,12 @@ def load_finetuned_params_and_loss(FLAGS):
 
 def parse_arguments():
     """
-    Parse command-line arguments for AlphaFold fine-tuning.
+    Parse command-line arguments for AF2 fine-tuning.
 
     Returns
     -------
     argparse.Namespace
-        Parsed command-line arguments.
+        Parsed command-line arguments
     """
     parser = argparse.ArgumentParser(
         description='Fine-tune AlphaFold2 on a custom dataset',
@@ -658,21 +804,28 @@ def parse_arguments():
 
     # Dataset configuration
     parser.add_argument('--train_dataset', type=str, required=True,
-                        help='File listing the dataset training samples')
+                        help='tsv file listing the dataset training samples. '
+                        'See phbradley/alphafold_finetune github README for format.')
     parser.add_argument('--valid_dataset', type=str, required=True,
-                        help='File listing the dataset validation samples')
+                        help='tsv file listing the dataset validation samples')
 
     # Binder classifier configuration
-    parser.add_argument('--plddt_binder', action='store_true', default=True,
-                        help='Use pLDDT binder classifier (default: True)')
-    parser.add_argument('--plddt_binder_slope', type=float, default=40.0,
+    parser.add_argument('--plddt_binder', action='store_true', default=False,
+                        help='Use pLDDT binder classifier (default: False)')
+    parser.add_argument('--plddt_binder_slope', type=float, default=16.69, # from logistic regression
                         help='Slope for plddt-based binder head')
-    parser.add_argument('--pae_binder_slope', type=float, default=-20.0,
+    parser.add_argument('--pae_binder_slope', type=float, default=-7.90, # from logistic regression
                         help='Slope for pae-based binder head')
     parser.add_argument('--binder_loss_weight', type=float, default=1.0,
                         help='Weight for binder classification loss')
     parser.add_argument('--binder_intercepts', type=float, nargs='+', default=[0.74],
-                        help='Binder model intercept values for different binder classes')
+                        help='Initial values for the switchpoint parameter in '
+                             'the logistic regression binder layer. This is the point '
+                             'where the prediction switches from binder to non-binder. '
+                             'Should be in values of 0.01*pLDDT or 0.1*PAE, where '
+                             'pLDDT ranges 0-100 and PAE has values in the 2-20 ish range.'
+                             'See example command lines on the phbradley/alphafold_finetune '
+                             'github README.')
     parser.add_argument('--freeze_binder', action='store_true',
                         help='Freeze binder model params')
     parser.add_argument('--only_fit_binder', action='store_true',
@@ -681,70 +834,76 @@ def parse_arguments():
                         help='Dont apply the accumulated gradients')
 
     # Model architecture configuration
-    parser.add_argument('--crop_size', type=int, default=200,
-                        help='Training crop size')
-    parser.add_argument('--extra_msa', type=int, default=512,
+    parser.add_argument('--crop_size', type=int, default=190,
+                        help='Max size of training example; set this '
+                             'as low as possible for memory and speed')
+    parser.add_argument('--extra_msa', type=int, default=1,
                         help='Number of extra MSA sequences')
-    parser.add_argument('--msa_clusters', type=int, default=256,
-                        help='Number of MSA clusters')
+    parser.add_argument('--msa_clusters', type=int, default=5,
+                        help='Number of MSA cluster sequences')
     parser.add_argument('--num_evo_blocks', type=int, default=48,
                         help='Number of evoformer blocks')
     parser.add_argument('--struc_viol_weight', type=float, default=0.0,
                         help='Structural violation weight')
 
     # Training configuration
-    parser.add_argument('--num_epochs', type=int, default=4,
+    parser.add_argument('--num_epochs', type=int, default=20,
                         help='Number of training epochs')
     parser.add_argument('--batch_size', type=int, default=1,
-                        help='Batch size (NOTE: Only BS=1 tested)')
+                        help='Batch size (only batch_size=1 tested)')
     parser.add_argument('--num_cpus', type=int, default=1,
                         help='Number of CPUs for multiprocessing')
-    parser.add_argument('--fake_native_weight', type=float, default=0.25,
-                        help='Weight for AF confidence terms when no real native structure')
+    parser.add_argument('--fake_native_weight', type=float, default=0,
+                        help='Weight to apply to structure loss when using a predicted '
+                        'structure as the ground truth')
     parser.add_argument('--random_recycling', action='store_true',
-                        help='Use random recycling iterations')
+                        help='if True, set num_iter_recycling '
+                        'randomly during training')
 
     # Optimizer configuration
     parser.add_argument('--grad_norm_clip', type=float, default=0.1,
-                        help='Clip gradient L2 norm to this value')
+                        help='Clip gradient L2 norm to this value per update')
     parser.add_argument('--apply_every', type=int, default=1,
                         help='Accumulate gradients from this many batches before applying')
-    parser.add_argument('--lr_coef', type=float, default=1.0,
+    parser.add_argument('--lr_coef', type=float, default=0.025,
                         help='Coefficient to multiply the learning rate')
     parser.add_argument('--no_ramp', action='store_true',
                         help='Turn off the learning rate ramp-up')
 
     # Checkpointing and logging
-    parser.add_argument('--save_steps', type=int, default=5000,
+    parser.add_argument('--save_steps', type=int, default=1000,
                         help='Number of global_steps between model checkpoints')
     parser.add_argument('--print_steps', type=int, default=20,
-                        help='Number of global_steps between printouts')
-    parser.add_argument('--valid_steps', type=int, default=1000,
+                        help='Number of global_steps between printing averaged results')
+    parser.add_argument('--valid_steps', type=int, default=10000,
                         help='Number of global_steps between validation predictions')
-    parser.add_argument('--patience', type=int, default=2,
-                        help='Number of validation steps before early stopping')
+    parser.add_argument('--patience', type=int, default=10,
+                        help='Number of validation steps before early stopping. '
+                        'Training will terminate if validation loss '
+                        'does not decrease in <patience> validation epochs')
 
     # Resume training
     parser.add_argument('--resume_training', action='store_true',
-                        help='Resume fine-tuning of an already fine-tuned model')
+                        help='Resume fine-tuning of a fine-tuned model')
     parser.add_argument('--resume_params', type=str, default='',
-                        help='Path to the params.pkl file of a previously fine-tuned model')
-    parser.add_argument('--resume_train_step', type=int, default=0,
-                        help='Global_step at which to resume fine-tuning')
+                        help='Path to params.pkl file from which to continue model training')
+    parser.add_argument('--resume_train_step', type=int, default=30000,
+                        help='Global_step at which to resume fine-tuning. Use previous loss values '
+                        'before this step for early stopping.')
     parser.add_argument('--resume_train_loss', type=str, default='',
-                        help='Path to the training loss file of the previously fine-tuned model')
+                        help='txt file containing training loss of the previously fine-tuned model')
     parser.add_argument('--resume_valid_loss', type=str, default='',
-                        help='Path to the validation loss file of the previously fine-tuned model')
+                        help='txt file containing validation loss of the previously fine-tuned model')
 
     # Debugging and testing
     parser.add_argument('--test_load', action='store_true',
-                        help='Test the dataset loading')
+                        help='Loop through datasets to test loading')
     parser.add_argument('--notrain', action='store_true',
                         help='Dont do training (debugging)')
     parser.add_argument('--no_valid', action='store_true',
-                        help='Skip the validation pass')
+                        help='Skip validation steps')
     parser.add_argument('--dump_pdbs', action='store_true',
-                        help='Dump PDB files during training')
+                        help='Dump pdb files of modeled structures during training')
     parser.add_argument('--verbose', action='store_true',
                         help='Verbose logging for debugging')
     parser.add_argument('--debug', action='store_true',
@@ -757,19 +916,19 @@ def parse_arguments():
 
 def configure_model(args, model_name):
     """
-    Configure the AlphaFold model settings.
+    Configure AF model settings.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     model_name : str
-        Name of the AlphaFold model to use.
+        AF model name
 
     Returns
     -------
     model_config
-        Configured AlphaFold model configuration.
+        Configured AF model config
     """
     model_config = config.model_config(model_name)
     model_config.data.common.resample_msa_in_recycling = True
@@ -785,17 +944,17 @@ def configure_model(args, model_name):
 
 def initialize_binder_classifier(args):
     """
-    Initialize the binder classifier model (PAE or pLDDT based).
+    Initialize binder classifier (PAE or pLDDT based).
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
 
     Returns
     -------
     tuple
-        (binder_classifier, binder_model_params) - The classifier function and its initial parameters.
+        (binder_classifier, binder_model_params) - Classifier function and initial params
     """
     if not args.plddt_binder:
         # PAE-based binder classifier
@@ -857,22 +1016,22 @@ def initialize_binder_classifier(args):
 
 def initialize_model_params(args, model_name, binder_model_params):
     """
-    Initialize or resume model parameters and training state.
+    Initialize or resume model params and training state.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     model_name : str
-        Name of the AlphaFold model.
+        AF model name
     binder_model_params : dict
-        Initial binder classifier parameters.
+        Initial binder classifier params
 
     Returns
     -------
     tuple
         (model_params, global_step, all_valid_loss, all_valid_binder_loss, all_valid_fape,
-         af2_model_params) - Model parameters and training state.
+         af2_model_params) - Model params and training state
     """
     if args.resume_training:
         model_params, global_step, all_valid_loss, \
@@ -900,14 +1059,14 @@ def load_datasets(args, batch_size):
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     batch_size : int
-        Batch size for dataloaders.
+        Batch size for dataloaders
 
     Returns
     -------
     tuple
-        (train_loader, valid_loader) - PyTorch data loaders for training and validation.
+        (train_loader, valid_loader) - PyTorch data loaders for training and validation
     """
     train_df = pd.read_table(args.train_dataset)
     valid_df = pd.read_table(args.valid_dataset)
@@ -931,19 +1090,19 @@ def load_datasets(args, batch_size):
 
 def setup_optimizer(args, model_params):
     """
-    Setup the optimizer and initialize optimizer state.
+    Setup optimizer and initialize optimizer state.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     model_params : dict
-        Model parameters.
+        Model parameters
 
     Returns
     -------
     tuple
-        (gradient_transform, replicated_params, af2_opt_state) - Optimizer components.
+        (gradient_transform, replicated_params, af2_opt_state) - Optimizer components
     """
     if args.no_ramp:
         scheduler = optax.linear_schedule(1e-3, 1e-3, 1000, 0)
@@ -979,39 +1138,39 @@ def train_one_epoch(epoch, train_loader, replicated_params, af2_opt_state, gradi
     Parameters
     ----------
     epoch : int
-        Current epoch number.
+        Current epoch number
     train_loader : torch.utils.data.DataLoader
-        Training data loader.
+        Training data loader
     replicated_params : dict
-        Replicated model parameters.
+        Replicated model parameters
     af2_opt_state : optax state
-        Optimizer state for AlphaFold2 parameters.
+        Optimizer state for AF2 params
     gradient_transform : optax.GradientTransformation
-        Gradient transformation chain.
+        Gradient transformation chain
     model_config : model config
-        AlphaFold model configuration.
+        AF model config
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     global_step : int
-        Current global training step.
+        Current global training step
     all_valid_loss : list
-        History of validation losses.
+        History of validation losses
     all_valid_binder_loss : list
-        History of validation binder losses.
+        History of validation binder losses
     all_valid_fape : list
-        History of validation FAPE values.
+        History of validation FAPE values
     valid_loader : torch.utils.data.DataLoader
-        Validation data loader.
+        Validation data loader
     jax_key : jax.random.PRNGKey
-        JAX random key.
+        JAX random key
     binder_loss_weight : float
-        Weight for binder loss.
+        Weight for binder loss
 
     Returns
     -------
     tuple
         (replicated_params, af2_opt_state, global_step, early_stop, jax_key,
-         all_valid_loss, all_valid_binder_loss, all_valid_fape) - Updated training state.
+         all_valid_loss, all_valid_binder_loss, all_valid_fape) - Updated training state
     """
     temp_train_loss = []
     temp_binder_loss = []
@@ -1221,7 +1380,7 @@ sample: {targetid}', flush=True)
 
 
 def main():
-    """Main execution function for AlphaFold fine-tuning."""
+    """Main execution for AF2 fine-tuning."""
     global FLAGS, model_runner, model_config, binder_classifier, batch_size, e, global_step
 
     args = parse_arguments()

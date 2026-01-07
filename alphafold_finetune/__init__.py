@@ -5,7 +5,7 @@ Tools for fine-tuning AlphaFold models and analyzing predictions.
 
 Adapted from
 
-    Motmaen, A., Dauparas, J., ... Bradley, P, PNAS. (2022).
+    Motmaen, A., Dauparas, J., ... Bradley, P, PNAS. (2023).
 
 and
 

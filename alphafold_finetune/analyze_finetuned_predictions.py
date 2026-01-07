@@ -1,64 +1,11 @@
 """
-Analyzes RMSDs and confidence metrics for fine-tuned AlphaFold2 predictions.
+Analyze RMSDs and confidence metrics for fine-tuned AF2 predictions.
 
 Author: Ben Orr
 Date: 2.20.24
 
-This module calculates RMSDs between classic and fine-tuned AlphaFold2 predictions
-and their ground truth structures. It loads and saves a dataframe with the fine-tuned
-model's predictions' RMSDs to the ground truth structures, their confidence metrics,
-and their paths to the PDB files for their classic AF2, fine-tuned AF2, and ground
-truth structures.
-
-Usage
------
-calc_checkpointed_models_metrics.py --job_name <job_name> --predictions <AF2_prediction_folder>
-    --ground_truth <ground_truth_folder1> [ <ground_truth_folder2> ... ]
-    --model_names <classic_model_name> <fine_tuned_model_name> --outfolder_parent <output_folder_parent>
-    [ --reshaped_region_rmsd --reshaped_residue_confidence --design_info_folders <design_info_folder1> [ <design_info_folder2> ... ]]
-
-Inputs
-------
-job_name : str
-    Name for the job which will be used in the output .png files.
-
-predictions : str
-    Path to a folder containing classic and fine-tuned AF2 predictions (.pdb files),
-    as well as AF2 confidence scores (.npy files).
-
-ground_truth : str or list of str
-    A folder (or folders) containing PDB files of the ground truth structures
-    (e.g., design models) of the corresponding AF2 predictions. The PDB headers in
-    the ground truth files must also appear in the headers of the AF2 output files.
-
-model_names : list of str
-    The classic and fine-tuned AF2 model names (as they appear in the headers of the
-    prediction output files). The classic model name should be provided first, followed
-    by the fine-tuned model name.
-
-outfolder_parent : str
-    Output files are written to outfolder_parent.
-
-reshaped_helix_rmsd : bool
-    Calculate Reshaped Helix RMSD to Rosetta values for LUCS designs.
-
-reshaped_residue_confidence : bool
-    Calculate the pAE values between the bb_remodeled_residues and non-bb_remodeled_residues
-    and pLDDT values of the bb_remodeled_residues (this residue set is found in the
-    bb_remodeled_residues column of the stability_data dataframe(s)). Uses the default
-    pLDDT and pAE thresholds or the provided thresholds.
-
-design_info_folders : str or list of str
-    If using the --reshaped_region_rmsd flag, then a path to a folder (or folders)
-    containing LUCS designs' <design_id>_design_info_folder.json files must be provided
-    with this flag. These <design_id>_design_info_folder.json files must contain a
-    linker_ids key, which is used to find the helical residues for each design.
-
-Outputs
--------
-A dataframe containing AF2 prediction (classic and fine-tuned) to ground truth RMSDs,
-confidence values for both AF2 models for each sample, and paths to PDB files in
-outfolder_parent/job_name.
+Calculates RMSDs between classic/fine-tuned AF2 predictions and ground truth.
+Saves dataframe with RMSDs, confidence metrics, PDB paths.
 """
 
 import os
@@ -83,23 +30,22 @@ pyrosetta.init()
 # Writing my own function to calculate RMSD
 def calc_RMSD(ref_coords: np.ndarray, coords: np.ndarray) -> float:
     """
-    Calculate RMSD between two sets of coordinates.
+    RMSD between two coordinate sets.
 
-    Takes num_points x num_dims (num_dims=3 for 3d coords) arrays. Calculates the
-    displacement between each pair of points, then divides the sum of these
-    displacements by the number of points to get the RMSD
+    Takes num_points × num_dims arrays (num_dims=3 for 3D).
+    Calculates displacement per pair, divides by num_points.
 
     Parameters
     ----------
     ref_coords : np.ndarray
-        Reference coordinates array of shape (n_points, n_dims).
+        Reference coords, (n_points, n_dims)
     coords : np.ndarray
-        Coordinates to compare of shape (n_points, n_dims).
+        Coords to compare, (n_points, n_dims)
 
     Returns
     -------
     float
-        The root mean square deviation between the two coordinate sets.
+        Root mean square deviation
     """
     total_disp = 0
     for idx in range(len(ref_coords)):
@@ -123,36 +69,34 @@ def get_RMSD(
     ref_chain: str = 'A'
 ) -> float:
     """
-    Align two models and calculate RMSD on specified residues.
+    Align two models, calculate RMSD on specified residues.
 
-    Align two models based on a subset of residues, and calcualte the RMSD on the
-    atom_types on the rmsd_res_subset residues.
-
-    Res subsets are PDB numbering, since this is what Biopython uses.
+    Aligns on subset, calculates RMSD on atom_types for rmsd_res_subset.
+    Res subsets use PDB numbering (BioPython).
 
     Parameters
     ----------
     ref_struct : Bio.PDB.Structure
-        Reference structure object.
+        Reference structure
     moving_struct : Bio.PDB.Structure
-        Structure to be aligned to reference.
+        Structure to align
     atom_types : List[str]
-        List of atom types to use for alignment and RMSD calculation (e.g., ['CA']).
+        Atoms for alignment/RMSD (e.g., ['CA'])
     ref_align_res_subset : List[int]
-        Residue indices in reference structure for alignment.
+        Ref residues for alignment
     ref_rmsd_res_subset : List[int]
-        Residue indices in reference structure for RMSD calculation.
+        Ref residues for RMSD
     moving_align_res_subset : List[int]
-        Residue indices in moving structure for alignment.
+        Moving residues for alignment
     moving_rmsd_res_subset : List[int]
-        Residue indices in moving structure for RMSD calculation.
-    ref_chain : str, optional
-        Chain identifier for reference structure, by default 'A'.
+        Moving residues for RMSD
+    ref_chain : str
+        Chain ID for ref, default 'A'
 
     Returns
     -------
     float
-        RMSD value between the two structures.
+        RMSD between structures
     """
     ref_model = ref_struct[0]
     ref_chain = ref_model[ref_chain]
@@ -205,24 +149,22 @@ def sns_plot(
     outfolder: str
 ) -> None:
     """
-    Create a seaborn scatter plot comparing RMSD values.
-
-    Plot with seaborn
+    Seaborn scatter plot comparing RMSDs.
 
     Parameters
     ----------
     x_vals : List[float]
-        X-axis values (typically fine-tuned model RMSDs).
+        X-axis, typically fine-tuned RMSDs
     y_vals : List[float]
-        Y-axis values (typically classic model RMSDs).
+        Y-axis, typically classic RMSDs
     x_name : str
-        Label for x-axis.
+        X-axis label
     y_name : str
-        Label for y-axis.
+        Y-axis label
     job_name : str
-        Name for the job, used in output filename.
+        Job name for output
     outfolder : str
-        Directory path where the plot will be saved.
+        Plot output directory
 
     Returns
     -------
@@ -252,16 +194,16 @@ def compare_rmsds(
     outfolder: str
 ) -> None:
     """
-    Compare RMSD values between two models and generate visualization.
+    Compare RMSD values between two models, generate visualization.
 
     Parameters
     ----------
     list_of_dicts : List[Dict[str, Any]]
-        List of dictionaries containing model predictions and RMSD data.
+        Dicts with predictions and RMSD data
     job_name : str
-        Name for the job, used in output filename.
+        Job name for output
     outfolder : str
-        Directory path where outputs will be saved.
+        Output directory
 
     Returns
     -------
@@ -297,20 +239,20 @@ def compare_rmsds(
 
 def compare_df_rmsds(df: pd.DataFrame, cutoff: float = 0) -> Tuple[int, int, List[float], List[float]]:
     """
-    Compare RMSD values from a dataframe with a cutoff threshold.
+    Compare RMSD values from dataframe with cutoff.
 
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame containing model predictions and RMSD data.
-    cutoff : float, optional
-        Cutoff threshold for RMSD comparison, by default 0.
+        DataFrame with predictions and RMSDs
+    cutoff : float
+        Cutoff threshold, default 0
 
     Returns
     -------
     Tuple[int, int, List[float], List[float]]
-        Number of structures where model1 is better, number where model2 is better,
-        model1 RMSDs, model2 RMSDs.
+        Num where model1 better, num where model2 better,
+        model1 RMSDs, model2 RMSDs
     """
     model1_name = df.iloc[0]['classic_name']
     model2_name = df.iloc[0]['ft_name']
@@ -350,23 +292,23 @@ def load_confidence_scores(
     model2_file: str
 ) -> Dict[str, Any]:
     """
-    Load plddt, pae, and ptm scores for the classic and ft AF2 models.
+    Load pLDDT, pAE, pTM scores for classic/fine-tuned AF2.
 
     Parameters
     ----------
     new_dict : Dict[str, Any]
-        Dictionary to update with confidence scores.
+        Dict to update with scores
     af2_folder : str
-        Path to folder containing AF2 prediction files.
+        AF2 prediction folder
     model1_file : str
-        Filename for classic model prediction.
+        Classic model filename
     model2_file : str
-        Filename for fine-tuned model prediction.
+        Fine-tuned model filename
 
     Returns
     -------
     Dict[str, Any]
-        Updated dictionary with confidence scores added.
+        Updated dict with scores
     """
     classic_plddt_path = os.path.join(af2_folder, model1_file.replace('.pdb', '_plddt.npy'))
     classic_pae_path = os.path.join(af2_folder, model1_file.replace('.pdb', '_predicted_aligned_error.npy'))
@@ -407,26 +349,22 @@ def load_design(
     design_info_file: Optional[str] = None
 ) -> Tuple[Any, List[List[int]], List[int]]:
     """
-    Load a design and extract remodeled and fixed residues.
-
-    Return:
-        pose_design, pose_to_compare, pose_to_compare_type, bb_remodeled_residues, bb_fixed_residues
+    Load design and extract remodeled and fixed residues.
 
     Parameters
     ----------
     design_path : str
-        Path to the design PDB file.
-    bb_remodeled_residues : Optional[List[int]], optional
-        List of remodeled residue indices, by default None.
-    design_info_file : Optional[str], optional
-        Path to design info JSON file, by default None.
+        Path to design pdb file
+    bb_remodeled_residues : Optional[List[int]]
+        Remodeled residue indices, default None
+    design_info_file : Optional[str]
+        Path to design info json file, default None
 
     Returns
     -------
     Tuple[Any, List[List[int]], List[int]]
-        pose_design: PyRosetta pose object
-        bb_remodeled_residues: List of lists of remodeled residue segments
-        bb_fixed_residues: List of fixed residue indices
+        PyRosetta pose object, list of remodeled residue segments,
+        list of fixed residue indices
     """
     pose_design = rosetta.core.import_pose.pose_from_file(os.path.join(design_path))
 
@@ -459,12 +397,12 @@ def xyzV_to_np_array(xyz: Any) -> np.ndarray:
     Parameters
     ----------
     xyz : rosetta.numeric.xyzVector_double_t
-        Rosetta xyz vector object.
+        Rosetta xyz vector object
 
     Returns
     -------
     np.ndarray
-        Numpy array representation of xyz coordinates.
+        Numpy array of xyz coords
     """
     return np.array([xyz.x, xyz.y, xyz.z])
 
@@ -476,12 +414,12 @@ def np_array_to_xyzV(a: np.ndarray) -> Any:
     Parameters
     ----------
     a : np.ndarray
-        Numpy array of shape (3,) with x, y, z coordinates.
+        Numpy array, shape (3,) with x, y, z coords
 
     Returns
     -------
     rosetta.numeric.xyzVector_double_t
-        Rosetta xyz vector object.
+        Rosetta xyz vector object
     """
     return rosetta.numeric.xyzVector_double_t(a[0], a[1], a[2])
 
@@ -493,12 +431,12 @@ def np_array_to_xyzM(a: np.ndarray) -> Any:
     Parameters
     ----------
     a : np.ndarray
-        Numpy array of shape (3, 3) representing a rotation matrix.
+        Numpy array, shape (3, 3) rotation matrix
 
     Returns
     -------
     rosetta.numeric.xyzMatrix_double_t
-        Rosetta xyz matrix object.
+        Rosetta xyz matrix object
     """
     return rosetta.numeric.xyzMatrix_double_t.rows(
         a[0][0], a[0][1], a[0][2],
@@ -512,21 +450,21 @@ def get_backbone_points(
     atom_types: List[str] = ['N', 'CA', 'C']
 ) -> List[np.ndarray]:
     """
-    Get backbone points for residues in a pose.
+    Get backbone points for residues in pose.
 
     Parameters
     ----------
     pose : rosetta.core.pose.Pose
-        PyRosetta pose object.
+        PyRosetta pose object
     residues : List[int]
-        List of residue indices.
-    atom_types : List[str], optional
-        List of atom types to extract, by default ['N', 'CA', 'C'].
+        Residue indices
+    atom_types : List[str]
+        Atom types to extract, default ['N', 'CA', 'C']
 
     Returns
     -------
     List[np.ndarray]
-        List of numpy arrays containing backbone atom coordinates.
+        Numpy arrays containing backbone atom coords
     """
     points = []
 
@@ -539,24 +477,24 @@ def get_backbone_points(
 
 def get_superimpose_transformation(P1: List[np.ndarray], P2: List[np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Get the superimpose transformation that transfoms a list of points P1 to another list of points P2.
+    Superimpose transformation that transforms P1 to P2.
 
     Parameters
     ----------
     P1 : List[np.ndarray]
-        First set of points.
+        First set of points
     P2 : List[np.ndarray]
-        Second set of points.
+        Second set of points
 
     Returns
     -------
     Tuple[np.ndarray, np.ndarray]
-        Rotation matrix M and translation vector t.
+        Rotation matrix M and translation vector t
 
     Raises
     ------
     Exception
-        If the two point sets have different numbers of points.
+        If point sets have different numbers of points
     """
     if len(P1) != len(P2):
         raise Exception("Sets to be superimposed must have same number of points.")
@@ -583,22 +521,22 @@ def superimpose_poses_by_residues(
     atom_types: List[str] = ['N', 'CA', 'C']
 ) -> None:
     """
-    Superimpose residues in a source pose into residues in a target pose.
+    Superimpose source pose residues to target pose residues.
 
-    Only backbone atoms are used for the superimposition.
+    Only backbone atoms used for superimposition.
 
     Parameters
     ----------
     pose_source : rosetta.core.pose.Pose
-        Source pose to be transformed.
+        Source pose to be transformed
     residues_source : List[int]
-        Residue indices in source pose.
+        Residue indices in source pose
     pose_target : rosetta.core.pose.Pose
-        Target pose for alignment.
+        Target pose for alignment
     residues_target : List[int]
-        Residue indices in target pose.
-    atom_types : List[str], optional
-        Atom types to use for superimposition, by default ['N', 'CA', 'C'].
+        Residue indices in target pose
+    atom_types : List[str]
+        Atom types for superimposition, default ['N', 'CA', 'C']
 
     Returns
     -------
@@ -623,23 +561,21 @@ def superimpose_poses_by_residues(
 
 def get_helix_of_lhl_unit(pose: Any, lhl_start: int, lhl_stop: int) -> Tuple[int, int]:
     """
-    Get the helix part of a LHL unit.
-
-    Return a pair of (start, stop).
+    Get helix part of LHL unit.
 
     Parameters
     ----------
     pose : rosetta.core.pose.Pose
-        PyRosetta pose object.
+        PyRosetta pose object
     lhl_start : int
-        Start residue index of LHL unit.
+        Start residue index of LHL unit
     lhl_stop : int
-        Stop residue index of LHL unit.
+        Stop residue index of LHL unit
 
     Returns
     -------
     Tuple[int, int]
-        Tuple of (helix_start, helix_stop) residue indices.
+        Helix start and stop residue indices
     """
     dssp_str = rosetta.core.scoring.dssp.Dssp(pose).get_dssp_secstruct()
 
@@ -663,41 +599,41 @@ def calc_backbone_RMSD(
     residues2: List[int]
 ) -> float:
     """
-    Calculate backbone RMSD between two poses for specific positions.
+    Backbone RMSD between two poses for specific positions.
 
     Parameters
     ----------
     pose1 : rosetta.core.pose.Pose
-        First pose.
+        First pose
     residues1 : List[int]
-        Residue indices in first pose.
+        Residue indices in first pose
     pose2 : rosetta.core.pose.Pose
-        Second pose.
+        Second pose
     residues2 : List[int]
-        Residue indices in second pose.
+        Residue indices in second pose
 
     Returns
     -------
     float
-        Backbone RMSD value.
+        Backbone RMSD value
     """
     assert(len(residues1) == len(residues2))
 
     def RMSD(points1: List[np.ndarray], points2: List[np.ndarray]) -> float:
         """
-        Calculate RMSD between two lists of numpy points.
+        RMSD between two lists of numpy points.
 
         Parameters
         ----------
         points1 : List[np.ndarray]
-            First set of points.
+            First set of points
         points2 : List[np.ndarray]
-            Second set of points.
+            Second set of points
 
         Returns
         -------
         float
-            RMSD value.
+            RMSD value
         """
         diff = [points1[i] - points2[i] for i in range(len(points1))]
 
@@ -727,17 +663,16 @@ def get_lhl_residues(
     Parameters
     ----------
     design_info_file : str
-        Path to design info JSON file.
+        Path to design info json file
     res_start_idx : int
-        Starting residue index.
+        Starting residue index
     seq_len : int
-        Sequence length.
+        Sequence length
 
     Returns
     -------
     Tuple[List[List[int]], List[List[int]]]
-        lhl_residues: List of lists containing LHL residue segments
-        helix_residues: List of lists containing helix residue segments
+        LHL residue segments, helix residue segments
     """
     # Load the list of bb_remodeled_residues
     with open(design_info_file) as design_info_json:
@@ -795,50 +730,36 @@ def calculate_bb_remodeled_region_rmsd(
     pose_helix_residues: Optional[List[List[int]]] = None
 ) -> Tuple[float, List[Tuple[int, int]]]:
     """
-    Calculate the backbone RMSDs of the remodeled region.
+    Backbone RMSD of remodeled region.
 
-    Return a two dimensional list where list[i][j] element
-    is the RMSD between design i and experimentally solved
-    or lowest scoring model j.
-    Return:
-        rmsds, pose_to_compare_types
-
-    Ben 5.10.23:
-        Calculate the Helix RMSDs between reference and design structures.
-        The reference will be either 2lv8 or a LUCS design, and the design will
-        be either a LUCS design or an AF2 model.
-
-        bb_remodeled_residues correspond to the design_path design.
-
-        Helix Residues is a list of lists, the first list having
-            the length of the number of LHLs, and the nested list
-            having the helical residues for each LHL.
+    Helix RMSDs between reference and design structures. Reference is either
+    2lv8 or LUCS design, design is either LUCS design or AF2 model.
 
     Parameters
     ----------
     reference_path : str
-        Path to reference structure PDB file.
+        Path to reference structure pdb file
     design_path : str
-        Path to design structure PDB file.
-    helix_idxs : List[int], optional
-        Indices of helices to analyze, by default [0, 1].
-    is_af2_design : bool, optional
-        Whether the design is from AlphaFold2, by default False.
-    atom_types : List[str], optional
-        Atom types for RMSD calculation, by default ['N', 'CA', 'C'].
-    ref_lhl_residues : Optional[List[List[int]]], optional
-        Reference LHL residue indices, by default None.
-    pose_lhl_residues : Optional[List[List[int]]], optional
-        Pose LHL residue indices, by default None.
-    ref_helix_residues : Optional[List[List[int]]], optional
-        Reference helix residue indices, by default None.
-    pose_helix_residues : Optional[List[List[int]]], optional
-        Pose helix residue indices, by default None.
+        Path to design structure pdb file
+    helix_idxs : List[int]
+        Helix indices to analyze, default [0, 1]
+    is_af2_design : bool
+        Whether design is from AF2, default False
+    atom_types : List[str]
+        Atom types for RMSD calculation, default ['N', 'CA', 'C']
+    ref_lhl_residues : Optional[List[List[int]]]
+        Reference LHL residue indices, default None
+    pose_lhl_residues : Optional[List[List[int]]]
+        Pose LHL residue indices, default None
+    ref_helix_residues : Optional[List[List[int]]]
+        Reference helix residue indices, default None
+    pose_helix_residues : Optional[List[List[int]]]
+        Pose helix residue indices, default None
 
     Returns
     -------
     Tuple[float, List[Tuple[int, int]]]
-        RMSD value and list of helix start-stop index tuples.
+        RMSD value and helix start-stop index tuples
     """
     # Load the designs
 
@@ -952,27 +873,27 @@ def get_reshaped_confidence(
     design_info_file: Optional[str] = None
 ) -> Tuple[float, float]:
     """
-    Load the pAE values between the reshaped residues and the rest of the protein.
+    Load pAE values between reshaped residues and rest of protein.
 
-    Also load the pLDDT values of the reshaped residues.
+    Also loads pLDDT values of reshaped residues.
 
     Parameters
     ----------
     data_dict : Dict[str, Any]
-        Dictionary containing model paths and confidence data.
+        Dict containing model paths and confidence data
     args : argparse.Namespace
-        Command-line arguments.
-    model_type : str, optional
-        Type of model ('classic' or 'ft'), by default 'classic'.
-    bb_remodeled_residues : Optional[List[int]], optional
-        List of remodeled residue indices, by default None.
-    design_info_file : Optional[str], optional
-        Path to design info JSON file, by default None.
+        Command-line arguments
+    model_type : str
+        Model type, 'classic' or 'ft', default 'classic'
+    bb_remodeled_residues : Optional[List[int]]
+        Remodeled residue indices, default None
+    design_info_file : Optional[str]
+        Path to design info json file, default None
 
     Returns
     -------
     Tuple[float, float]
-        Mean pAE value and mean pLDDT value for reshaped residues.
+        Mean pAE and mean pLDDT for reshaped residues
     """
     # Load the LHLR structure
     pose_design, bb_remodeled_residues, bb_fixed_residues \
@@ -1008,19 +929,19 @@ def get_reshaped_confidence(
 
 def find_design_info_file(args: argparse.Namespace, data_dict: Dict[str, Any]) -> Optional[str]:
     """
-    Find the design info JSON file for a given design.
+    Find design info json file for given design.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments containing design_info_folders.
+        Command-line arguments containing design_info_folders
     data_dict : Dict[str, Any]
-        Dictionary containing design name.
+        Dict containing design name
 
     Returns
     -------
     Optional[str]
-        Path to design info file if found, None otherwise.
+        Path to design info file if found, None otherwise
     """
     for design_info_folder in args.design_info_folders:
         if str(data_dict['name'])+'_design_info.json' in os.listdir(design_info_folder):
@@ -1038,7 +959,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="Calculate RMSDs between classic and fine-tuned AF2 predictions to their ground truth structures.  \
         Load and save a dataframe with the checkpointed models' predictions' RMSDs to the ground truth structures, their\
-        confidence metrics, and their paths to the PDB files for their classic AF2, fine-tuned AF2, and ground truth\
+        confidence metrics, and their paths to the pdb files for their classic AF2, fine-tuned AF2, and ground truth\
         structures.",
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -1047,7 +968,7 @@ if __name__ == '__main__':
     parser.add_argument('--predictions', type=str, required=True,
                         help='Path to a folder containing classic and fine-tuned AF2 predictions (.pdb files), as well as AF2 confidence scores (.npy files).')
     parser.add_argument('--ground_truth', nargs='*', type=str, required=True,
-                        help='A folder (or folders) containing PDB files of the ground truth structures (e.g., design models) of the corresponding\
+                        help='A folder (or folders) containing pdb files of the ground truth structures (e.g., design models) of the corresponding\
                         AF2 predictions.  The PDB headers in the ground truth files must also appear in the headers of the AF2 output files.')
     parser.add_argument('--model_names', nargs=2, type=str, required=True,
                         help='The classic and fine-tuned AF2 model names (as they appear in the headers of the prediction output files).\
@@ -1212,7 +1133,7 @@ if __name__ == '__main__':
         atom_types = ['N', 'CA', 'C']
 
         # range(1, len+1) because res_idxs are 1-indexed (PDB-numbering)
-        # If the ground truth and prediction PDB files have the same numbering, then
+        # If the ground truth and prediction pdb files have the same numbering, then
         # defining only one set of align and rmsd residues works:
         # align_res_subset = list(range(1, len(list(gt_struct.get_residues()))+1))
         # rmsd_res_subset = align_res_subset

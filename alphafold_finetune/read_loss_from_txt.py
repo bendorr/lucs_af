@@ -14,13 +14,13 @@ Usage:
 
 Inputs:
 
-	job_names: Name(s) for the jobs which will be used in the output .png files. The order of job names must match that
+	job_names: Name(s) for the jobs which will be used in the output png files. The order of job names must match that
 		of log files.
 
-	train_loss_files: Paths to alphafold_finetune train loss .txt files from which to read loss values. The order of log files must match that
+	train_loss_files: Paths to alphafold_finetune train loss txt files from which to read loss values. The order of log files must match that
 		of job names.
 
-	valid_loss_files: Paths to alphafold_finetune valid loss .txt files from which to read loss values. The order of log files must match that
+	valid_loss_files: Paths to alphafold_finetune valid loss txt files from which to read loss values. The order of log files must match that
 		of job names.
 
 	outfolder: Folder in which to output figures.
@@ -48,8 +48,7 @@ import numpy as np
 
 def reformat_valid_loss_files(args):
 	"""
-	Reformat the validation loss files, so that each
-	validation example has its own line.
+	Reformat validation loss files so each validation example has own line.
 	"""
 	for valid_file in args.valid_loss_files:
 		new_file_string = ''
@@ -73,7 +72,7 @@ def reformat_valid_loss_files(args):
 
 def rolling_means(array, window_size):
 	"""
-	Return an array of rolling means
+	Array of rolling means.
 	"""
 	i=0
 	moving_aves=[]
@@ -86,7 +85,7 @@ def rolling_means(array, window_size):
 
 def load_loss_values(args):
 	"""
-	Load loss values from files into a list of dicts.
+	Load loss values from files into list of dicts.
 	"""
 	data_dicts = []
 
@@ -280,29 +279,19 @@ def load_loss_values(args):
 	return data_dicts
 
 def print_min_loss(name: str, vals: List[float]) -> None:
-	"""Print minimum and maximum values with their indices for debugging.
-
-	Helper function to display summary statistics of loss arrays during debugging.
+	"""
+	Min and max values with indices for debugging.
 
 	Parameters
 	----------
 	name : str
-		Name of the loss metric being analyzed.
+		Loss metric name
 	vals : list of float
-		Array of loss values.
+		Array of loss values
 
 	Returns
 	-------
 	None
-		Prints statistics to stdout.
-
-	Examples
-	--------
-	>>> print_min_loss('FAPE', [1.5, 0.8, 1.2, 0.5, 1.0])
-	Min FAPE: 0.5
-	Min Index FAPE: 3
-	Max FAPE: 1.5
-	Max Index FAPE: 0
 	"""
 	print(f'Min {name}: {min(vals)}')
 	print(f'Min Index {name}: {vals.index(min(vals))}')
@@ -319,65 +308,36 @@ def plot_loss_curve(
 		title: str = 'Total loss curve',
 		outfile: str = '',
 		alpha: float = 1) -> None:
-	"""Plot training and validation loss curves for a single experiment.
+	"""
+	Training and validation loss curves for single experiment.
 
-	Generates a line plot showing both training and validation loss over time.
-	Training loss is displayed as a solid line (optionally smoothed with rolling
-	average) and validation loss as a dashed line.
+	Line plot with training loss (solid) and validation loss (dashed),
+	optionally smoothed with rolling average.
 
 	Parameters
 	----------
 	args : argparse.Namespace
-		Parsed command line arguments containing:
-		- train_rolling_window : int
-			Window size for smoothing training loss.
-		- batch_size : int
-			Batch size for normalizing x-axis when plotting by batches.
-		- debug : bool
-			If True, print debugging statistics.
+		Command-line arguments
 	data_dict : dict
-		Dictionary containing loss data for one experiment, as returned by
-		load_loss_values(). Must contain keys matching the x and y parameters.
-	x : str, optional
-		Key for x-axis data. Options: 'steps', 'batches', or 'fapes_batches'.
-		Default is 'steps'.
-	y : str, optional
-		Key for y-axis data. Options: 'losses', 'fapes', 'binder_losses',
-		'batch_losses', 'batch_fapes', 'batch_binder_losses', 'fapes_batches',
-		'chym_ec50_losses', 'tryp_ec50_losses'. Default is 'losses'.
-	xlabel : str, optional
-		Label for x-axis. Default is 'Batch'.
-	ylabel : str, optional
-		Label for y-axis. Default is 'Loss'.
-	title : str, optional
-		Plot title. Default is 'Total loss curve'.
-	outfile : str, optional
-		Path where the figure will be saved. Default is ''.
-	alpha : float, optional
-		Transparency of plot lines (0-1). Default is 1.
+		Dict containing loss data from load_loss_values
+	x : str
+		Key for x-axis data, default 'steps'
+	y : str
+		Key for y-axis data, default 'losses'
+	xlabel : str
+		Label for x-axis, default 'Batch'
+	ylabel : str
+		Label for y-axis, default 'Loss'
+	title : str
+		Plot title, default 'Total loss curve'
+	outfile : str
+		Path where figure will be saved, default ''
+	alpha : float
+		Transparency of plot lines (0-1), default 1
 
 	Returns
 	-------
 	None
-		Saves the figure to the specified outfile path.
-
-	Notes
-	-----
-	- Training loss is smoothed using a rolling window if train_rolling_window > 1.
-	- Validation loss is plotted as the mean across validation examples at each step.
-	- For 'fapes_batches', only non-zero FAPE values are plotted.
-	- When x='batches', validation steps are divided by batch_size for alignment.
-
-	Examples
-	--------
-	>>> plot_loss_curve(
-	...     args, data_dict,
-	...     x='steps', y='losses',
-	...     xlabel='Training Step', ylabel='Total Loss',
-	...     title='Experiment Loss Curve',
-	...     outfile='./output/loss.png'
-	... )
-	Saved figure: ./output/loss.png
 	"""
 	fig = plt.figure(figsize=(8, 5))
 	ax = plt.subplot(111)
@@ -432,69 +392,38 @@ def plot_combined_loss_curve(
 		outfile: str = '',
 		alpha: float = 0.1,
 		cmap: str = 'Paired') -> None:
-	"""Plot combined training and validation loss curves from multiple experiments.
+	"""
+	Combined training and validation loss curves from multiple experiments.
 
-	Generates a single plot overlaying loss curves from multiple experiments for
-	direct comparison. Each experiment gets a unique color from the colormap, with
-	training losses as solid lines and validation losses as dashed lines.
+	Single plot overlaying loss curves for direct comparison, each with unique
+	color from colormap.
 
 	Parameters
 	----------
 	args : argparse.Namespace
-		Parsed command line arguments containing:
-		- train_rolling_window : int
-			Window size for smoothing training loss.
-		- batch_size : int
-			Batch size for normalizing x-axis when plotting by batches.
+		Command-line arguments
 	data_dicts : list of dict
-		List of dictionaries containing loss data for each experiment, as
-		returned by load_loss_values().
-	x : str, optional
-		Key for x-axis data. Options: 'steps', 'batches', or 'fapes_batches'.
-		Default is 'steps'.
-	y : str, optional
-		Key for y-axis data. Options: 'losses', 'fapes', 'binder_losses',
-		'batch_losses', 'batch_fapes', 'batch_binder_losses', 'fapes_batches',
-		'chym_ec50_losses', 'tryp_ec50_losses'. Default is 'losses'.
-	xlabel : str, optional
-		Label for x-axis. Default is 'Batch'.
-	ylabel : str, optional
-		Label for y-axis. Default is 'Loss'.
-	title : str, optional
-		Plot title. Default is 'Total loss curve'.
-	outfile : str, optional
-		Path where the figure will be saved. Default is ''.
-	alpha : float, optional
-		Transparency of plot lines (0-1). Lower values help distinguish
-		overlapping curves. Default is 0.1.
-	cmap : str, optional
-		Matplotlib colormap name for coloring different experiments.
-		Default is 'Paired'.
+		Dicts containing loss data from load_loss_values
+	x : str
+		Key for x-axis data, default 'steps'
+	y : str
+		Key for y-axis data, default 'losses'
+	xlabel : str
+		Label for x-axis, default 'Batch'
+	ylabel : str
+		Label for y-axis, default 'Loss'
+	title : str
+		Plot title, default 'Total loss curve'
+	outfile : str
+		Path where figure will be saved, default ''
+	alpha : float
+		Transparency of plot lines (0-1), default 0.1
+	cmap : str
+		Matplotlib colormap name, default 'Paired'
 
 	Returns
 	-------
 	None
-		Saves the figure to the specified outfile path at 300 DPI.
-
-	Notes
-	-----
-	- Colors are assigned sequentially from the colormap: experiment i gets
-	  colors cmap(2*i) for training and cmap(2*i+1) for validation.
-	- Experiments missing the requested loss type are skipped automatically.
-	- Legend font size is reduced to accommodate multiple entries.
-	- Figure uses tight layout to prevent label cutoff.
-
-	Examples
-	--------
-	>>> plot_combined_loss_curve(
-	...     args, data_dicts,
-	...     x='steps', y='losses',
-	...     xlabel='Training Step', ylabel='Total Loss',
-	...     title='Multi-Experiment Comparison',
-	...     outfile='./output/combined_loss.png',
-	...     alpha=0.3
-	... )
-	Saved figure: ./output/combined_loss.png
 	"""
 	# cmap = matplotlib.cm.get_cmap(cmap)
 	cmap = matplotlib.colormaps[cmap]
@@ -545,7 +474,9 @@ def plot_combined_loss_curve(
 
 
 def plot_individual_loss_curves(args: argparse.Namespace, data_dicts: List[Dict[str, Any]]) -> None:
-	"""Plot individual loss curves for each experiment."""
+	"""
+	Individual loss curves for each experiment.
+	"""
 	for data_dict in data_dicts:
 		# Determine title append text based on batch size
 		if args.batch_size == 1:
@@ -594,7 +525,9 @@ def plot_individual_loss_curves(args: argparse.Namespace, data_dicts: List[Dict[
 
 
 def plot_combined_loss_curves(args: argparse.Namespace, data_dicts: List[Dict[str, Any]]) -> None:
-	"""Plot combined loss curves from multiple experiments."""
+	"""
+	Combined loss curves from multiple experiments.
+	"""
 	# Calculate alpha based on number of experiments
 	alpha = 1 - 0.08 * len(data_dicts)
 
@@ -640,7 +573,9 @@ def plot_combined_loss_curves(args: argparse.Namespace, data_dicts: List[Dict[st
 
 
 def main():
-	"""Main entry point for loss curve visualization."""
+	"""
+	Main entry point for loss curve visualization.
+	"""
 	# Parse command line arguments
 	parser = argparse.ArgumentParser(
 		description='Analyze RMSDs between classic and fine-tuned AF2 predictions to their ground truth structures,\
@@ -648,13 +583,13 @@ def main():
 		formatter_class=argparse.RawDescriptionHelpFormatter)
 
 	parser.add_argument('--job_names', nargs='*', type=str, required=True,
-			help='Name(s) for the jobs which will be used in the output .png files. The order of job names must\
+			help='Name(s) for the jobs which will be used in the output png files. The order of job names must\
 			match that of log files.')
 	parser.add_argument('--train_loss_files', nargs='*', type=str, required=True,
-			help='alphafold_finetune train loss .txt files from which to read loss values. The order of log files must match\
+			help='txt files containing alphafold_finetune training loss values. The order of log files must match\
 			that of job names.')
 	parser.add_argument('--valid_loss_files', nargs='*', type=str, required=True,
-			help='alphafold_finetune valid loss .txt files from which to read loss values. The order of log files must match\
+			help='txt files containing alphafold_finetune validation loss values. The order of log files must match\
 			that of job names.')
 	parser.add_argument('--outfolder', type=str, required=True,
 			help='Folder in which to output figures.')

@@ -1,114 +1,41 @@
 #!/usr/bin/env python3
 """
-Analyzes and visualizes 6D helix vectors from protein structures.
+Analyze and visualize 6D helix vectors (3D position + 3D direction).
 
 Author: Ben Orr
 Date: 9.9.22
 Adapted from: XingJie Pan's measure_structure_space.py
 
-This script analyzes and visualizes 6D helix vectors (3D position + 3D direction)
-calculated by calc_6d_helix_vectors.py. It provides tools for spatial binning,
-filtering, coloring, and 3D visualization of helix vectors from input protein
-structures.
+Analyzes 6D helix vectors from calc_6d_helix_vectors.py. Supports spatial binning,
+filtering, coloring, 3D visualization, and movie frame generation.
 
-The script supports:
-- Loading and binning helix vectors in 6D space
-- Multiple coloring schemes (by design ID, experimental validation, computational metrics)
-- Non-redundant helix visualization (one per spatial bin)
-- 3D plotting
-- Movie frame generation for rotating visualizations
-- Loading beta sheet coordinates from a reference structure
+Helix format: [x, y, z, vx, vy, vz] (centroid position + direction).
 
-Helix Vector Format
--------------------
-Each helix is represented as a 6-element vector:
-    [x, y, z, vx, vy, vz]
-where (x,y,z) is the helix centroid position and (vx,vy,vz) is the direction vector.
+Spatial binning: 2Å voxels for position, binary (±) bins for direction components.
 
-Spatial Binning
----------------
-Helix vectors are binned into voxels based on:
-- Position: 2 Angstrom bins for (x,y,z)
-- Direction: Binary bins (positive/negative) for (vx,vy,vz)
+Usage examples:
+    python analyze_helix_vectors.py --helix_coords_dir <dir> \
+        --sheet_coords_dir <dir> --starting_structure_name <name> \
+        --designs_df_path <df.csv> --color_by design_id --output_dir <output>
 
-This creates discrete spatial regions for analyzing helix distribution and redundancy.
+    # Color by continuous metric with colorbar
+    python analyze_helix_vectors.py ... --color_by helix_rmsd \
+        --colorbar_title "Helix RMSD"
 
-Usage
------
-Basic usage:
-    python analyze_helix_vectors.py --helix_coords_dir <dir> --sheet_coords_dir <dir> \\
-        --starting_structure_name <name> --designs_df_path <df.csv> \\
-        --color_by <metric> --output_dir <output>
-
-Color by design ID:
-    python analyze_helix_vectors.py ... --color_by design_id
-
-Color by continuous metric:
-    python analyze_helix_vectors.py ... --color_by helix_rmsd --colorbar_title "Helix RMSD"
-
-Plot one helix per bin:
+    # Non-redundant visualization (one helix per bin)
     python analyze_helix_vectors.py ... --plot_one_helix_per_bin
 
-Generate movie frames:
+    # Generate 360 movie frames
     python analyze_helix_vectors.py ... --save_movie_frames
 
-Parameters
-----------
-helix_coords_dir : str
-    Directory containing helix_dicts_lhl{i}.json files with 6D helix vectors.
-
-sheet_coords_dir : str
-    Directory containing sheet_coords files for beta strand visualization.
-
-starting_structure_name : str
-    Name of starting structure (scaffold) used in file naming.
-
-designs_df_path : str
-    Path to CSV file with design_id column and metrics for coloring.
-
-color_by : str
-    Coloring scheme. Options:
-    - 'design_id': Color by unique design
-    - 'color_group': Color by binary group (0/1) in dataframe
-    - 'folded_group': Color by experimental validation (folded/not_folded/low_expression)
-    - 'train_test': Color by train/test split based on metric threshold
-    - 'indiv_<colors>': Individual colors per LHL (e.g., 'indiv_blue,red')
-    - 'color_all_<color>': Single color for all helices
-    - '<metric_name>': Color by continuous metric from dataframe
-
-num_lhls : int, optional
-    Number of Loop-Helix-Loop units to analyze. Default is 2.
-
-num_strands : int, optional
-    Number of beta strands to plot. Default is 4.
-
-plot_one_helix_per_bin : bool, optional
-    If set, plot only one helix per spatial bin (non-redundant visualization).
-
-plot_only_color_group : int, optional
-    Plot only designs from specified color group (0 or 1). Default -1 (all).
-
-hide_sheet : bool, optional
-    If set, do not plot the beta sheet scaffold.
-
-save_movie_frames : bool, optional
-    If set, save 360 frames for movie generation.
-
-elevation : int, optional
-    Camera elevation angle for saved images. Default -1 (use preset orientations).
-
-azimuth : int, optional
-    Camera azimuth angle for saved images. Default -1 (use preset orientations).
-
-output_dir : str
-    Directory for output files including movie frames and hashed helix data.
-
-Output Files
-------------
-The following files are saved to output_dir:
-    - hashed_helix_dicts_list.json: Spatial bins with helix vectors
-    - movies/<metric>/orient*.png: Oriented view images
-    - movies/<metric>/movie*.png: Movie frames (if --save_movie_frames)
+Coloring options (--color_by):
+- 'design_id': unique design colors
+- 'color_group': binary group (0/1) from dataframe
+- 'folded_group': experimental validation (folded/not_folded/low_expression)
+- 'train_test': train/test split by metric threshold
+- 'indiv_<colors>': individual colors per LHL (e.g., 'indiv_blue,red')
+- 'color_all_<color>': single color for all
+- '<metric_name>': continuous metric from dataframe
 """
 
 import os
@@ -127,18 +54,17 @@ import math
 
 def load_helix_coords(file_name: str) -> List[npt.NDArray[np.float64]]:
     """
-    Load helix coordinates from a JSON file.
+    Load helix coords from json file.
 
     Parameters
     ----------
     file_name : str
-        Path to JSON file containing serialized helix coordinates.
+        Path to JSON with serialized helix coords
 
     Returns
     -------
     List[npt.NDArray[np.float64]]
-        List of helix coordinate arrays, each with shape (6,) representing
-        [x, y, z, vx, vy, vz] for centroid position and direction vector.
+        Shape (6,) arrays [x, y, z, vx, vy, vz] for centroid position and direction
     """
     with open(file_name, 'r') as f:
         h_coords_serial = json.load(f)
@@ -152,31 +78,24 @@ def load_helix_dicts(
     lhl_id: int = 0
 ) -> List[Dict[str, Any]]:
     """
-    Load list of helix dictionaries from JSON files.
+    Load helix dicts from json files matching file_header pattern.
 
-    This function loads all JSON files matching the file_header pattern
-    and aggregates them into a single list of design dictionaries.
+    Aggregates all matching json files into single list of design dicts. Converts helix
+    coords from lists to numpy arrays.
 
     Parameters
     ----------
     folder : str
-        Directory containing helix dictionary JSON files.
+        Directory with helix dict json files
     file_header : str
-        File name prefix to match (e.g., 'helix_dicts_lhl0_').
-    lhl_id : int, optional
-        Loop-Helix-Loop ID number. Default is 0.
+        Filename prefix to match (e.g., 'helix_dicts_lhl0_')
+    lhl_id : int
+        Loop-Helix-Loop ID, default 0
 
     Returns
     -------
     List[Dict[str, Any]]
-        List of dictionaries, each containing:
-        - 'design_id': Design identifier
-        - f'helix{lhl_id}_coords': NumPy array of helix coordinates
-
-    Notes
-    -----
-    Helix coordinates are stored as lists in JSON and converted back to
-    NumPy arrays for computational efficiency.
+        Dicts with 'design_id' and f'helix{lhl_id}_coords' (numpy array)
     """
     all_helix_dicts = []
     file_list = [f for f in os.listdir(folder) if file_header in f]
@@ -198,27 +117,22 @@ def load_sheet_coords(
     sheet_coords_fnames: List[str]
 ) -> List[List[npt.NDArray[np.float64]]]:
     """
-    Load beta sheet coordinates from JSON files.
+    Load beta sheet coords from json files (one file per strand).
 
-    Each JSON file contains coordinates for one beta strand. This function
-    aggregates multiple strand coordinates for complete sheet visualization.
+    Aggregates multiple strand coords for complete sheet visualization. Skips files
+    that cannot be loaded.
 
     Parameters
     ----------
     sheet_coords_out_dir : str
-        Directory containing sheet coordinate JSON files.
+        Directory with sheet coord json files
     sheet_coords_fnames : List[str]
-        List of JSON filenames to load (one per strand).
+        json filenames to load (one per strand)
 
     Returns
     -------
     List[List[npt.NDArray[np.float64]]]
-        List of lists, where each sublist contains coordinate arrays for
-        one beta strand. Each coordinate array has shape (3,) for [x, y, z].
-
-    Notes
-    -----
-    Files that cannot be loaded are skipped with a warning message.
+        Each sublist: shape (3,) coord arrays [x, y, z] for one beta strand
     """
     sheet_coords = []
     for fname in sheet_coords_fnames:
@@ -245,28 +159,22 @@ def plot_helices(
     """
     Plot helix vectors as 3D arrows (quivers).
 
+    List of colors requires individual plotting per helix. Numeric color arrays don't
+    work properly with quiver.
+
     Parameters
     ----------
     helix_coords : List[npt.NDArray[np.float64]]
-        List of helix coordinate arrays, each with shape (6,) for
-        [x, y, z, vx, vy, vz].
+        Shape (6,) arrays [x, y, z, vx, vy, vz]
     axis3d : Axes3D
-        Matplotlib 3D axis object for plotting.
-    length : float, optional
-        Length scaling factor for arrow vectors. Default is 1.
-    color : Union[str, List[str], Any], optional
-        Color specification:
-        - str: Single color name for all helices
-        - List[str]: Individual color for each helix
-        - Other: Numeric color values (not recommended, see note)
-        Default is 'blue'.
-    alpha : float, optional
-        Transparency level (0=transparent, 1=opaque). Default is 1.
-
-    Notes
-    -----
-    When using a list of colors, matplotlib's quiver requires individual
-    plotting per helix. Numeric color arrays don't work properly with quiver.
+        Matplotlib 3D axis
+    length : float
+        Arrow length scaling factor, default 1
+    color : Union[str, List[str], Any]
+        str: single color for all; List[str]: individual colors per helix;
+        Other: numeric (not recommended), default 'blue'
+    alpha : float
+        Transparency (0=transparent, 1=opaque), default 1
     """
     if type(color) == str:
         for h in helix_coords:
@@ -295,27 +203,20 @@ def plot_sheet(
     cmap: Optional[str] = None
 ) -> None:
     """
-    Plot beta sheet as connected 3D lines.
+    Plot beta sheet as connected 3D lines (one line per strand).
 
-    Each beta strand is plotted as a separate line. Optionally applies
-    a colormap gradient along the strand from N-terminus to C-terminus.
+    With colormap: scatter points with gradient (N->C terminus), lines with low alpha.
 
     Parameters
     ----------
     sheet_coords : List[List[npt.NDArray[np.float64]]]
-        List of beta strands, each containing coordinate arrays.
+        Beta strands with coord arrays
     axis3d : Axes3D
-        Matplotlib 3D axis object for plotting.
-    color : str, optional
-        Default color for sheet strands. Default is 'green'.
-    cmap : Optional[str], optional
-        Colormap name for gradient coloring along strands. If None, uses
-        solid color. Default is None.
-
-    Notes
-    -----
-    When using a colormap, scatter points are added with gradient colors
-    while lines are drawn with low transparency for structural context.
+        Matplotlib 3D axis
+    color : str
+        Strand color if no cmap, default 'green'
+    cmap : Optional[str]
+        Colormap name for gradient along strands (None = solid color), default None
     """
     if cmap:
         cmap = plt.cm.get_cmap(cmap)
@@ -336,36 +237,23 @@ def bin_helix_dicts_by_hash(
     """
     Bin helix vectors into spatial voxels using hash-based binning.
 
-    This function creates a spatial hash map where helices with similar
-    positions and directions are grouped together. This enables:
-    - Identification of redundant or similar helices
-    - Non-redundant visualization
-    - Analysis of structural diversity
+    Creates spatial hash map grouping helices with similar positions and directions.
+    Enables redundancy identification, non-redundant visualization, and diversity analysis.
+
+    Binning: position = 2Å voxels, direction = binary (±1) per component.
 
     Parameters
     ----------
     helix_dicts : List[Dict[str, Any]]
-        List of design dictionaries containing helix coordinates.
-    lhl_id : int, optional
-        Loop-Helix-Loop ID number. Default is 0.
+        Design dicts with helix coords
+    lhl_id : int
+        Loop-Helix-Loop ID, default 0
 
     Returns
     -------
     Dict[Tuple[int, int, int, int, int, int], List[Dict[str, Any]]]
-        Dictionary mapping spatial bins to design dictionaries.
-        Keys are tuples (x, y, z, vx, vy, vz) representing:
-        - (x, y, z): Position bin indices (2 Angstrom bins)
-        - (vx, vy, vz): Direction signs (-1 or +1 for each component)
-        Values are lists of design dictionaries in that bin.
-
-    Notes
-    -----
-    Binning strategy:
-    - Position: Discretized into 2 Angstrom voxels
-    - Direction: Binary classification (positive/negative) per component
-
-    This binary direction binning groups helices pointing in generally
-    the same octant of 3D space, regardless of exact angle.
+        Keys: (x, y, z, vx, vy, vz) where (x, y, z) = position bin indices (2Å bins),
+        (vx, vy, vz) = direction signs (±1). Values: design dicts in that bin.
     """
     position_bin_size = 2
 
@@ -401,24 +289,21 @@ def get_all_helices(
     lhl_id: int = 0
 ) -> List[npt.NDArray[np.float64]]:
     """
-    Extract all helix vectors from hashed dictionary.
+    Extract all helix vectors from hashed dict.
+
+    Extracts first (typically only) helix from each design.
 
     Parameters
     ----------
     hashed_helix_dicts : Dict[Tuple, List[Dict]]
-        Dictionary mapping spatial bins to design dictionaries.
-    lhl_id : int, optional
-        Loop-Helix-Loop ID number. Default is 0.
+        Spatial bins mapped to design dicts
+    lhl_id : int
+        Loop-Helix-Loop ID, default 0
 
     Returns
     -------
     List[npt.NDArray[np.float64]]
-        List of all helix coordinate arrays, each with shape (6,).
-
-    Notes
-    -----
-    Each design dictionary contains a list of helix coordinates.
-    This function extracts the first (and typically only) helix from each design.
+        Shape (6,) helix coord arrays
     """
     helices = []
     for k in hashed_helix_dicts.keys():
@@ -435,28 +320,22 @@ def get_nonredundant_helices(
     lhl_id: int = 0
 ) -> List[npt.NDArray[np.float64]]:
     """
-    Extract one representative helix per spatial bin.
+    Extract one representative helix per spatial bin (non-redundant set).
 
-    This function returns a non-redundant set of helices by selecting
-    the first helix from each spatial bin. Useful for visualization
-    when full structural diversity is more important than showing all designs.
+    Returns first helix from each bin. Useful for visualization prioritizing structural
+    diversity over showing all designs. Output size = number of occupied bins << total designs.
 
     Parameters
     ----------
     hashed_helix_dicts : Dict[Tuple, List[Dict]]
-        Dictionary mapping spatial bins to design dictionaries.
-    lhl_id : int, optional
-        Loop-Helix-Loop ID number. Default is 0.
+        Spatial bins mapped to design dicts
+    lhl_id : int
+        Loop-Helix-Loop ID, default 0
 
     Returns
     -------
     List[npt.NDArray[np.float64]]
-        List of non-redundant helix coordinate arrays, one per bin.
-
-    Notes
-    -----
-    The number of returned helices equals the number of occupied spatial bins,
-    which is typically much smaller than the total number of designs.
+        Non-redundant helix coord arrays, one per bin
     """
     helices = []
     for k in hashed_helix_dicts.keys():
@@ -471,29 +350,24 @@ def get_nonredundant_color_group_helices(
     color_group_col: str = 'id_color'
 ) -> List[npt.NDArray[np.float64]]:
     """
-    Extract one helix per spatial bin per unique color group.
+    Extract one helix per bin per unique color group (semi-redundant).
 
-    This provides a semi-redundant representation where different experimental
-    groups or design families are all represented in each spatial bin.
+    Different experimental groups/design families all represented in each bin. If bin has
+    multiple color groups, one representative from each included.
 
     Parameters
     ----------
     hashed_helix_dicts : Dict[Tuple, List[Dict]]
-        Dictionary mapping spatial bins to design dictionaries.
-    lhl_id : int, optional
-        Loop-Helix-Loop ID number. Default is 0.
-    color_group_col : str, optional
-        Dictionary key for color group labels. Default is 'id_color'.
+        Spatial bins mapped to design dicts
+    lhl_id : int
+        Loop-Helix-Loop ID, default 0
+    color_group_col : str
+        Dict key for color group labels, default 'id_color'
 
     Returns
     -------
     List[npt.NDArray[np.float64]]
-        List of helix coordinate arrays, one per bin per unique color group.
-
-    Notes
-    -----
-    If a bin contains designs from multiple color groups, one representative
-    from each group is included in the output.
+        Helix coord arrays, one per bin per unique color group
     """
     helices = []
     for k in hashed_helix_dicts.keys():
@@ -511,29 +385,23 @@ def get_nonredundant_color_group_colors(
     color_group_col: str = 'id_color'
 ) -> List[Any]:
     """
-    Get colors corresponding to helices from get_nonredundant_color_group_helices.
+    Get colors for helices from get_nonredundant_color_group_helices.
 
-    This function must be called with the same hashed_helix_dicts and
-    color_group_col as get_nonredundant_color_group_helices to ensure
-    color-to-helix correspondence.
+    Must use same hashed_helix_dicts and color_group_col as
+    get_nonredundant_color_group_helices for correct correspondence. Order guaranteed
+    by Python 3.7+ dict insertion order.
 
     Parameters
     ----------
     hashed_helix_dicts : Dict[Tuple, List[Dict]]
-        Dictionary mapping spatial bins to design dictionaries.
-    color_group_col : str, optional
-        Dictionary key for color group labels. Default is 'id_color'.
+        Spatial bins mapped to design dicts
+    color_group_col : str
+        Dict key for color group labels, default 'id_color'
 
     Returns
     -------
     List[Any]
-        List of colors in the same order as helices from
-        get_nonredundant_color_group_helices.
-
-    Notes
-    -----
-    The ordering is guaranteed to match because Python 3.7+ dicts maintain
-    insertion order.
+        Colors matching get_nonredundant_color_group_helices order
     """
     colors = []
     for k in hashed_helix_dicts.keys():
@@ -550,17 +418,17 @@ def get_nonredundant_helices_from_hashed_coords(
     hashed_helices: Dict[Any, List[npt.NDArray[np.float64]]]
 ) -> List[npt.NDArray[np.float64]]:
     """
-    Get one helix coordinate per hash bin.
+    Get one helix coord per hash bin.
 
     Parameters
     ----------
     hashed_helices : Dict[Any, List[npt.NDArray]]
-        Dictionary mapping bins to lists of helix coordinate arrays.
+        Bins mapped to helix coord arrays
 
     Returns
     -------
     List[npt.NDArray[np.float64]]
-        List of helix coordinate arrays, one per bin.
+        Helix coord arrays, one per bin
     """
     helices = []
 
@@ -574,17 +442,17 @@ def get_all_helices_from_hashed_coords(
     hashed_helices: Dict[Any, List[npt.NDArray[np.float64]]]
 ) -> List[npt.NDArray[np.float64]]:
     """
-    Extract all helix coordinates from hashed dictionary.
+    Extract all helix coords from hashed dict.
 
     Parameters
     ----------
     hashed_helices : Dict[Any, List[npt.NDArray]]
-        Dictionary mapping bins to lists of helix coordinate arrays.
+        Bins mapped to helix coord arrays
 
     Returns
     -------
     List[npt.NDArray[np.float64]]
-        Flattened list of all helix coordinate arrays.
+        Flattened list of all helix coord arrays
     """
     helices = []
 
@@ -602,21 +470,20 @@ def get_common_bins(
     """
     Find spatial bins occupied by both helix sets.
 
-    This is useful for comparing structural diversity between two LHL units
-    or design sets. Common bins indicate spatial regions where both sets
-    have helix placement.
+    Useful for comparing structural diversity between two LHL units or design sets.
+    Common bins = spatial regions with helix placement in both sets.
 
     Parameters
     ----------
     hashed_helices1 : Dict[Any, Any]
-        First hashed helix dictionary.
+        First hashed helix dict
     hashed_helices2 : Dict[Any, Any]
-        Second hashed helix dictionary.
+        Second hashed helix dict
 
     Returns
     -------
     List[Any]
-        List of bin keys present in both dictionaries.
+        Bin keys present in both dicts
     """
     keys1 = hashed_helices1.keys()
     keys2 = hashed_helices2.keys()
@@ -639,31 +506,23 @@ def make_movie_frames(
     """
     Generate rotating movie frames for 3D visualization.
 
-    Saves a sequence of images with incremental azimuthal rotation.
-    These frames can be compiled into a movie using ffmpeg or similar tools.
+    Saves image sequence with incremental azimuthal rotation. Compile with ffmpeg:
+    `ffmpeg -framerate 30 -i movie%d.png -c:v libx264 output.mp4`
 
     Parameters
     ----------
     ax : Axes3D
-        Matplotlib 3D axis with plotted data.
+        Matplotlib 3D axis with plotted data
     movie_folder : str
-        Directory to save movie frame images.
-    num_frames : int, optional
-        Number of frames to generate (azimuth angles). Default is 360.
-    elev : int, optional
-        Camera elevation angle in degrees. Default is 10.
+        Directory to save movie frames
+    num_frames : int
+        Number of frames (azimuth angles), default 360
+    elev : int
+        Camera elevation angle (degrees), default 10
 
     Notes
     -----
-    Each frame is saved as movie{i}.png where i is the azimuth angle.
-    Full 360-degree rotation creates smooth looping animations.
-
-    Examples
-    --------
-    To compile frames into a movie with ffmpeg:
-    ```bash
-    ffmpeg -framerate 30 -i movie%d.png -c:v libx264 output.mp4
-    ```
+    Frame saved as movie{i}.png where i = azimuth angle. 360° = smooth loop.
     """
     # Save 360 images of the 3d plot, each at a different angle
     print('Generating movie frames...')
@@ -682,31 +541,25 @@ def save_oriented_frames(
     azim: int = -1
 ) -> None:
     """
-    Save images from multiple preset camera orientations.
+    Save images from preset camera orientations or single custom view.
 
-    Generates standard views (top, sides, etc.) or a single custom view
-    for publication-quality figures or multi-angle analysis.
+    Preset: 8 standard views (4 side views at elev=90, 4 angled at elev=0, 90° intervals).
+    Custom: both elev and azim specified (not -1).
 
     Parameters
     ----------
     ax : Axes3D
-        Matplotlib 3D axis with plotted data.
+        Matplotlib 3D axis with plotted data
     movie_folder : str
-        Directory to save oriented frame images.
-    elev : int, optional
-        Camera elevation angle. If -1, uses preset orientations. Default is -1.
-    azim : int, optional
-        Camera azimuth angle. If -1, uses preset orientations. Default is -1.
+        Directory to save oriented frames
+    elev : int
+        Elevation angle (-1 = use presets), default -1
+    azim : int
+        Azimuth angle (-1 = use presets), default -1
 
     Notes
     -----
-    Preset orientations include 8 standard views:
-    - 4 side views at 90-degree intervals (elev=90)
-    - 4 angled views at 90-degree intervals (elev=0)
-
-    If both elev and azim are specified (not -1), saves a single view.
-
-    Output files are named: orient{i}_elev{elev}_azim{azim}_roll{roll}.png
+    Output: orient{i}_elev{elev}_azim{azim}_roll{roll}.png
     """
     # Save 360 images of the 3d plot, each at a different angle
     print('Generating oriented frames...')
@@ -734,24 +587,19 @@ def add_color_to_hashed_helices_dicts_by_bin(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]]
 ) -> Dict[Any, List[Dict[str, Any]]]:
     """
-    Add 'bin_color' key to design dictionaries based on spatial bin.
+    Add 'bin_color' key based on spatial bin (unique color per bin).
 
-    Assigns a unique color to all designs within each spatial bin.
-    Useful for visualizing spatial clustering of designs.
+    Useful for visualizing spatial clustering. Limited to 9 colors; bins beyond 9th cycle.
 
     Parameters
     ----------
     hashed_helix_dicts : Dict[Any, List[Dict]]
-        Dictionary mapping bins to design dictionaries.
+        Bins mapped to design dicts
 
     Returns
     -------
     Dict[Any, List[Dict[str, Any]]]
-        Updated dictionary with 'bin_color' added to each design dictionary.
-
-    Notes
-    -----
-    Limited to 9 distinct colors. Bins beyond the 9th will cycle colors.
+        Updated dict with 'bin_color' in each design dict
     """
     colors = ['blue', 'red', 'orange', 'purple', 'gold', 'magenta', 'cyan',
               'grey', 'black']
@@ -769,23 +617,18 @@ def add_color_to_hashed_helices_dicts_by_design_id(
     """
     Add 'id_color' key using unique color per design ID.
 
-    Assigns a continuous colormap color to each unique design ID.
-    Useful for tracking individual designs across spatial bins.
+    Assigns 'Spectral' colormap color to each unique design ID for tracking across
+    spatial bins. Colors assigned by design index order for consistency.
 
     Parameters
     ----------
     hashed_helix_dicts : Dict[Any, List[Dict]]
-        Dictionary mapping bins to design dictionaries.
+        Bins mapped to design dicts
 
     Returns
     -------
     Dict[Any, List[Dict[str, Any]]]
-        Updated dictionary with 'id_color' added to each design dictionary.
-
-    Notes
-    -----
-    Uses the 'Spectral' colormap for maximum visual distinction between designs.
-    Colors are assigned based on design index order to ensure consistency.
+        Updated dict with 'id_color' in each design dict
     """
     colors = ['blue', 'red', 'orange', 'purple', 'gold', 'magenta', 'cyan',
               'grey', 'black']
@@ -1176,24 +1019,21 @@ def subset_helix_dicts(
     design_ids: List[int]
 ) -> List[Dict[str, Any]]:
     """
-    Filter helix dictionaries to include only specified design IDs.
+    Filter helix dicts to include only specified design IDs.
+
+    Useful for analyzing specific subsets (stable designs, experimentally validated, etc.).
 
     Parameters
     ----------
     helix_dicts : List[Dict]
-        List of design dictionaries with helix coordinates.
+        Design dicts with helix coords
     design_ids : List[int]
-        List of design IDs to retain.
+        Design IDs to retain
 
     Returns
     -------
     List[Dict[str, Any]]
-        Filtered list containing only dictionaries with design_id in design_ids.
-
-    Notes
-    -----
-    Useful for analyzing specific subsets such as stable designs or
-    experimentally validated designs.
+        Filtered list with design_id in design_ids only
     """
     subset_helix_dicts = []
     for d in helix_dicts:
@@ -1207,27 +1047,21 @@ def filter_helix_dicts(
     continuous_metric: str
 ) -> Dict[Any, List[Dict[str, Any]]]:
     """
-    Remove designs with missing values for continuous metric.
+    Remove designs with missing (None) values for continuous metric.
 
-    Filters out design dictionaries where the specified metric is None,
-    enabling cleaner colormap visualization.
+    Enables cleaner colormap visualization. Bins may become empty (remain as empty lists).
 
     Parameters
     ----------
     hashed_helix_dicts : Dict[Any, List[Dict]]
-        Dictionary mapping bins to design dictionaries.
+        Bins mapped to design dicts
     continuous_metric : str
-        Dictionary key for the metric to check.
+        Dict key for metric to check
 
     Returns
     -------
     Dict[Any, List[Dict[str, Any]]]
-        Filtered dictionary with only designs having non-None metric values.
-
-    Notes
-    -----
-    Bins may become empty after filtering. Empty bins remain as empty lists
-    in the returned dictionary.
+        Filtered dict with non-None metric values only
     """
     filtered_hashed_helix_dicts = {}
     for k in hashed_helix_dicts.keys():

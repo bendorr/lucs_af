@@ -40,20 +40,20 @@ With parallel processing:
 Parameters
 ----------
 pdb_dirs : List[str]
-    Path or paths to directories containing PDB files.
+    Path or paths to directories containing pdb files.
     - Flat structure: Contains .pdb files directly
     - Hierarchical structure: Contains subdirectories named <pdb_name>,
       each containing <pdb_name>.pdb or <pdb_name>_<suffix>.pdb
 
 pdb_dirs_subdir_split : bool, optional
-    If set, expect hierarchical directory structure where each PDB is in
+    If set, expect hierarchical directory structure where each pdb is in
     its own subdirectory named <pdb_name>.
 
 outdir : str
     Path to output directory where matrices will be saved.
 
 pdb_suffix : str, optional
-    Suffix at the end of PDB files (e.g., "_relaxed" for <name>_relaxed.pdb).
+    Suffix at the end of pdb files (e.g., "_relaxed" for <name>_relaxed.pdb).
     Currently not implemented.
 
 num_tasks : int, optional
@@ -74,7 +74,7 @@ The following files are saved to outdir:
     - rmsd.npy or rmsd_<task_id>.npy: RMSD matrix (NxN, symmetric)
     - tm1.npy or tm1_<task_id>.npy: TM-score matrix normalized by structure 1
     - tm2.npy or tm2_<task_id>.npy: TM-score matrix normalized by structure 2
-    - pdb_order.json or pdb_order_<task_id>.json: List of PDB names in matrix order
+    - pdb_order.json or pdb_order_<task_id>.json: List of pdb names in matrix order
 
 For parallel runs, matrices from different tasks can be summed element-wise
 to produce the complete all-by-all matrix.
@@ -96,18 +96,18 @@ from tmtools import tm_align
 
 def calc_rmsd_and_tm_score(pdb_path_1: str, pdb_path_2: str) -> Tuple[float, float, float]:
     """
-    Calculate RMSD and TM-scores between two PDB structures.
+    Calculate RMSD and TM-scores between two pdb structures.
 
-    This function loads two PDB structures, extracts their first chains,
+    This function loads two pdb structures, extracts their first chains,
     performs optimal structural alignment, and calculates both RMSD and
     TM-scores between them.
 
     Parameters
     ----------
     pdb_path_1 : str
-        Path to the first PDB file.
+        Path to the first pdb file.
     pdb_path_2 : str
-        Path to the second PDB file.
+        Path to the second pdb file.
 
     Returns
     -------
@@ -190,19 +190,19 @@ def get_rmsd_TM_score(chain_1: Any, chain_2: Any) -> Tuple[float, float, float]:
 
 def collect_pdb_files(pdb_dirs: List[str], subdir_split: bool) -> Tuple[List[str], List[str]]:
     """
-    Collect PDB files from input directories.
+    Collect pdb files from input directories.
 
     Parameters
     ----------
     pdb_dirs : List[str]
-        List of directories containing PDB files.
+        List of directories containing pdb files.
     subdir_split : bool
         If True, expect hierarchical directory structure.
 
     Returns
     -------
     Tuple[List[str], List[str]]
-        List of PDB file paths and list of PDB names.
+        List of pdb file paths and list of pdb names.
     """
     pdb_list: List[str] = []
     pdb_names: List[str] = []
@@ -218,7 +218,7 @@ def collect_pdb_files(pdb_dirs: List[str], subdir_split: bool) -> Tuple[List[str
                     if pdb.endswith('.pdb'):
                         pdb_list.append(os.path.join(subdir_path, pdb))
                         pdb_names.append(pdb.split('.')[0])
-                        break  # Only store one PDB file per subdir
+                        break  # Only store one pdb file per subdir
         else:
             # Flat structure: <pdb_dir>/<pdb_name>.pdb
             for pdb in os.listdir(pdb_dir):
@@ -242,7 +242,7 @@ def calculate_pairwise_metrics(
     Parameters
     ----------
     pdb_list : List[str]
-        List of PDB file paths.
+        List of pdb file paths.
     num_tasks : int
         Number of parallel tasks.
     task_id : int
@@ -306,7 +306,7 @@ def save_results(
     task_id: int
 ) -> None:
     """
-    Save matrices and PDB order to files.
+    Save matrices and pdb order to files.
 
     Parameters
     ----------
@@ -319,7 +319,7 @@ def save_results(
     tm2_mat : npt.NDArray[np.float64]
         TM2 matrix.
     pdb_names : List[str]
-        List of PDB names.
+        List of pdb names.
     num_tasks : int
         Total number of parallel tasks.
     task_id : int
@@ -353,7 +353,7 @@ def main():
     """Main entry point for calculating pairwise RMSDs and TM-scores."""
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description='Calculate pairwise RMSDs and TM-scores for all pairs of PDB structures.',
+        description='Calculate pairwise RMSDs and TM-scores for all pairs of pdb structures.',
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
     # Input arguments
@@ -362,7 +362,7 @@ def main():
         nargs='*',
         type=str,
         required=True,
-        help='Path or paths to directories containing PDB files named <pdb_name>.pdb, '
+        help='Path or paths to directories containing pdb files named <pdb_name>.pdb, '
              'or containing subdirectories named <pdb_name>, in which case TM scores and RMSDs '
              'are calculated between each <pdb_dir>/<pdb_name>/<pdb_name>.pdb')
 
@@ -416,9 +416,9 @@ def main():
 
     args = parser.parse_args()
 
-    # Collect PDB files
+    # Collect pdb files
     pdb_list, pdb_names = collect_pdb_files(args.pdb_dirs, args.pdb_dirs_subdir_split)
-    print(f'Found {len(pdb_list)} PDB structures')
+    print(f'Found {len(pdb_list)} pdb structures')
 
     # Calculate pairwise metrics
     rmsd_mat, tm1_mat, tm2_mat = calculate_pairwise_metrics(

@@ -1,9 +1,4 @@
-"""
-Unit tests for degree_of_reshaping.common.rmsd_calculations module.
-
-Author: Ben Orr
-Date: 12.18.25
-"""
+"""Unit tests for degree_of_reshaping.common.rmsd_calculations module."""
 
 import pytest
 import numpy as np
@@ -12,10 +7,10 @@ from degree_of_reshaping.common.rmsd_calculations import calc_rmsd
 
 
 class TestCalcRMSD:
-    """Tests for calc_rmsd function."""
+    """Test calc_rmsd function."""
 
     def test_identical_coordinates(self):
-        """Test RMSD of identical coordinate sets."""
+        """Test RMSD of identical coords."""
         coords = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]], dtype=np.float64)
         rmsd = calc_rmsd(coords, coords)
 
@@ -33,7 +28,7 @@ class TestCalcRMSD:
         assert np.abs(rmsd - 1.0) < 1e-10
 
     def test_2d_coordinates(self):
-        """Test RMSD calculation with 2D coordinates."""
+        """Test RMSD calc with 2D coords."""
         ref = np.array([[0, 0], [1, 1], [2, 2]], dtype=np.float64)
         coords = np.array([[0.1, 0.1], [1.1, 1.1], [2.1, 2.1]], dtype=np.float64)
 
@@ -44,7 +39,7 @@ class TestCalcRMSD:
         assert np.abs(rmsd - expected) < 1e-10
 
     def test_random_coordinates(self):
-        """Test that RMSD is non-negative and reasonable."""
+        """Test RMSD is non-negative and reasonable."""
         np.random.seed(42)
         ref = np.random.randn(100, 3)
         coords = np.random.randn(100, 3)
@@ -68,7 +63,7 @@ class TestCalcRMSD:
         assert np.abs(rmsd - expected) < 1e-10
 
     def test_shape_mismatch_raises_error(self):
-        """Test that mismatched shapes raise an error."""
+        """Test mismatched shapes raise error."""
         ref = np.array([[0, 0, 0], [1, 1, 1]], dtype=np.float64)
         coords = np.array([[0, 0, 0]], dtype=np.float64)
 
@@ -80,7 +75,7 @@ class TestCalcRMSD:
 # Mark them to be skipped if PyRosetta is not available
 @pytest.mark.requires_pyrosetta
 class TestPyRosettaFunctions:
-    """Tests for PyRosetta-based RMSD functions."""
+    """Test PyRosetta-based RMSD functions."""
 
     def test_get_backbone_points_placeholder(self):
         """Placeholder for PyRosetta tests."""

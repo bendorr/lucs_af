@@ -1,17 +1,16 @@
 """
-PyRosetta utility functions for structural analysis.
+PyRosetta utilities for structural analysis.
 
 Author: Ben Orr
 Date: 12.18.25
 
-This module consolidates PyRosetta helper functions used across the codebase,
-providing utilities for:
+PyRosetta helper functions for:
 - Residue numbering conversion (PDB ↔ Pose)
 - Backbone coordinate extraction
 - Pose alignment and superposition
 - Residue selector string formatting
 
-These functions require PyRosetta to be installed and initialized.
+Requires PyRosetta installed and initialized.
 
 Key Functions
 -------------
@@ -20,7 +19,7 @@ convert_pose_to_pdb_resnums : Convert Pose residue numbers to PDB numbering
 get_backbone_points : Extract backbone atom coordinates from pose
 superimpose_poses : Superimpose one pose onto another
 load_pyrosetta_strings : Format residue lists for PyRosetta selectors
-get_residue_list_from_pdb : Extract all residue numbers from PDB file
+get_residue_list_from_pdb : Extract all residue numbers from pdb file
 """
 
 from typing import List, Tuple, Optional, Any
@@ -45,41 +44,21 @@ def convert_pdb_to_pose_resnums(
     """
     Convert PDB residue numbers to PyRosetta pose numbering.
 
-    Maps residue indices from PDB file numbering to PyRosetta's internal
-    pose numbering system, which may differ due to chain breaks or non-standard
-    numbering in PDB files.
-
     Parameters
     ----------
     pose : pyrosetta.Pose
-        PyRosetta Pose object with PDB information.
+        PyRosetta Pose with PDB info
     pdb_res_list : List[int]
-        List of residue numbers in PDB numbering.
+        Residue numbers in PDB numbering
     chain : str, optional
-        Chain ID to use for conversion. If None, uses chain of first residue.
+        Chain ID for conversion, uses first residue's chain if None
     verbose : bool, optional
-        If True, print conversion details and warnings. Default is False.
+        Print conversion details and warnings, default False
 
     Returns
     -------
     List[int]
-        List of residue numbers in PyRosetta pose numbering.
-        Residues that cannot be mapped (convert to 0) are excluded.
-
-    Notes
-    -----
-    - Residues that cannot be mapped (convert to 0) are excluded from output
-    - If chain is not provided, uses chain ID from the first residue
-    - Prints warnings for excluded residues if verbose=True
-
-    Examples
-    --------
-    >>> from pyrosetta import pose_from_file
-    >>> pose = pose_from_file("structure.pdb")
-    >>> pdb_nums = [10, 11, 12, 50, 51]
-    >>> pose_nums = convert_pdb_to_pose_resnums(pose, pdb_nums, verbose=True)
-    >>> print(pose_nums)
-    [10, 11, 12, 48, 49]
+        Residue numbers in Pose numbering, excludes unmapped residues (convert to 0)
 
     See Also
     --------
@@ -460,20 +439,20 @@ def load_pyrosetta_strings(
 
 def get_residue_list_from_pdb(pdb_path: str) -> List[int]:
     """
-    Extract all residue numbers from a PDB file.
+    Extract all residue numbers from a pdb file.
 
     Parses ATOM records to find all unique residue numbers present in the
-    PDB file. Useful for determining the residue range of a structure.
+    pdb file. Useful for determining the residue range of a structure.
 
     Parameters
     ----------
     pdb_path : str
-        Path to PDB file.
+        Path to pdb file.
 
     Returns
     -------
     List[int]
-        Sorted list of unique residue numbers found in the PDB file.
+        Sorted list of unique residue numbers found in the pdb file.
 
     Notes
     -----

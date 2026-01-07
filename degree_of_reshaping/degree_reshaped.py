@@ -237,10 +237,10 @@ def parse_arguments() -> argparse.Namespace:
             _screen_compatible_loop_helix_loop_units directory (whose filenames are model_<lucs_design_id>.pdb).')
     parser.add_argument('--starting_structure_path', type=str, required=False,
             default='/wynton/home/kortemme/borr/thesis/local_protein_sequence_design/test_inputs/2lv8_inputs/2lv8_cleaned.pdb',
-            help='Path to the LUCS starting structure.')
+            help='pdb file of the LUCS starting structure.')
     parser.add_argument('--starting_structure_insertion_points', type=str, required=False,
             default='/wynton/home/kortemme/borr/thesis/local_protein_sequence_design/test_inputs/2lv8_inputs/2lv8_insertion_points.json',
-            help='Path to the LUCS starting structures insertion points file.')
+            help='json file containing the LUCS starting structures insertion points.')
     parser.add_argument('--start_struct_res_start_idx', type=int, required=False, default=1,
             help='Index on which the starting structures residue numbers begin.')
     parser.add_argument('--filter_by_subsequence', type=str, required=False, default='',
@@ -248,7 +248,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--lucs_id_suffix', type=str, required=False, default='',
             help='Suffix added to <design_id>/<design_id><suffix>.pdb file names.')
     parser.add_argument('--include_designs_df', type=str, required=False, default=None,
-            help='Path to a .csv file with a design_id column. If provided, only these design IDs '
+            help='csv file with a design_id column. If provided, only these design IDs '
             'will be analyzed.')
 
     # RMSD inputs
@@ -260,7 +260,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument('--bb_rem_all_helical', action='store_true',
             help="Assume that all designs' bb_remodeled_residues (in the design_info.json files) are helical.")
     parser.add_argument('--starting_structure_helix_residues_file', type=str, required=False, default=None,
-            help='Use a provided json file containing (a list of lists of) helix residues in the Starting Structure. \
+            help='json file containing (a list of lists of) helix residues in the Starting Structure. \
             If not provided, then use DSSP to find reshaped helix residues in the Starting Structure.')
 
     # Alignment inputs
@@ -268,10 +268,10 @@ def parse_arguments() -> argparse.Namespace:
             help='Align the design structures on the residues contained in their <lucs_dir>/<design_id>_align_residues.json \
             files, which contain lists of lists of residues.')
     parser.add_argument('--starting_structure_align_residues_file', type=str, required=False, default=None,
-            help='If using --use_align_residues_file to select residues on which to align for each design, then \
-            provide an align_residues.json file (list of lists of residue indices) for the starting structure.')
+            help='json file containing align_residues (list of lists of residue indices) for the starting structure. \
+            Required if using --use_align_residues_file to select residues on which to align for each design.')
     parser.add_argument('--aligned_pdb_outdir', type=str, required=False, default=None,
-            help='If provided, then save aligned PDB files when calculating Helix RMSD to the starting structure \
+            help='If provided, then save aligned pdb files when calculating Helix RMSD to the starting structure \
             to the specified directory.')
 
     # AlphaFold inputs
@@ -758,7 +758,7 @@ def process_alphafold_predictions(data: StructureData, af_structs: List[Any],
     Args:
         data: StructureData object containing all structure and residue information.
         af_structs: List of AlphaFold prediction PyRosetta poses.
-        af_paths: List of paths to AlphaFold prediction PDB files.
+        af_paths: List of paths to AlphaFold prediction pdb files.
         af_model_names: List of AlphaFold model names.
 
     Returns:

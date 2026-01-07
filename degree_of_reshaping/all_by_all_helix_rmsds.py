@@ -1,15 +1,14 @@
 """
-Calculates all-by-all helix RMSDs for LUCS designs.
+All-by-all helix RMSDs for LUCS designs.
 
 Author: Ben Orr
 Date: 2.6.25
 
-This script calculates all-by-all helix RMSDs (Root Mean Square Deviations) between
-specified helices in LUCS (Loop-Helix-Loop Unit Combinatorial Sampling) designs. 
-It supports multiple RMSD calculation methods and can align structures using 
-either non-remodeled residues or specified alignment residues from JSON files.
+Calculates all-by-all helix RMSDs between specified helices in LUCS designs.
+Supports multiple RMSD calculation methods and can align structures using
+non-remodeled residues or specified alignment residues from json files.
 
-The script produces several output matrices:
+Output matrices:
 1. Overall helix RMSD between design pairs
 2. Individual helix RMSDs for each reshaped helix
 3. Alternative helix RMSDs using Steph Crilly's alignment method
@@ -42,57 +41,54 @@ Parallel execution with SGE:
 Parameters
 ----------
 data_dir : list of str
-    Path(s) to directory/directories containing designs organized in subdirectories
-    named by design ID. Each subdirectory should contain a PDB file and design_info.json.
+    Paths to directories containing designs in subdirectories named by design ID,
+    each with pdb file and design_info.json
 
 output_dir : str
-    Directory path where results will be saved. Creates directory if it doesn't exist.
+    Directory where results will be saved, creates if doesn't exist
 
 include_designs_df : str
-    Path to CSV file containing a 'design_id' column with designs to include in calculations.
+    csv file with 'design_id' column, designs to include in calculations
 
 design_id_suffix : str, optional
-    Suffix added to PDB filenames (default: ''). Files are expected at:
-    <design_id>/<design_id><suffix>.pdb
+    Suffix for pdb filenames. Expected: <design_id>/<design_id><suffix>.pdb
 
 skip_completed_files : bool, optional
-    If True, skip calculations if output files already exist for current task.
+    Skip calculations if output files exist for current task
 
 use_dssp : bool, optional
-    Use DSSP algorithm to identify helical residues.
+    Use DSSP to identify helical residues
 
 assume_helix : bool, optional
-    If fewer than 4 helical residues found, assume all LHL residues except
-    5 N- and C-terminal residues are helical.
+    If <4 helical residues found, assume all LHL residues except 5 N/C-terminal are helical
 
 bb_rem_all_helical : bool, optional
-    Consider all backbone-remodeled residues to be helical.
+    Consider all backbone-remodeled residues helical
 
 use_align_residues_file : bool, optional
-    Use <design_id>_align_residues.json files for structure alignment instead of
-    non-remodeled residues.
+    Use <design_id>_align_residues.json for alignment instead of non-remodeled residues
 
 aligned_pdb_outdir : str, optional
-    If provided, save aligned PDB files to specified directory.
+    If provided, save aligned pdb files to this directory
 
 num_tasks : int, optional
-    Number of parallel tasks for job distribution (default: 1).
+    Number of parallel tasks for job distribution
 
 task_id : int, optional
-    Current task ID for parallel execution, 1-indexed (default: 1).
+    Current task ID for parallel execution (1-indexed)
 
 verbose : bool, optional
-    Print detailed progress and debugging information.
+    Print detailed progress and debugging info
 
 test_stop : int, optional
-    Stop after completing specified number of RMSD calculations (for testing).
+    Stop after N RMSD calculations for testing
 
 Output
 ------
 The script saves the following files to output_dir:
 
 design_paths[_task{id}_of_{total}].json
-    List of all design PDB file paths included in calculations.
+    List of all design pdb file paths included in calculations.
 
 helix_rmsd_results[_task{id}_of_{total}].npy
     NxN numpy array of overall helix RMSDs between all design pairs.
@@ -132,35 +128,22 @@ init(options='-mute all')
 
 def check_completed_files(args: argparse.Namespace) -> bool:
     """
-    Check if output files for the current task already exist.
-
-    This function verifies whether all expected output files have been generated
-    for the current task, allowing the script to skip redundant calculations.
+    Check if output files for current task exist.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments containing:
-        - num_tasks : int
-            Total number of parallel tasks
-        - task_id : int
-            Current task ID (1-indexed)
-        - output_dir : str
-            Directory where output files should be located
+        Command-line arguments with num_tasks, task_id, output_dir
 
     Returns
     -------
     bool
-        True if all output files exist for this task, False otherwise.
+        True if all output files exist for this task
 
     Notes
     -----
-    Checks for the following files:
-    - design_paths[_task{id}_of_{total}].json
-    - helix_rmsd_results[_task{id}_of_{total}].npy
-    - indiv_helix_rmsd_results[_task{id}_of_{total}].npy
-    - indiv_helix_rmsd2_results[_task{id}_of_{total}].npy
-    - indiv_common_helix_rmsd_results[_task{id}_of_{total}].npy
+    Checks for: design_paths, helix_rmsd_results, indiv_helix_rmsd_results,
+    indiv_helix_rmsd2_results, indiv_common_helix_rmsd_results files
     """
     if args.num_tasks != 1:
         fname_append = f'_task{args.task_id}_of_{args.num_tasks}'
@@ -176,34 +159,22 @@ def check_completed_files(args: argparse.Namespace) -> bool:
 
 def get_design_paths(args: argparse.Namespace) -> List[str]:
     """
-    Collect paths to all design PDB files from specified data directories.
-
-    This function searches through data directories for design PDB files, optionally
-    filtering by a list of design IDs from a CSV file. Design files are expected to
-    be organized in subdirectories named by design ID.
+    Collect paths to design pdb files from data directories.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments containing:
-        - data_dir : list of str
-            List of directory paths containing design subdirectories
-        - design_id_suffix : str
-            Suffix appended to design ID for PDB filename
-        - include_designs_df : str or None
-            Path to CSV file with 'design_id' column for filtering designs
+        Command-line arguments with data_dir, design_id_suffix, include_designs_df
 
     Returns
     -------
     List[str]
-        Sorted list of absolute paths to design PDB files.
+        Sorted absolute paths to design pdb files
 
     Notes
     -----
-    - Expected file structure: <data_dir>/<design_id>/<design_id><suffix>.pdb
-    - Only includes paths to files that actually exist
-    - If include_designs_df is None, includes all found designs
-    - Results are sorted alphabetically for consistent ordering
+    Expected structure: <data_dir>/<design_id>/<design_id><suffix>.pdb
+    Filters by include_designs_df if provided, includes all if None
     """
     design_paths = []
     if args.include_designs_df is not None:
@@ -226,16 +197,16 @@ def get_design_paths(args: argparse.Namespace) -> List[str]:
 
 def get_design_info_path(design_path: str) -> str:
     """
-    Find the design_info.json file associated with a design PDB file.
+    Find the design_info.json file associated with a design pdb file.
 
     This function searches for the design_info.json file in two possible locations:
-    1. Adjacent to the PDB file: <design_id>_design_info.json
+    1. Adjacent to the pdb file: <design_id>_design_info.json
     2. In the design directory: design_info.json
 
     Parameters
     ----------
     design_path : str
-        Path to the design PDB file.
+        Path to the design pdb file.
 
     Returns
     -------
@@ -261,7 +232,7 @@ def get_design_info_path(design_path: str) -> str:
 
 def get_align_residues(args: argparse.Namespace, design_path1: str, design_path2: str) -> Optional[List[List[List[int]]]]:
     """
-    Load alignment residues from JSON files for two designs.
+    Load alignment residues from json files for two designs.
 
     This function reads <design_id>_align_residues.json files for both designs
     and prepares matching residue lists for structural alignment. If the designs
@@ -273,9 +244,9 @@ def get_align_residues(args: argparse.Namespace, design_path1: str, design_path2
     args : argparse.Namespace
         Command-line arguments (unused but kept for consistency).
     design_path1 : str
-        Path to the first design PDB file.
+        Path to the first design pdb file.
     design_path2 : str
-        Path to the second design PDB file.
+        Path to the second design pdb file.
 
     Returns
     -------
@@ -287,7 +258,7 @@ def get_align_residues(args: argparse.Namespace, design_path1: str, design_path2
     Notes
     -----
     - Expects files at: <design_path>_align_residues.json (without .pdb extension)
-    - JSON files should contain lists of residue number lists
+    - json files should contain lists of residue number lists
     - When residue counts differ between designs, trimming is centered to preserve
       the middle residues
     - Used for aligning on specific residues (e.g., beta sheets) instead of
@@ -333,7 +304,7 @@ def calculate_all_by_all_helix_rmsds(
     design_paths: List[str]
 ) -> Tuple[np.ndarray, List[np.ndarray], List[np.ndarray], List[np.ndarray]]:
     """
-    Calculate all-by-all helix RMSDs between pairs of protein designs.
+    Calculate all-by-all helix RMSDs between pairs of designs.
 
     This is the main calculation function that performs pairwise helix RMSD
     calculations for all design combinations. For each pair, it:
@@ -365,7 +336,7 @@ def calculate_all_by_all_helix_rmsds(
             Stop after N calculations for testing
 
     design_paths : List[str]
-        List of paths to design PDB files for comparison.
+        List of paths to design pdb files for comparison.
 
     Returns
     -------
@@ -761,7 +732,7 @@ if __name__ == "__main__":
     parser.add_argument('--use_align_residues_file', action='store_true',
                         help='Use align_residues.json file for structure alignment.')
     parser.add_argument('--aligned_pdb_outdir', type=str, required=False, default=None,
-                        help='If provided, then save aligned PDB files when calculating Helix RMSD to the reference structure '
+                        help='If provided, then save aligned pdb files when calculating Helix RMSD to the reference structure '
                              'to the specified directory.')
 
     # Parallelization arguments

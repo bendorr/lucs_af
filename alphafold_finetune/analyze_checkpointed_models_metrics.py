@@ -1,5 +1,5 @@
 """
-Analyzes metrics for AlphaFold checkpointed models across training.
+Analyze metrics for checkpointed AlphaFold2 models across fine-tuning.
 
 Author: Ben Orr
 Date: 4.4.23
@@ -91,8 +91,8 @@ Figures and data files written to the outfolder_parent/job_name.
 Notes
 -----
 This module processes checkpoint data from fine-tuned AlphaFold2 models to evaluate
-how model predictions improve over training steps. It provides statistical and
-visual comparisons between classic and fine-tuned model performance.
+how model predictions improve over training steps. It compares classic and fine-tuned 
+model performance.
 """
 
 import argparse
@@ -121,41 +121,35 @@ def sns_plot(
     filename_append: str
 ) -> None:
     """
-    Plot the RMSDs to the ground-truth structure for the classic and fine-tuned AF2 predictions.
+    RMSDs to ground truth for classic and fine-tuned AF2 predictions.
 
-    Creates a density scatter plot comparing RMSD values between two models with
-    a diagonal reference line for visual comparison.
+    Density scatter plot comparing RMSD values between two models with
+    diagonal reference line.
 
     Parameters
     ----------
     x_vals : np.ndarray
-        RMSD values for the x-axis model.
+        RMSD values for x-axis model
     y_vals : np.ndarray
-        RMSD values for the y-axis model.
+        RMSD values for y-axis model
     x_name : str
-        Label for the x-axis model.
+        Label for x-axis model
     y_name : str
-        Label for the y-axis model.
+        Label for y-axis model
     job_name : str
-        Name of the job for output file naming.
+        Job name for output file naming
     training_step : int
-        Number of training steps for the fine-tuned model.
+        Number of training steps for fine-tuned model
     outfolder : str
-        Directory path where the figure will be saved.
+        Directory path where figure will be saved
     title_append : str
-        Additional text to append to the plot title.
+        Text to append to plot title
     filename_append : str
-        Additional text to append to the output filename.
+        Text to append to output filename
 
     Returns
     -------
     None
-        Saves the plot to disk.
-
-    Notes
-    -----
-    The plot uses a Gaussian kernel density estimation to color points by density,
-    making it easier to identify regions with many overlapping data points.
     """
     # sns.set_theme()
     sns.set_theme(style="whitegrid")
@@ -203,34 +197,28 @@ def sns_violinplot(
     outpath: str = ''
 ) -> None:
     """
-    Create a violin plot for visualizing data distributions.
+    Violin plot for visualizing data distributions.
 
     Parameters
     ----------
     data : pd.DataFrame
-        DataFrame containing the data to plot.
+        DataFrame containing data to plot
     x : str
-        Column name for the x-axis categorical variable.
+        Column name for x-axis categorical variable
     y : str
-        Column name for the y-axis continuous variable.
+        Column name for y-axis continuous variable
     hue : str
-        Column name for grouping variable that will split the violins.
+        Column name for grouping variable
     split : bool
-        Whether to split the violins by the hue variable.
-    title : str, optional
-        Title for the plot. Default is ''.
-    outpath : str, optional
-        File path where the figure will be saved. Default is ''.
+        Whether to split violins by hue variable
+    title : str
+        Plot title, default ''
+    outpath : str
+        File path where figure will be saved, default ''
 
     Returns
     -------
     None
-        Saves the plot to disk.
-
-    Notes
-    -----
-    This function automatically orders categories as 'stable', 'unstable', 'uncertain'
-    if the 'uncertain' category is present in the data.
     """
     sns.set_theme(style="whitegrid")
     sns.set(font_scale=1)
@@ -267,46 +255,37 @@ def compare_rmsds(
     rmsd_col_ending: str = '_gt_rmsd'
 ) -> Tuple[int, int, int, int]:
     """
-    Compare the RMSDs between the classic and fine-tuned AF2 predictions and the ground truth structure.
+    RMSDs between classic and fine-tuned AF2 predictions and ground truth.
 
-    Calculates statistics comparing how many designs each model predicts more
-    accurately and generates a visualization comparing their performance.
+    Calculates statistics comparing prediction accuracy and generates
+    visualization.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments containing configuration options.
+        Command-line arguments
     df : pd.DataFrame
-        DataFrame containing RMSD data for both models.
+        DataFrame containing RMSD data for both models
     job_name : str
-        Name of the job for output file naming.
+        Job name for output file naming
     training_step : int
-        Number of training steps for the fine-tuned model.
+        Number of training steps for fine-tuned model
     outfolder : str
-        Directory path where outputs will be saved.
+        Directory path where outputs will be saved
     rmsd_thresh : float
-        RMSD threshold for classification.
+        RMSD threshold for classification
     title_append : str
-        Additional text to append to plot titles.
+        Text to append to plot titles
     filename_append : str
-        Additional text to append to output filenames.
-    rmsd_col_ending : str, optional
-        Suffix for RMSD column names. Default is '_gt_rmsd'.
+        Text to append to output filenames
+    rmsd_col_ending : str
+        Suffix for RMSD column names, default '_gt_rmsd'
 
     Returns
     -------
-    num_model1_better : int
-        Number of structures where model 1 (classic) has lower RMSD.
-    num_model2_better : int
-        Number of structures where model 2 (fine-tuned) has lower RMSD.
-    num_model1_sub_thresh : int
-        Number of structures where model 1 has RMSD below threshold.
-    num_model2_sub_thresh : int
-        Number of structures where model 2 has RMSD below threshold.
-
-    Notes
-    -----
-    Model 1 should always be the classic AF2 model.
+    Tuple[int, int, int, int]
+        Num structures where classic better, num where fine-tuned better,
+        num classic sub-threshold, num fine-tuned sub-threshold
     """
     model1_name = df.iloc[0]['classic_name']
     model2_name = df.iloc[0]['ft_name']
@@ -362,36 +341,28 @@ def plot_rmsd_frac_over_training_step(
     outfile: Optional[str] = None
 ) -> None:
     """
-    Plot fractions of designs with specified RMSD characteristics over training steps.
+    Fractions of designs with specified RMSD characteristics over training steps.
 
-    Creates line plots showing how model performance changes across training steps,
-    such as fractions of designs with lower RMSDs or sub-threshold RMSDs.
+    Line plots showing model performance changes across training steps.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments containing configuration options.
+        Command-line arguments
     training_steps : list of list of int
-        Training step values for each data series.
+        Training step values for each data series
     fracs : list of list of float
-        Fraction values corresponding to each training step.
-    labels : str or list of str, optional
-        Labels for each data series. Default is ''.
-    title : str, optional
-        Title for the plot. Default is ''.
-    outfile : str or None, optional
-        Path where the figure will be saved. If None, plot is not saved.
-        Default is None.
+        Fraction values corresponding to each training step
+    labels : str or list of str
+        Labels for each data series, default ''
+    title : str
+        Plot title, default ''
+    outfile : Optional[str]
+        Path where figure will be saved, default None
 
     Returns
     -------
     None
-        Optionally saves the plot to disk if outfile is provided.
-
-    Notes
-    -----
-    If verbose mode is enabled, prints the labels, training steps, and fractions
-    for debugging purposes.
     """
     fig = plt.figure()
     ax = fig.add_axes([0.2, 0.2, 0.6, 0.6])
@@ -427,39 +398,29 @@ def make_all_rmsd_frac_over_training_step_figures(
     rmsd_col_ending: str = '_gt_rmsd'
 ) -> None:
     """
-    Make four plots tracking RMSD statistics across training steps.
+    Four plots tracking RMSD statistics across training steps.
 
-    Generates plots showing: (1) fraction of designs where classic AF2 has lower
-    RMSD, (2) fraction where fine-tuned AF2 has lower RMSD, (3) fraction where
-    classic AF2 achieves sub-threshold RMSD, and (4) fraction where fine-tuned
-    AF2 achieves sub-threshold RMSD.
+    Plots showing fractions of designs with lower RMSDs and sub-threshold RMSDs
+    for classic and fine-tuned models.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments containing configuration options including job_name
-        and rmsd_thresh.
+        Command-line arguments
     df : pd.DataFrame
-        DataFrame containing RMSD data with 'ground_truth_parent' and
-        'training_step' columns.
-    title_append : str, optional
-        Additional text to append to plot titles. Default is ''.
-    filename_append : str, optional
-        Additional text to append to output filenames. Default is ''.
-    outfolder : str, optional
-        Directory path where outputs will be saved. Default is ''.
-    rmsd_col_ending : str, optional
-        Suffix for RMSD column names. Default is '_gt_rmsd'.
+        DataFrame with RMSD data
+    title_append : str
+        Text to append to plot titles, default ''
+    filename_append : str
+        Text to append to output filenames, default ''
+    outfolder : str
+        Directory path where outputs will be saved, default ''
+    rmsd_col_ending : str
+        Suffix for RMSD column names, default '_gt_rmsd'
 
     Returns
     -------
     None
-        Saves four plots to disk.
-
-    Notes
-    -----
-    This function processes data for each unique ground truth parent directory
-    separately to allow comparison across different datasets.
     """
     ground_truth_parents = natsorted(df['ground_truth_parent'].unique().tolist())
 
@@ -544,21 +505,17 @@ def make_all_rmsd_frac_over_training_step_figures(
 
 def load_plddts(plddt_string: str) -> np.ndarray:
     """
-    Parse a string representation of pLDDT values into a NumPy array.
+    Parse string representation of pLDDT values into numpy array.
 
     Parameters
     ----------
     plddt_string : str
-        String representation of pLDDT values, formatted with brackets and spaces.
+        String of pLDDT values with brackets and spaces
 
     Returns
     -------
     np.ndarray
-        Array of pLDDT values as floats.
-
-    Notes
-    -----
-    This function removes newlines, brackets, and parses space-separated values.
+        Array of pLDDT values as floats
     """
     return np.array([
         float(v) for v in
@@ -568,22 +525,17 @@ def load_plddts(plddt_string: str) -> np.ndarray:
 
 def load_paes(pae_string: str) -> np.ndarray:
     """
-    Parse a string representation of pAE values into a 2D NumPy array.
+    Parse string representation of pAE values into 2D numpy array.
 
     Parameters
     ----------
     pae_string : str
-        String representation of pAE matrix values, formatted with nested brackets.
+        String of pAE matrix values with nested brackets
 
     Returns
     -------
     np.ndarray
-        2D array of pAE values as floats.
-
-    Notes
-    -----
-    This function handles the nested bracket structure of pAE matrices by splitting
-    on '] [' delimiters and parsing each row separately.
+        2D array of pAE values as floats
     """
     paes = []
     for row in pae_string.split('] ['):
@@ -603,46 +555,34 @@ def calc_precision_recall_for_one_example(
     higher_better: bool = True
 ) -> Tuple[int, int, int, int]:
     """
-    Add to the number of true/false positives/negatives and return their values.
+    Update confusion matrix counts for single example.
 
-    Classifies a single example based on a threshold and updates confusion matrix
-    counts accordingly.
+    Classifies example based on threshold and updates counts.
 
     Parameters
     ----------
     row : pd.Series
-        DataFrame row containing the 'stability_label' field.
+        DataFrame row with 'stability_label' field
     thresh : float
-        Threshold value for classification.
+        Threshold value for classification
     val : float
-        Metric value to compare against threshold.
+        Metric value to compare against threshold
     tp : int
-        Current count of true positives.
+        Current count of true positives
     fp : int
-        Current count of false positives.
+        Current count of false positives
     tn : int
-        Current count of true negatives.
+        Current count of true negatives
     fn : int
-        Current count of false negatives.
-    higher_better : bool, optional
-        If True, values above threshold are considered positive predictions.
-        If False (e.g., for pAE), values below threshold are positive. Default is True.
+        Current count of false negatives
+    higher_better : bool
+        If True, values above threshold are positive predictions,
+        if False (e.g., pAE), below threshold are positive, default True
 
     Returns
     -------
-    tp : int
-        Updated count of true positives.
-    fp : int
-        Updated count of false positives.
-    tn : int
-        Updated count of true negatives.
-    fn : int
-        Updated count of false negatives.
-
-    Notes
-    -----
-    If lower (positive) values are considered higher confidence (like with pAE),
-    then multiply the pAE values by -1 to use the same logic below as for pLDDT.
+    Tuple[int, int, int, int]
+        Updated tp, fp, tn, fn counts
     """
     # If lower (positive) values are considered higher confidence
     # (like with pAE), then multiply the pAE values by -1 to use
@@ -665,23 +605,19 @@ def calc_precision_recall_for_one_example(
 
 def get_precision_value(tp: int, fp: int) -> float:
     """
-    Calculate precision from true positive and false positive counts.
+    Precision from true positive and false positive counts.
 
     Parameters
     ----------
     tp : int
-        Number of true positives.
+        Number of true positives
     fp : int
-        Number of false positives.
+        Number of false positives
 
     Returns
     -------
     float
-        Precision value. Returns 1 if no predictions were made (tp + fp == 0).
-
-    Notes
-    -----
-    Precision = TP / (TP + FP)
+        Precision value, returns 1 if no predictions made
     """
     if (tp + fp) == 0:
         return 1
@@ -691,23 +627,19 @@ def get_precision_value(tp: int, fp: int) -> float:
 
 def get_recall_value(tp: int, fn: int) -> float:
     """
-    Calculate recall from true positive and false negative counts.
+    Recall from true positive and false negative counts.
 
     Parameters
     ----------
     tp : int
-        Number of true positives.
+        Number of true positives
     fn : int
-        Number of false negatives.
+        Number of false negatives
 
     Returns
     -------
     float
-        Recall value. Returns 0 if no positive examples exist (tp + fn == 0).
-
-    Notes
-    -----
-    Recall = TP / (TP + FN)
+        Recall value, returns 0 if no positive examples exist
     """
     if (tp + fn) == 0:
         return 0
@@ -717,23 +649,19 @@ def get_recall_value(tp: int, fn: int) -> float:
 
 def get_false_positive_rate(fp: int, tn: int) -> float:
     """
-    Calculate false positive rate from false positive and true negative counts.
+    False positive rate from false positive and true negative counts.
 
     Parameters
     ----------
     fp : int
-        Number of false positives.
+        Number of false positives
     tn : int
-        Number of true negatives.
+        Number of true negatives
 
     Returns
     -------
     float
-        False positive rate. Returns 0 if no negative examples exist (fp + tn == 0).
-
-    Notes
-    -----
-    FPR = FP / (FP + TN)
+        FPR value, returns 0 if no negative examples exist
     """
     if (fp + tn) == 0:
         return 0
@@ -747,58 +675,25 @@ def count_confusion_matrix_values(
     sub_plot_df: pd.DataFrame
 ) -> Tuple[int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int]:
     """
-    Calculate values in the pLDDT and pAE confusion matrices for a given threshold.
+    Confusion matrix values for pLDDT and pAE at given threshold.
 
-    Computes true positives, false positives, true negatives, and false negatives
-    for both classic and fine-tuned models using both pLDDT and pAE metrics.
+    Computes tp, fp, tn, fn for both classic and fine-tuned models using
+    both pLDDT and pAE metrics.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments containing configuration options.
+        Command-line arguments
     thresh : float
-        Threshold value for classification.
+        Threshold value for classification
     sub_plot_df : pd.DataFrame
-        DataFrame containing model predictions and stability labels.
+        DataFrame with model predictions and stability labels
 
     Returns
     -------
-    c_plddt_tp : int
-        Classic model pLDDT true positives.
-    c_plddt_fp : int
-        Classic model pLDDT false positives.
-    c_plddt_tn : int
-        Classic model pLDDT true negatives.
-    c_plddt_fn : int
-        Classic model pLDDT false negatives.
-    f_plddt_tp : int
-        Fine-tuned model pLDDT true positives.
-    f_plddt_fp : int
-        Fine-tuned model pLDDT false positives.
-    f_plddt_tn : int
-        Fine-tuned model pLDDT true negatives.
-    f_plddt_fn : int
-        Fine-tuned model pLDDT false negatives.
-    c_pae_tp : int
-        Classic model pAE true positives.
-    c_pae_fp : int
-        Classic model pAE false positives.
-    c_pae_tn : int
-        Classic model pAE true negatives.
-    c_pae_fn : int
-        Classic model pAE false negatives.
-    f_pae_tp : int
-        Fine-tuned model pAE true positives.
-    f_pae_fp : int
-        Fine-tuned model pAE false positives.
-    f_pae_tn : int
-        Fine-tuned model pAE true negatives.
-    f_pae_fn : int
-        Fine-tuned model pAE false negatives.
-
-    Notes
-    -----
-    Requires 'plddt_metric' and 'pae_metric' to be defined in the calling scope.
+    Tuple[int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int]
+        Classic pLDDT tp/fp/tn/fn, fine-tuned pLDDT tp/fp/tn/fn,
+        classic pAE tp/fp/tn/fn, fine-tuned pAE tp/fp/tn/fn
     """
     ## For the classic AF2 model:
     # True/False Positive/Negative for calculating Precision and Recall
@@ -868,30 +763,22 @@ def plot_precision_recall_curve(
     outpath: Optional[str] = None
 ) -> None:
     """
-    Plot a Precision-Recall curve for the provided df.
+    Precision-Recall curve for provided dataframe.
 
-    Creates a visualization showing the trade-off between precision and recall
-    for different classification thresholds.
+    Trade-off between precision and recall for different thresholds.
 
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame containing 'precision', 'recall', 'metric_type', and 'model_type'
-        columns.
-    metric_type : str or None, optional
-        Type of metric to plot (e.g., 'plddt', 'pae'). Default is None.
-    outpath : str or None, optional
-        Path where the figure will be saved. Default is None.
+        DataFrame with 'precision', 'recall', 'metric_type', 'model_type' columns
+    metric_type : Optional[str]
+        Metric type to plot (e.g., 'plddt', 'pae'), default None
+    outpath : Optional[str]
+        Path where figure will be saved, default None
 
     Returns
     -------
     None
-        Saves the plot to disk if outpath is provided.
-
-    Notes
-    -----
-    The plot displays precision vs. recall curves for both classic and fine-tuned
-    models for the specified metric type.
     """
     # sns.set_theme()
     sns.set_theme(style="whitegrid")
@@ -938,30 +825,22 @@ def plot_tpr_fpr_curve(
     outpath: Optional[str] = None
 ) -> None:
     """
-    Plot a True Positive Rate vs. False Positive Rate curve (ROC curve).
+    TPR vs FPR curve (ROC curve).
 
-    Creates a visualization showing the trade-off between TPR and FPR for different
-    classification thresholds, and computes the AUROC for both models.
+    Trade-off between TPR and FPR for different thresholds with AUROC.
 
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame containing 'recall' (TPR), 'FPR', 'metric_type', 'model_type',
-        'training_step', and 'dataset' columns.
-    metric_type : str or None, optional
-        Type of metric to plot (e.g., 'plddt', 'pae'). Default is None.
-    outpath : str or None, optional
-        Path where the figure will be saved. Default is None.
+        DataFrame with 'recall' (TPR), 'FPR', 'metric_type', 'model_type' columns
+    metric_type : Optional[str]
+        Metric type to plot (e.g., 'plddt', 'pae'), default None
+    outpath : Optional[str]
+        Path where figure will be saved, default None
 
     Returns
     -------
     None
-        Saves the plot to disk if outpath is provided.
-
-    Notes
-    -----
-    The function calculates and displays AUROC values for both classic and
-    fine-tuned models directly on the plot.
     """
     sns.set(font_scale=1.5)
     sns.set_theme(style="whitegrid")
@@ -1031,36 +910,29 @@ def plot_rmsds_for_each_dataset(
     outfolder: str = ''
 ) -> None:
     """
-    Plot RMSD to Rosetta values for each example over dataset name.
+    RMSD to Rosetta values for each example over dataset name.
 
-    Creates strip plots showing RMSD distributions for both classic and fine-tuned
-    AF2 predictions, organized by dataset.
+    Strip plots showing RMSD distributions for classic and fine-tuned AF2,
+    organized by dataset.
 
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame containing RMSD data with 'training_step' and 'ground_truth_parent'
-        columns.
+        DataFrame with RMSD data
     args : argparse.Namespace
-        Command-line arguments containing configuration options.
-    rmsd_col_ending : str, optional
-        Suffix for RMSD column names. Default is '_gt_rmsd'.
-    title_append : str, optional
-        Additional text to append to plot titles. Default is ''.
-    filename_append : str, optional
-        Additional text to append to output filenames. Default is ''.
-    outfolder : str, optional
-        Directory path where outputs will be saved. Default is ''.
+        Command-line arguments
+    rmsd_col_ending : str
+        Suffix for RMSD column names, default '_gt_rmsd'
+    title_append : str
+        Text to append to plot titles, default ''
+    filename_append : str
+        Text to append to output filenames, default ''
+    outfolder : str
+        Directory path where outputs will be saved, default ''
 
     Returns
     -------
     None
-        Saves plots to disk and displays them.
-
-    Notes
-    -----
-    The function creates different plot layouts depending on whether data from
-    single or multiple datasets is being visualized.
     """
     # sns.set_theme()
     sns.set_theme(style="whitegrid")
@@ -1171,37 +1043,28 @@ def violinplot_rmsds_for_each_dataset(
     outfolder: str = ''
 ) -> None:
     """
-    Plot violin plots of RMSD to Rosetta values for each example over dataset name.
+    Violin plots of RMSD to Rosetta values for each example over dataset name.
 
-    Creates violin plots showing RMSD distributions for both classic and fine-tuned
-    AF2 predictions, split by stability label.
+    RMSD distributions for classic and fine-tuned AF2, split by stability label.
 
     Parameters
     ----------
     df : pd.DataFrame
-        DataFrame containing RMSD data with 'training_step', 'ground_truth_parent',
-        and 'stability_label' columns.
+        DataFrame with RMSD data
     args : argparse.Namespace
-        Command-line arguments containing configuration options.
-    rmsd_col_ending : str, optional
-        Suffix for RMSD column names. Default is '_gt_rmsd'.
-    title_append : str, optional
-        Additional text to append to plot titles. Default is ''.
-    filename_append : str, optional
-        Additional text to append to output filenames. Default is ''.
-    outfolder : str, optional
-        Directory path where outputs will be saved. Default is ''.
+        Command-line arguments
+    rmsd_col_ending : str
+        Suffix for RMSD column names, default '_gt_rmsd'
+    title_append : str
+        Text to append to plot titles, default ''
+    filename_append : str
+        Text to append to output filenames, default ''
+    outfolder : str
+        Directory path where outputs will be saved, default ''
 
     Returns
     -------
     None
-        Saves plots to disk and displays them.
-
-    Notes
-    -----
-    The function creates different plot layouts depending on whether data from
-    single or multiple datasets is being visualized. Violins are split by
-    stability label to show distributions for stable vs. unstable designs.
     """
     sns.set_theme(style="whitegrid")
     sns.set(font_scale=2)
@@ -1311,52 +1174,27 @@ def get_confidence_values(
     stab_row: pd.Series
 ) -> Tuple[float, float, float, float]:
     """
-    Load pLDDT and pAE values for the current design.
+    Load pLDDT and pAE values for current design.
 
-    Extracts and processes confidence metrics (pLDDT and pAE) from stored string
-    representations, handling potential padding artifacts from AlphaFold predictions.
+    Extracts and processes confidence metrics from stored string representations,
+    handling padding artifacts from AF predictions.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments containing configuration options including verbose flag.
+        Command-line arguments
     new_df : pd.DataFrame
-        DataFrame for storing processed confidence values (not modified in this function).
+        DataFrame for storing processed confidence values
     row : pd.Series
-        DataFrame row containing 'classic_plddt', 'ft_plddt', 'classic_pae', and
-        'ft_pae' columns.
+        DataFrame row with 'classic_plddt', 'ft_plddt', 'classic_pae', 'ft_pae'
     stab_row : pd.Series
-        DataFrame row from stability data containing 'sequence' or 'protein_sequence_c'
-        column.
+        Row from stability data with 'sequence' or 'protein_sequence_c' column
 
     Returns
     -------
-    c_pae : float
-        Mean pAE value for classic model over actual sequence length.
-    f_pae : float
-        Mean pAE value for fine-tuned model over actual sequence length.
-    c_plddt : float
-        Mean pLDDT value for classic model over actual sequence length.
-    f_plddt : float
-        Mean pLDDT value for fine-tuned model over actual sequence length.
-
-    Notes
-    -----
-    Get the sequence length of each example, and only analyze the first num_seq
-    positions in the pae and plddt arrays. I believe this is from a bug in the
-    alphafold_finetune code, must pad its input representations, and outputs
-    pLDDT and pAE matrices that include low values for padded positions.
-
-    Select the first seq_len residues from which to calculate average pLDDT and
-    pAE scores. alphafold_finetune thresholds are pLDDT / 100 and pAE / 31
-
-    That these values should be divided by 100 and 10 may be a faulty assumption.
-    I need to see how the binder_intercepts are used in alphafold_finetune!
-    For now, it may make more sense to simply plot the distributions of confidence
-    values for stable and unstable designs, before and after AF2 fine-tuning.
-
-    The output confidence arrays from alphafold_finetune appear to have padded values,
-    so just use the array indices that correspond with actual residue indices.
+    Tuple[float, float, float, float]
+        Mean classic pAE, mean fine-tuned pAE, mean classic pLDDT,
+        mean fine-tuned pLDDT over actual sequence length
     """
     # Get the sequence length of each example, and only analyze the first num_seq
     # positions in the pae and plddt arrays. I believe this is from a bug in the

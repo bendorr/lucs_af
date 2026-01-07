@@ -2,13 +2,21 @@ import torch
 
 def kabsch(A, B):
         """
-        Params:
-                A, B - lists of coordinates, [n_atoms, 3]
+        Kabsch algorithm for optimal rotation/translation.
 
-        Returns:
-                A_aligned - list of aligned coordinates of coordinate set A
-                R - Rotation matrix
-                t - Translation matrix
+        Parameters
+        ----------
+        A, B : torch.Tensor
+            Coordinate sets, shape [batch, n_atoms, 3]
+
+        Returns
+        -------
+        A_aligned : torch.Tensor
+            Aligned coords of set A
+        R : torch.Tensor
+            Rotation matrix
+        t : torch.Tensor
+            Translation matrix
         """
         a_mean = A.mean(dim=1, keepdims=True).type('torch.DoubleTensor')
         b_mean = B.mean(dim=1, keepdims=True).type('torch.DoubleTensor')

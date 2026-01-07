@@ -1,16 +1,16 @@
 """
-Computes helix RMSDs between protein designs and a reference structure.
+Computes helix RMSDs between designs and a reference structure.
 
 Author: Ben Orr
 Date: 3.20.25
 
-This module computes Root Mean Square Deviations (RMSDs) for helical regions between
-protein designs and a reference structure. It supports both experimental designs and
-AlphaFold2/3 predictions, with multiple alignment and RMSD calculation methods.
+Computes RMSDs for helical regions between designs and a reference structure.
+Supports both experimental designs and AlphaFold2/3 predictions, with multiple
+alignment and RMSD calculation methods.
 
 Usage Examples
 --------------
-Basic usage with design structures::
+Basic usage with design structures:
 
     python helix_rmsds_to_ref.py \\
         --pdb_dir /path/to/designs/ \\
@@ -19,7 +19,7 @@ Basic usage with design structures::
         --reference_structure_path /path/to/reference.pdb \\
         --reference_structure_design_info /path/to/ref_design_info.json
 
-With AlphaFold2 predictions::
+With AlphaFold2 predictions:
 
     python helix_rmsds_to_ref.py \\
         --analyze_af2 \\
@@ -29,7 +29,7 @@ With AlphaFold2 predictions::
         --reference_structure_path /path/to/reference.pdb \\
         --reference_structure_design_info /path/to/ref_design_info.json
 
-With parallel processing::
+With parallel processing:
 
     python helix_rmsds_to_ref.py \\
         --pdb_dir /path/to/designs/ \\
@@ -42,15 +42,15 @@ Parameters
 ----------
 Input/Output:
     --pdb_dir : list of str
-        Directories containing design PDB files in subdirectories named by design ID
+        Directories containing design pdb files in subdirectories named by design ID
     --design_info_dir : list of str
         Directories containing design_info.json files
     --outfile : str
-        Path to output CSV file for results
+        Path to output csv file for results
     --design_id_suffix : str, optional
-        Suffix for PDB filenames (default: '')
+        Suffix for pdb filenames (default: '')
     --include_designs_df : str, optional
-        CSV file with 'design_id' column to filter designs
+        csv file with 'design_id' column to filter designs
 
 AlphaFold2/3 Options:
     --analyze_af2 : flag
@@ -82,8 +82,8 @@ Parallelization:
 
 Output
 ------
-CSV file containing:
-    - design_path: Path to design PDB file
+csv file containing:
+    - design_path: Path to design pdb file
     - design_id: Design identifier
     - ben_helix_rmsd: Overall helix RMSD using custom alignment
     - ben_indiv_helix{i}_rmsd: Individual helix RMSD for helix i
@@ -145,15 +145,15 @@ def check_completed_files(args: argparse.Namespace) -> bool:
 
 def get_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
     """
-    Collect paths to design PDB files from specified directories.
+    Collect paths to design pdb files from specified directories.
 
     Parameters
     ----------
     args : argparse.Namespace
         Command-line arguments containing:
         - pdb_dir: List of directories with design subdirectories
-        - design_id_suffix: Optional suffix for PDB filenames
-        - include_designs_df: Optional CSV file to filter designs
+        - design_id_suffix: Optional suffix for pdb filenames
+        - include_designs_df: Optional csv file to filter designs
 
     Returns
     -------
@@ -194,7 +194,7 @@ def get_af2_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
     args : argparse.Namespace
         Command-line arguments containing:
         - af2_data_parents: Parent directories containing AF2 predictions
-        - include_designs_df: Optional CSV file to filter designs
+        - include_designs_df: Optional csv file to filter designs
         - is_colabfold_format: Whether data is in ColabFold format
         - split_af2_fnames_at: String to split filenames for design IDs
         - af_prefix: Prefix for AF2/3 prediction filenames
@@ -214,7 +214,7 @@ def get_af2_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
       format, in which case each af_file is a PDB, json, or png file.
     - Supports both ColabFold format (all files in one directory) and standard
       format (separate subdirectory per design)
-    - Only processes PDB files (change for AF3 .cif files)
+    - Only processes pdb files (change for AF3 .cif files)
     """
     af2_found = False
 
@@ -247,7 +247,7 @@ def get_af2_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
                 # Ignore misc dirs containing files.
                 if 'files' in af_file: continue
 
-                # Only process PDB files.
+                # Only process pdb files.
                 # Change this if processing AF3 .cif files.
                 if '.pdb' not in af_file: continue
 
@@ -346,16 +346,16 @@ def get_design_info_path(args: argparse.Namespace, design_id: str) -> str:
 
 def get_align_residues(args: argparse.Namespace, design_path1: str, design_path2: str) -> Optional[List[List[List[int]]]]:
     """
-    Load alignment residues from JSON files for two structures.
+    Load alignment residues from json files for two structures.
 
     Parameters
     ----------
     args : argparse.Namespace
         Command-line arguments (not currently used in function body)
     design_path1 : str
-        Path to first design PDB file
+        Path to first design pdb file
     design_path2 : str
-        Path to second design PDB file
+        Path to second design pdb file
 
     Returns
     -------
@@ -366,7 +366,7 @@ def get_align_residues(args: argparse.Namespace, design_path1: str, design_path2
 
     Notes
     -----
-    - Looks for {design_id}_align_residues.json files in the same directory as PDB files
+    - Looks for {design_id}_align_residues.json files in the same directory as pdb files
     - If designs have different lengths, centers the alignment on the shorter design
     - Residue numbers are expected to be PDB-numbered (will need conversion to Pose numbering)
     """
@@ -813,7 +813,7 @@ if __name__ == "__main__":
     # I/O arguments
     parser.add_argument('--pdb_dir', nargs='*', type=str, required=True,
         help="Path to a directory or directories containing subdir-split designs (subdirs named by design ID) "
-             "containing designs' PDB files.")
+             "containing designs' pdb files.")
     parser.add_argument('--design_info_dir', nargs='*', type=str, required=True,
         help='Path to a directory or directories containing subdir-split designs (subdirs named by design ID) '
              'containing design_info.json files.')
@@ -828,7 +828,7 @@ if __name__ == "__main__":
     
     # AlphaFold inputs
     parser.add_argument('--analyze_af2', action='store_true',
-        help="Instead of using the PDB files in the --pdb_dir, find these designs' "
+        help="Instead of using the pdb files in the --pdb_dir, find these designs' "
              "associated AF2 predictions, provided in the --af2_data_dirs argument.")
     parser.add_argument('--af2_data_parents', nargs='*', type=str, required=False, default=None,
         help='Path to a parent directory or parent directories containing subdirectories with AF2 '
@@ -869,10 +869,10 @@ if __name__ == "__main__":
     parser.add_argument('--use_align_residues_file', action='store_true',
         help='Use align_residues.json file for structure alignment.')
     parser.add_argument('--aligned_pdb_outdir', type=str, required=False, default=None,
-        help='If provided, then save aligned PDB files when calculating Helix RMSD to the reference structure '
+        help='If provided, then save aligned pdb files when calculating Helix RMSD to the reference structure '
              'to the specified directory.')
     parser.add_argument('--reference_structure_helix_residues_file', type=str, required=False, default=None,
-        help='Use a provided JSON file containing (a list of lists of) helix residues in the Starting Structure. '
+        help='Use a provided json file containing (a list of lists of) helix residues in the Starting Structure. '
              'If not provided, then use DSSP to find reshaped helix residues in the Starting Structure.')
 
     # Parallelization arguments

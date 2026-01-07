@@ -1,11 +1,11 @@
 """
-Structural alignment of PDB files using the Kabsch algorithm with PyTorch.
+Structural alignment of pdb files using the Kabsch algorithm with PyTorch.
 
 Author: Ben Orr
 Date: 10.22.24
 
-This module provides functions for structural alignment of PDB files using the
-Kabsch algorithm implemented with PyTorch. It uses BioPandas for PDB file I/O
+This module provides functions for structural alignment of pdb files using the
+Kabsch algorithm implemented with PyTorch. It uses BioPandas for pdb file I/O
 and manipulation.
 
 The module supports:
@@ -20,7 +20,7 @@ kabsch : Core Kabsch algorithm for optimal rotation/translation
 apply_transform : Apply rotation and translation to coordinates
 rmsd_ : Calculate RMSD after Kabsch alignment
 pdb_align : Align two PDB structures and calculate RMSD
-align_and_dump_pdb : Align structures and save aligned PDB file
+align_and_dump_pdb : Align structures and save aligned pdb file
 coord_extractor : Extract coordinates from PandasPdb dataframes
 
 References
@@ -274,18 +274,18 @@ def pdb_align(
     chainids2: Optional[List[str]] = None
 ) -> Tuple[torch.Tensor, torch.Tensor, PandasPdb, torch.Tensor, torch.Tensor, torch.Tensor]:
     """
-    Align two PDB structures and calculate RMSD.
+    Align two pdb structures and calculate RMSD.
 
-    This function loads two PDB files, extracts C-alpha coordinates,
+    This function loads two pdb files, extracts C-alpha coordinates,
     aligns pdb2 to pdb1 using the Kabsch algorithm, and calculates RMSD.
     If the structures have different lengths, they are cropped to match.
 
     Parameters
     ----------
     pdb1 : str
-        Path to the first (reference) PDB file.
+        Path to the first (reference) pdb file.
     pdb2 : str
-        Path to the second PDB file to be aligned.
+        Path to the second pdb file to be aligned.
     chainids1 : Optional[List[str]], optional
         Chain IDs to use from pdb1. If None, uses all chains.
     chainids2 : Optional[List[str]], optional
@@ -318,7 +318,7 @@ def pdb_align(
     >>> print(f"RMSD: {rmsd.item():.2f} Å")
     >>> print(f"Aligned structure shape: {aligned.shape}")
     """
-    # Load PDB files
+    # Load pdb files
     ppdb1 = PandasPdb().read_pdb(pdb1)
     ppdb2 = PandasPdb().read_pdb(pdb2)
 
@@ -349,18 +349,18 @@ def align_and_dump_pdb(
     chainids2: Optional[List[str]] = None
 ) -> torch.Tensor:
     """
-    Align two PDB structures and save the aligned structure.
+    Align two pdb structures and save the aligned structure.
 
     This function aligns pdb2 to pdb1 using C-alpha atoms, then applies
     the transformation to all atoms of pdb2 and saves the aligned structure
-    to a new PDB file.
+    to a new pdb file.
 
     Parameters
     ----------
     pdb1 : str
-        Path to the first (reference) PDB file.
+        Path to the first (reference) pdb file.
     pdb2 : str
-        Path to the second PDB file to be aligned.
+        Path to the second pdb file to be aligned.
     chainids1 : Optional[List[str]], optional
         Chain IDs to use from pdb1. If None, uses all chains.
     chainids2 : Optional[List[str]], optional

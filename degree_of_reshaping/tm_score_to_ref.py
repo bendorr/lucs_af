@@ -5,13 +5,13 @@ Author: Ben Orr
 Date: 7.31.24
 
 This script calculates Template Modeling (TM) scores between a set of PDB structures
-and a reference structure. TM-score is a metric for measuring structural similarity
-between protein models, with values ranging from 0 to 1 (higher = more similar).
+and a reference structure. TM-score measures structural similarity between
+protein structures, with values ranging from 0 to 1 (higher = more similar).
 
 The script supports:
 - Parallel processing via task distribution
 - Multiple input directories
-- Customizable PDB file naming conventions
+- Customizable pdb file naming conventions
 - Progress tracking and verbose output
 
 Reference:
@@ -35,8 +35,8 @@ pdb_dirs : List[str]
     structure and the reference PDB structure.
 
 ref_path : str
-    Path to a reference PDB file, to which TM scores will be calculated for all
-    input PDB structures.
+    Path to a reference pdb file, to which TM scores will be calculated for all
+    input pdb structures.
 
 outfile : str
     Path to an output .csv file that will contain pdb_names and their TM scores
@@ -62,7 +62,7 @@ test_stop : int, optional
 
 Output
 ------
-CSV file containing columns:
+csv file containing columns:
     - name: PDB structure name
     - tm_score: TM score to reference structure (0-1 scale)
 
@@ -83,17 +83,17 @@ from tmtools import tm_align
 
 def calc_TM_score(pdb_path_1: str, pdb_path_2: str) -> float:
     """
-    Calculate TM score between two PDB structures.
+    Calculate TM score between two pdb structures.
 
-    This function loads two PDB structures, extracts their first chains,
-    and calculates the TM score between them using the tmtools library.
+    Loads two pdb structures, extracts their first chains,
+    and calculates the TM score between them using tmtools.
 
     Parameters
     ----------
     pdb_path_1 : str
-        Path to the first PDB file.
+        Path to the first pdb file.
     pdb_path_2 : str
-        Path to the second PDB file (typically the reference structure).
+        Path to the second pdb file (typically the reference structure).
 
     Returns
     -------
@@ -128,9 +128,8 @@ def get_TM_score(chain_1: Any, chain_2: Any) -> float:
     """
     Calculate TM score between two tmtools chain objects.
 
-    This is a lower-level function that operates on tmtools chain objects
-    rather than file paths. It performs structural alignment and computes
-    the TM score.
+    Performs structural alignment and computes
+    the TM score on tmtools chain objects.
 
     Parameters
     ----------
@@ -179,7 +178,7 @@ def calculate_tm_scores_to_ref(
     ref_path : str
         Path to reference structure.
     pdb_suffix : str
-        Suffix for PDB filenames.
+        Suffix for pdb filenames.
     num_tasks : int
         Number of parallel tasks.
     task_id : int
@@ -207,7 +206,7 @@ def calculate_tm_scores_to_ref(
             if task_idx % num_tasks != (task_id - 1):
                 continue
 
-            # Construct PDB file path
+            # Construct pdb file path
             pdb_path = os.path.join(pdb_dir, subdir, f'{subdir}{pdb_suffix}.pdb')
 
             # Skip if file doesn't exist
@@ -239,7 +238,7 @@ def calculate_tm_scores_to_ref(
 
 def save_tm_scores(df: pd.DataFrame, outfile: str, num_tasks: int, task_id: int) -> None:
     """
-    Save TM scores DataFrame to CSV file.
+    Save TM scores DataFrame to csv file.
 
     Parameters
     ----------
@@ -284,7 +283,7 @@ def main():
         '--ref_path',
         type=str,
         required=True,
-        help='Path to a reference PDB file, to which TM scores will be calculated for the PDB structures.')
+        help='Path to a reference pdb file, to which TM scores will be calculated for the pdb structures.')
 
     parser.add_argument(
         '--outfile',

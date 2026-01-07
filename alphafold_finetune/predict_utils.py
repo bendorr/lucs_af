@@ -5,7 +5,7 @@ Author: Ben Orr
 Date: 7.10.23
 Adapted from https://github.com/phbradley/alphafold_finetune
 
-Utility functions for AlphaFold prediction with template features.
+AF2 prediction utilities
 """
 
 import sys
@@ -35,22 +35,22 @@ def mk_mock_template(
     num_temp: int = 1
 ) -> Dict[str, Any]:
     """
-    Create empty template features dict.
+    Empty template features dict.
 
     From Sergey Ovchinnikov's colabfold/batch.py.
-    Edited to use residue_constants instead of templates.residue_constants.
+    Uses residue_constants vs templates.residue_constants.
 
     Parameters
     ----------
     query_sequence : str or list of str
-        Query sequence(s).
-    num_temp : int, optional
-        Number of templates (default: 1).
+        Query sequence(s)
+    num_temp : int
+        Number of templates, default 1
 
     Returns
     -------
     dict
-        Template features dictionary with empty/mock values.
+        Template features with empty/mock values
     """
     ln = (
         len(query_sequence)
@@ -95,29 +95,27 @@ def load_pdb_coords(
     verbose: bool = False,
 ) -> Tuple[List[str], Dict[str, List[str]], Dict[str, Dict[str, Dict[str, npt.NDArray]]], Dict[str, Dict[str, str]]]:
     """
-    Load PDB coordinates.
-
-    Super-simple, stripped down PDB reader. Not good with messy PDBs.
+    Load pdb coords. Simple, stripped-down reader - not robust for messy pdbs.
 
     Parameters
     ----------
     pdbfile : str
-        Path to PDB file.
-    allow_chainbreaks : bool, optional
-        Allow chain breaks (default: False).
-    allow_skipped_lines : bool, optional
-        Allow skipped lines (default: False).
-    verbose : bool, optional
-        Verbose output (default: False).
+        pdb file path
+    allow_chainbreaks : bool
+        Allow chain breaks, default False
+    allow_skipped_lines : bool
+        Allow skipped lines, default False
+    verbose : bool
+        Verbose output, default False
 
     Returns
     -------
     tuple
         (chains, all_resids, all_coords, all_name1s)
-        - chains: List of chain IDs
-        - all_resids: Dict[chain] = list of residue IDs
-        - all_coords: Dict[chain][resid][atom] = xyz coordinates
-        - all_name1s: Dict[chain][resid] = single letter amino acid code
+        chains: list of chain IDs
+        all_resids: dict[chain] = list of residue IDs
+        all_coords: dict[chain][resid][atom] = xyz coords
+        all_name1s: dict[chain][resid] = single letter AA
     """
     chains = []
     all_resids: Dict[str, List[str]] = {}
@@ -192,23 +190,23 @@ def fill_afold_coords(
     all_coords: Dict[str, Dict[str, Dict[str, npt.NDArray]]],
 ) -> Tuple[npt.NDArray, npt.NDArray]:
     """
-    Fill AlphaFold atom37 coordinates.
+    Fill AlphaFold atom37 coords.
 
     Parameters
     ----------
     chain_order : list of str
-        Ordered list of chain IDs.
+        Ordered chain IDs
     all_resids : dict
-        Dict[chain] = list of residue IDs.
+        dict[chain] = list of residue IDs
     all_coords : dict
-        Dict[chain][resid][atom] = xyz coordinates.
+        dict[chain][resid][atom] = xyz coords
 
     Returns
     -------
     tuple
         (all_positions, all_positions_mask)
-        - all_positions: [num_res, 37, 3] atom37 coordinates
-        - all_positions_mask: [num_res, 37] atom37 mask
+        all_positions: [num_res, 37, 3] atom37 coords
+        all_positions_mask: [num_res, 37] atom37 mask
     """
     assert residue_constants.atom_type_num == 37  # HACK/SANITY
     crs = [(chain, resid) for chain in chain_order for resid in all_resids[chain]]
@@ -254,35 +252,35 @@ def run_alphafold_prediction(
     dump_metrics: bool = True,
 ) -> Dict[str, Dict[str, Any]]:
     """
-    Run AlphaFold prediction with template features.
+    Run AF prediction with template features.
 
     Parameters
     ----------
     query_sequence : str
-        Query amino acid sequence.
+        Query AA sequence
     msa : list of str
-        Multiple sequence alignment. If single sequence, provide as list of str.
+        MSA (single seq = list of one str)
     deletion_matrix : list of list of int
-        Deletion matrix for MSA.
+        Deletion matrix for MSA
     chainbreak_sequence : str
-        Sequence with '/' separators indicating chain breaks.
+        Sequence with '/' chain breaks
     template_features : dict
-        Template features dictionary.
+        Template features dict
     model_runners : dict
-        Dictionary of AlphaFold model runners.
+        AF model runners
     out_prefix : str
-        Output file prefix.
+        Output file prefix
     crop_size : int, optional
-        Crop size for prediction.
-    dump_pdbs : bool, optional
-        Whether to dump PDB files (default: True).
-    dump_metrics : bool, optional
-        Whether to dump metrics (default: True).
+        Crop size
+    dump_pdbs : bool
+        Dump pdbs, default True
+    dump_metrics : bool
+        Dump metrics, default True
 
     Returns
     -------
     dict
-        Dictionary with keys=model_name, values=dictionary of metrics.
+        dict[model_name] = dict of metrics
     """
     # Gather features for running with only template information
     feature_dict = {
@@ -328,29 +326,29 @@ def predict_structure(
     dump_metrics: bool = True,
 ) -> Dict[str, Dict[str, Any]]:
     """
-    Predict structure using AlphaFold for the given sequence.
+    Predict structure using AF.
 
     Parameters
     ----------
     prefix : str
-        Output file prefix.
+        Output file prefix
     feature_dict : dict
-        Feature dictionary for AlphaFold.
+        Feature dict for AF
     model_runners : dict
-        Dictionary of AlphaFold model runners.
-    random_seed : int, optional
-        Random seed (default: 0).
+        AF model runners
+    random_seed : int
+        Random seed, default 0
     crop_size : int, optional
-        Crop size for prediction.
-    dump_pdbs : bool, optional
-        Whether to dump PDB files (default: True).
-    dump_metrics : bool, optional
-        Whether to dump metrics (default: True).
+        Crop size
+    dump_pdbs : bool
+        Dump pdbs, default True
+    dump_metrics : bool
+        Dump metrics, default True
 
     Returns
     -------
     dict
-        Dictionary with keys=model_name, values=dictionary of metrics.
+        dict[model_name] = dict of metrics
     """
     unrelaxed_pdb_lines = []
     model_names = []
@@ -418,31 +416,31 @@ def load_model_runners(
     small_msas: bool = True,
 ) -> OrderedDict:
     """
-    Load AlphaFold model runners.
+    Load AF model runners.
 
     Parameters
     ----------
     model_names : list of str
-        Names of models to load.
+        Model names
     crop_size : int
-        Crop size for models.
+        Crop size
     data_dir : str
-        Directory containing AlphaFold parameters.
-    num_recycle : int, optional
-        Number of recycling iterations (default: 3).
-    num_ensemble : int, optional
-        Number of ensemble iterations (default: 1).
-    model_params_files : list of str or None, optional
-        Paths to custom model parameter files. If None, use default params.
-    resample_msa_in_recycling : bool, optional
-        Whether to resample MSA in recycling (default: True).
-    small_msas : bool, optional
-        Whether to use small MSAs (default: True).
+        AF params directory
+    num_recycle : int
+        Recycling iterations, default 3
+    num_ensemble : int
+        Ensemble iterations, default 1
+    model_params_files : list of str or None
+        Custom param files (None = default)
+    resample_msa_in_recycling : bool
+        Resample MSA, default True
+    small_msas : bool
+        Use small MSAs, default True
 
     Returns
     -------
     OrderedDict
-        Dictionary of model runners keyed by model name.
+        Model runners by name
     """
     if model_params_files is None:
         model_params_files = [None] * len(model_names)
@@ -504,31 +502,31 @@ def create_single_template_features(
     expected_template_len: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
-    Create template features from a single template PDB file.
+    Create template features from single template pdb.
 
     Parameters
     ----------
     target_sequence : str
-        Target amino acid sequence.
+        Target AA sequence
     template_pdbfile : str
-        Path to template PDB file.
+        Template pdb file path
     target_to_template_alignment : dict
-        Dict mapping target positions to template positions (0-indexed).
+        Map target positions to template positions (0-indexed)
     template_name : str
-        Name for template (goes into template_domain_names, encoded).
-    allow_chainbreaks : bool, optional
-        Allow chain breaks in template (default: True).
-    allow_skipped_lines : bool, optional
-        Allow skipped lines when reading PDB (default: True).
+        Template name (goes into template_domain_names, encoded)
+    allow_chainbreaks : bool
+        Allow chain breaks in template, default True
+    allow_skipped_lines : bool
+        Allow skipped lines when reading pdb, default True
     expected_identities : int, optional
-        Expected number of identities for sanity check.
+        Expected identities for sanity check
     expected_template_len : int, optional
-        Expected template length for sanity check.
+        Expected template length for sanity check
 
     Returns
     -------
     dict
-        Template features dictionary.
+        Template features dict
     """
     num_res = len(target_sequence)
     chains_tmp, all_resids_tmp, all_coords_tmp, all_name1s_tmp = load_pdb_coords(
@@ -589,17 +587,17 @@ def compile_template_features(
     template_features_list: List[Dict[str, Any]]
 ) -> Dict[str, npt.NDArray]:
     """
-    Compile multiple template features into a single dictionary.
+    Compile multiple template features into single dict.
 
     Parameters
     ----------
     template_features_list : list of dict
-        List of template feature dictionaries.
+        List of template feature dicts
 
     Returns
     -------
     dict
-        Compiled template features with stacked arrays.
+        Compiled template features with stacked arrays
     """
     all_template_features = {}
     for name, dtype in templates.TEMPLATE_FEATURES.items():
@@ -624,40 +622,40 @@ def create_batch_for_training(
     random_seed: Optional[int] = None,
 ) -> Dict[str, Any]:
     """
-    Create a batch for training with native structure information.
+    Create training batch with native structure info.
 
     Parameters
     ----------
     target_chainseq : str
-        Target sequence with '/' between chains.
+        Target sequence with '/' between chains
     target_trim_positions : list of int
-        0-indexed positions to keep from full target sequence.
+        0-indexed positions to keep from full target sequence
     templates_alignfile : str
-        TSV file with template alignments (columns: template_pdbfile,
-        target_to_template_alignstring, identities, target_len, template_len).
+        tsv with template alignments (cols: template_pdbfile,
+        target_to_template_alignstring, identities, target_len, template_len)
     native_pdbfile : str
-        Path to native structure PDB file.
+        Native structure pdb path
     native_align : dict
-        Dict mapping (target_pos, native_pos), 0-indexed wrt full target sequence.
+        Map (target_pos, native_pos), 0-indexed wrt full target seq
     crop_size : int
-        Crop size for model.
+        Crop size for model
     model_runner : RunModel
-        AlphaFold model runner for feature processing.
+        AF model runner for feature processing
     native_identities : int, optional
-        Expected native identities for sanity checking.
+        Expected native identities for sanity check
     native_len : int, optional
-        Expected native length for sanity checking.
-    debug : bool, optional
-        Enable debug mode (default: False).
-    verbose : bool, optional
-        Enable verbose output (default: False).
+        Expected native length for sanity check
+    debug : bool
+        Debug mode, default False
+    verbose : bool
+        Verbose output, default False
     random_seed : int, optional
-        Random seed. If None, randomize (default: None).
+        Random seed (None = randomize), default None
 
     Returns
     -------
     dict
-        Processed feature dictionary for training.
+        Processed feature dict for training
     """
     assert len(target_trim_positions) <= crop_size
     assert None not in target_trim_positions

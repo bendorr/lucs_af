@@ -135,7 +135,7 @@ def find_original_lucs_dir(args: argparse.Namespace, design_id: str) -> str:
 	"""
 	Find the original LUCS directory or file for a given design ID.
 
-	Searches for the original LUCS design structure in various directory
+	Searches for the original LUCS backbone in various directory
 	configurations, including compatible LHL formats and nested subdirectories.
 
 	Parameters
@@ -188,15 +188,15 @@ def find_original_lucs_dir(args: argparse.Namespace, design_id: str) -> str:
 
 def pdb_to_seq(pdb_path: str) -> tuple[str, str]:
 	"""
-	Extract the protein sequence from a PDB file.
+	Extract the protein sequence from a pdb file.
 
-	Parses ATOM records from a PDB file and converts three-letter amino acid
+	Parses ATOM records from a pdb file and converts three-letter amino acid
 	codes to single-letter sequence. Returns the sequence and chain ID.
 
 	Parameters
 	----------
 	pdb_path : str
-		Path to the PDB file
+		Path to the pdb file
 
 	Returns
 	-------
@@ -209,8 +209,8 @@ def pdb_to_seq(pdb_path: str) -> tuple[str, str]:
 
 	Notes
 	-----
-	- Currently only handles PDB format, not CIF files (TODO)
-	- Assumes the PDB file contains only one chain
+	- Currently only handles pdb format, not CIF files (TODO)
+	- Assumes the pdb file contains only one chain
 	- Reads all ATOM records regardless of chain ID
 	- Handles non-standard residue numbering by tracking unique residue numbers
 
@@ -307,13 +307,13 @@ def load_af3_structs(af_dir: str, design_id: str = '') -> tuple:
 		- af_struct_1 through af_struct_5 : pyrosetta.Pose
 			PyRosetta Pose objects for models 0-4
 		- af_pdb_paths : list of str
-			List of PDB file paths for the 5 models
+			List of pdb file paths for the 5 models
 
 	Notes
 	-----
-	- Automatically converts CIF files to PDB format if PDB files don't exist
+	- Automatically converts CIF files to pdb format if pdb files don't exist
 	- Expected CIF filename format: {design_id}_model_{i}.cif where i is 0-4
-	- Generated PDB filename format: {design_id}_model_{i}.pdb where i is 0-4
+	- Generated pdb filename format: {design_id}_model_{i}.pdb where i is 0-4
 	- Prints conversion messages during CIF to PDB conversion
 
 	Works for AF3 predictions in the format output by the AlphaFold Server
@@ -325,12 +325,12 @@ def load_af3_structs(af_dir: str, design_id: str = '') -> tuple:
 
 	for af_pdb_path, af_cif_path in zip(af_pdb_paths, af_cif_paths):
 		if os.path.exists(af_pdb_path):
-			print(f'PDB file exists: {af_pdb_path}')
+			print(f'pdb file exists: {af_pdb_path}')
 		else:
 			# Read file
 			parser = MMCIFParser()
 			structure = parser.get_structure(af_cif_path.split('.')[0], af_cif_path)
-			# Write PDB
+			# Write pdb
 			io = PDBIO()
 			io.set_structure(structure)
 			io.save(af_pdb_path)
@@ -367,13 +367,13 @@ def load_af3_linux_structs(args: argparse.Namespace, af_dir: str, design_id: str
 		- af_struct_1 through af_struct_5 : pyrosetta.Pose
 			PyRosetta Pose objects for models 0-4
 		- af_pdb_paths : list of str
-			List of PDB file paths for the 5 models
+			List of pdb file paths for the 5 models
 
 	Notes
 	-----
-	- Automatically converts CIF files to PDB format if PDB files don't exist
+	- Automatically converts CIF files to pdb format if pdb files don't exist
 	- Expected directory structure: seed-1_sample-{n}/model.cif for n=0-4
-	- Generated PDB filename format: {design_id}_model_{i}.pdb where i is 0-4
+	- Generated pdb filename format: {design_id}_model_{i}.pdb where i is 0-4
 	- Currently hard-coded to use random seed 1
 	- Prints conversion messages during CIF to PDB conversion
 
@@ -392,7 +392,7 @@ def load_af3_linux_structs(args: argparse.Namespace, af_dir: str, design_id: str
 
 	for af_pdb_path, af_cif_path in zip(af_pdb_paths, af_cif_paths):
 		if os.path.exists(af_pdb_path):
-			print(f'PDB file exists: {af_pdb_path}')
+			print(f'pdb file exists: {af_pdb_path}')
 		else:
 			# Read file
 			parser = MMCIFParser()
@@ -443,7 +443,7 @@ def load_colabfold_structs(args: argparse.Namespace, af_dir: str, design_id: str
 	- Provide a design ID that uniquely identifies exactly 5 AF2 predictions
 	- For example, use '123_mpnnSeq1' not '123' if '123_mpnnSeq2' also exists
 	- Files are identified by design_id prefix and model number suffix (1-5)
-	- Verbose mode prints current directory and found PDB files
+	- Verbose mode prints current directory and found pdb files
 
 	Get the 5 structures by their design ID.
 
@@ -457,7 +457,7 @@ def load_colabfold_structs(args: argparse.Namespace, af_dir: str, design_id: str
 
 	if args.verbose:
 		print(f"Current af_dir: {af_dir}")
-		print(f'PDB files found: {pdb_files}')
+		print(f'pdb files found: {pdb_files}')
 
 	af_struct_1 = pose_from_file(
 		os.path.join(af_dir, [f for f in pdb_files if f.split('.')[0].split('_')[-1] == '1'][0]))
@@ -604,7 +604,7 @@ def load_colabfold_plddts(af_dir: str, design_id: str) -> list:
 	"""
 	Load pLDDT confidence scores from ColabFold predictions.
 
-	Loads pLDDT scores from ColabFold score JSON files and returns them
+	Loads pLDDT scores from ColabFold score json files and returns them
 	ordered by AF2 model number (1-5).
 
 	Parameters
@@ -809,7 +809,7 @@ def get_biopython_atoms_with_ins_pts(struct, res_start_idx: int, atom_types: lis
 	Return biopython atoms within the 2 insertion point ranges from the
 	provided biopython structure object.
 
-	Residue start index is in case a PDB file's numbering doesn't begin on 1.
+	Residue start index is in case a pdb file's numbering doesn't begin on 1.
 	"""
 	ins_pt1_start+=res_start_idx-1
 	ins_pt1_stop+=res_start_idx-1
@@ -1678,7 +1678,7 @@ def add_best_af_metrics_to_df(df, df_col_prefix_values, \
 
 def calc_TM_score(pdb_path_1: str, pdb_path_2: str) -> float:
 	"""
-	Calculate TM-score between two PDB structures.
+	Calculate TM-score between two pdb structures.
 
 	Uses tmtools to compute the Template Modeling score, a metric for
 	assessing structural similarity between two protein structures.
@@ -1686,9 +1686,9 @@ def calc_TM_score(pdb_path_1: str, pdb_path_2: str) -> float:
 	Parameters
 	----------
 	pdb_path_1 : str
-		Path to first PDB file
+		Path to first pdb file
 	pdb_path_2 : str
-		Path to second PDB file
+		Path to second pdb file
 
 	Returns
 	-------
@@ -1740,7 +1740,7 @@ def get_TM_score(chain_1, chain_2) -> float:
 
 	See Also
 	--------
-	calc_TM_score : Calculate TM-score directly from PDB file paths
+	calc_TM_score : Calculate TM-score directly from pdb file paths
 
 	Use tmtools to calculate and return the TM score between two tmtools chains.
 	"""
@@ -2674,9 +2674,9 @@ def convert_pdb_to_pose_resnums(pose, pdb_res_list: list[int], verbose: bool = F
 	"""
 	Convert PDB residue numbers to PyRosetta pose numbering.
 
-	Maps residue indices from PDB file numbering to PyRosetta's internal
+	Maps residue indices from pdb file numbering to PyRosetta's internal
 	pose numbering system, which may differ due to chain breaks or non-standard
-	numbering in PDB files.
+	numbering in pdb files.
 
 	Parameters
 	----------
@@ -2723,20 +2723,20 @@ def convert_pdb_to_pose_resnums(pose, pdb_res_list: list[int], verbose: bool = F
 
 def get_residue_list_from_pdb(pdb_path: str) -> list[int]:
 	"""
-	Extract all residue numbers from a PDB file.
+	Extract all residue numbers from a pdb file.
 
 	Parses ATOM records to find all unique residue numbers present in the
-	PDB file.
+	pdb file.
 
 	Parameters
 	----------
 	pdb_path : str
-		Path to the PDB file
+		Path to the pdb file
 
 	Returns
 	-------
 	list of int
-		Sorted list of unique residue numbers found in the PDB file
+		Sorted list of unique residue numbers found in the pdb file
 
 	Notes
 	-----

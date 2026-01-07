@@ -1,9 +1,4 @@
-"""
-Unit tests for config module.
-
-Author: Ben Orr
-Date: 12.18.25
-"""
+"""Unit tests for config module."""
 
 import pytest
 import os
@@ -14,10 +9,10 @@ from degree_of_reshaping.config import Config, PathConfig, AnalysisConfig, Alpha
 
 
 class TestPathConfig:
-    """Tests for PathConfig dataclass."""
+    """Test PathConfig dataclass."""
 
     def test_default_values(self):
-        """Test that PathConfig has expected defaults."""
+        """Test PathConfig expected defaults."""
         config = PathConfig()
 
         assert config.starting_structure_path == ""
@@ -37,10 +32,10 @@ class TestPathConfig:
 
 
 class TestAnalysisConfig:
-    """Tests for AnalysisConfig dataclass."""
+    """Test AnalysisConfig dataclass."""
 
     def test_default_values(self):
-        """Test that AnalysisConfig has expected defaults."""
+        """Test AnalysisConfig expected defaults."""
         config = AnalysisConfig()
 
         assert config.filter_by_subsequence == ""
@@ -51,10 +46,10 @@ class TestAnalysisConfig:
 
 
 class TestAlphaFoldConfig:
-    """Tests for AlphaFoldConfig dataclass."""
+    """Test AlphaFoldConfig dataclass."""
 
     def test_default_values(self):
-        """Test that AlphaFoldConfig has expected defaults."""
+        """Test AlphaFoldConfig expected defaults."""
         config = AlphaFoldConfig()
 
         assert config.model_type == "af2"
@@ -63,10 +58,10 @@ class TestAlphaFoldConfig:
 
 
 class TestConfig:
-    """Tests for main Config class."""
+    """Test main Config class."""
 
     def test_default_initialization(self):
-        """Test that Config initializes with default sub-configs."""
+        """Test Config initializes with default sub-configs."""
         config = Config()
 
         assert isinstance(config.paths, PathConfig)
@@ -74,7 +69,7 @@ class TestConfig:
         assert isinstance(config.alphafold, AlphaFoldConfig)
 
     def test_to_dict(self):
-        """Test conversion to dictionary."""
+        """Test dict conversion."""
         config = Config()
         config.paths.data_dir = "/test/data"
         config.analysis.verbose = True
@@ -85,7 +80,7 @@ class TestConfig:
         assert config_dict['analysis']['verbose'] is True
 
     def test_to_yaml_and_from_yaml(self):
-        """Test saving to and loading from YAML."""
+        """Test YAML save and load."""
         config = Config()
         config.paths.starting_structure_path = "/test/struct.pdb"
         config.analysis.verbose = True
@@ -108,7 +103,7 @@ class TestConfig:
             os.unlink(temp_path)
 
     def test_env_overrides(self):
-        """Test environment variable overrides."""
+        """Test env variable overrides."""
         # Set environment variables
         os.environ['LUCS_DATA_DIR'] = '/env/data'
         os.environ['LUCS_VERBOSE'] = 'true'
@@ -128,7 +123,7 @@ class TestConfig:
             del os.environ['LUCS_NUM_TASKS']
 
     def test_update_from_args(self):
-        """Test updating from argparse Namespace."""
+        """Test update from argparse Namespace."""
         import argparse
 
         args = argparse.Namespace(
@@ -146,17 +141,17 @@ class TestConfig:
 
 
 class TestLoadConfig:
-    """Tests for load_config convenience function."""
+    """Test load_config convenience function."""
 
     def test_load_with_defaults(self):
-        """Test loading with default values."""
+        """Test load with default values."""
         config = load_config(use_defaults=True)
 
         assert isinstance(config, Config)
         assert config.paths.data_dir == "./data"
 
     def test_load_nonexistent_file_with_defaults(self):
-        """Test that nonexistent file falls back to defaults."""
+        """Test nonexistent file falls back to defaults."""
         config = load_config("/nonexistent/path.yaml", use_defaults=True)
 
         # Should still create config with defaults
@@ -164,7 +159,7 @@ class TestLoadConfig:
         # This tests the fallback behavior
 
     def test_load_nonexistent_file_without_defaults(self):
-        """Test that nonexistent file raises error when use_defaults=False."""
+        """Test nonexistent file raises error when use_defaults=False."""
         with pytest.raises(FileNotFoundError):
             load_config(use_defaults=False)
 

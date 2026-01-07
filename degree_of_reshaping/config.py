@@ -12,7 +12,7 @@ This module provides a flexible configuration system that supports:
 
 Usage
 -----
-Basic usage with YAML file:
+Basic usage with yaml file:
     >>> config = Config.from_yaml("my_config.yaml")
     >>> print(config.paths.starting_structure_path)
     /path/to/structure.pdb
@@ -47,9 +47,9 @@ class PathConfig:
     Attributes
     ----------
     starting_structure_path : str
-        Path to the LUCS starting structure PDB file.
+        Path to the LUCS starting structure pdb file.
     starting_structure_insertion_points : str
-        Path to the insertion points JSON file for the starting structure.
+        Path to the insertion points json file for the starting structure.
     data_dir : str
         Base directory for data files.
     output_dir : str
@@ -111,7 +111,7 @@ class Config:
     Main configuration class for LUCS AlphaFold analysis.
 
     This class consolidates all configuration settings and provides methods
-    for loading from YAML files, environment variables, and integration with
+    for loading from yaml files, environment variables, and integration with
     command-line argument parsers.
 
     Attributes
@@ -143,17 +143,17 @@ class Config:
     @classmethod
     def from_yaml(cls, yaml_path: Union[str, Path]) -> 'Config':
         """
-        Load configuration from a YAML file.
+        Load configuration from a yaml file.
 
         Parameters
         ----------
         yaml_path : str or Path
-            Path to YAML configuration file.
+            Path to yaml configuration file.
 
         Returns
         -------
         Config
-            Configuration object with values from YAML file.
+            Configuration object with values from yaml file.
 
         Examples
         --------
@@ -227,12 +227,12 @@ class Config:
 
     def to_yaml(self, yaml_path: Union[str, Path]) -> None:
         """
-        Save configuration to a YAML file.
+        Save configuration to a yaml file.
 
         Parameters
         ----------
         yaml_path : str or Path
-            Path where YAML file will be saved.
+            Path where yaml file will be saved.
 
         Examples
         --------

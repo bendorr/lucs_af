@@ -32,7 +32,7 @@ With parallel processing:
 Parameters
 ----------
 df_path : str
-    Path to input CSV containing LUCS design information with columns:
+    csv file containing LUCS design information with columns:
     - design_id: Unique design identifier
     - af2_design_id: AlphaFold2 design ID
     - lucs_design_id: LUCS design ID
@@ -44,7 +44,7 @@ outfolder : str
     Path to output directory for results.
 
 outfile : str
-    Name for the output CSV file (will be appended with task_id if num_tasks > 1).
+    Name for the output csv file (will be appended with task_id if num_tasks > 1).
 
 num_tasks : int, optional
     Number of parallel tasks for distributing calculations. Default is 1.
@@ -60,7 +60,7 @@ test_stop : int, optional
 
 Output
 ------
-CSV file containing:
+csv file containing:
     - design_id, af2_design_id, lucs_design_id: Design identifiers
     - af2_location, lucs_location: File paths
     - bb_remodeled_residues: Backbone-remodeled residue indices
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         '--df_path',
         type=str,
         required=True,
-        help='Path to a CSV file containing LUCS design information.')
+        help='csv file containing LUCS design information.')
 
     # Parallelization arguments
     parser.add_argument(

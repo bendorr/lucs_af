@@ -5,10 +5,7 @@ Ben Orr
 3.28.24
 Adapted from https://github.com/phbradley/alphafold_finetune
 
-Utility functions for AlphaFold fine-tuning and training.
-
-Contains protein structure manipulation functions, coordinate transformations,
-and JAX implementations of AlphaFold confidence metrics (pLDDT, PAE).
+AF training utilities - structure manipulation, coordinate transforms, JAX confidence metrics (pLDDT, PAE).
 """
 
 from typing import Dict, List, Tuple, Optional, Union, Any
@@ -19,7 +16,7 @@ import numpy.typing as npt
 from alphafold.common import residue_constants
 
 
-# Feature keys used in PDB structure processing
+# Feature keys for PDB structure processing
 pdb_key_list = [
     'atom14_atom_exists',
     'residx_atom14_to_atom37',
@@ -51,7 +48,7 @@ pdb_key_list_int = [
     'residx_atom37_to_atom14'
 ]
 
-# Feature list A: atomic and backbone features
+# Atomic and backbone features
 list_a = [
     'atom14_atom_exists',
     'residx_atom14_to_atom37',
@@ -72,7 +69,7 @@ list_a = [
     'backbone_affine_mask'
 ]
 
-# Template features lists
+# Template features
 list_a_templates = [
     'template_aatype',
     'template_all_atom_masks',
@@ -86,7 +83,7 @@ list_b_templates = [
     'template_mask',
 ]
 
-# Feature list B: sequence and MSA features
+# Sequence and MSA features
 list_b = [
     'aatype',
     'residue_index',
@@ -107,7 +104,7 @@ list_b = [
     'target_feat'
 ]
 
-# Feature list C: chi angles and rigid group features
+# Chi angles and rigid group features
 list_c = [
     'chi_mask',
     'chi_angles',
@@ -125,25 +122,22 @@ def pseudo_beta_fn_np(
     all_atom_masks: Optional[npt.NDArray[np.float32]] = None
 ) -> Union[npt.NDArray[np.float32], Tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]]:
     """
-    Create pseudo beta features.
-
-    For glycine (which lacks CB), uses CA position as pseudo-beta.
-    For all other residues, uses CB position.
+    Pseudo-beta features. Gly uses CA, others CB.
 
     Parameters
     ----------
     aatype : np.ndarray
-        Amino acid types, shape [...].
+        AA types, shape [...]
     all_atom_positions : np.ndarray
-        Atom positions, shape [..., 37, 3].
+        Atom positions, [..., 37, 3]
     all_atom_masks : np.ndarray, optional
-        Atom masks, shape [..., 37]. If None, only positions returned.
+        Atom masks, [..., 37] (None = positions only)
 
     Returns
     -------
     np.ndarray or tuple
-        If all_atom_masks is None: pseudo_beta positions, shape [..., 3].
-        Otherwise: (pseudo_beta, pseudo_beta_mask), both [..., 3] and [...].
+        If all_atom_masks None: pseudo_beta [..., 3]
+        Else: (pseudo_beta, pseudo_beta_mask)
     """
     is_gly = np.equal(aatype, residue_constants.restype_order['G'])
     ca_idx = residue_constants.atom_order['CA']
@@ -170,22 +164,21 @@ def apply_rot_to_vec(
     unstack: bool = False
 ) -> List[npt.NDArray[np.float32]]:
     """
-    Multiply rotation matrix by a vector.
+    Rotation matrix × vector multiplication.
 
     Parameters
     ----------
     rot : np.ndarray
-        Rotation matrix, shape [3, 3, ...].
+        Rotation matrix, [3, 3, ...]
     vec : np.ndarray or list
-        Vector to rotate. If unstack=True, shape [..., 3].
-        If unstack=False, list of 3 arrays.
-    unstack : bool, optional
-        Whether to unstack vec first (default: False).
+        Vector (unstack=True: [..., 3], False: list of 3)
+    unstack : bool
+        Unstack vec first, default False
 
     Returns
     -------
     list of np.ndarray
-        Rotated vector as list [x, y, z].
+        Rotated vector [x, y, z]
     """
     if unstack:
         x, y, z = [vec[:, i] for i in range(3)]
@@ -203,19 +196,19 @@ def _multiply(
     b: npt.NDArray[np.float32]
 ) -> npt.NDArray[np.float32]:
     """
-    Multiply two 3x3 rotation matrices.
+    3x3 rotation matrix multiplication.
 
     Parameters
     ----------
     a : np.ndarray
-        First rotation matrix, shape [3, 3, ...].
+        First rotation matrix, [3, 3, ...]
     b : np.ndarray
-        Second rotation matrix, shape [3, 3, ...].
+        Second rotation matrix, [3, 3, ...]
 
     Returns
     -------
     np.ndarray
-        Matrix product a @ b, shape [3, 3, ...].
+        Product a @ b, [3, 3, ...]
     """
     return np.stack([
         np.array([
@@ -242,33 +235,27 @@ def make_canonical_transform(
     c_xyz: npt.NDArray[np.float32]
 ) -> Tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
     """
-    Returns translation and rotation matrices to canonicalize residue atoms.
+    Canonicalize residue atoms via translation/rotation.
+    CA at origin, C on x-axis, N in xy plane.
 
-    Note that this method does not take care of symmetries. If you provide the
-    atom positions in the non-standard way, the N atom will end up not at
-    [-0.527250, 1.359329, 0.0] but instead at [-0.527250, -1.359329, 0.0]. You
-    need to take care of such cases in your code.
+    Note: Doesn't handle symmetries. Non-standard positions
+    may place N at [-0.527250, -1.359329, 0.0] vs [-, +1.359329, -].
 
     Parameters
     ----------
     n_xyz : np.ndarray
-        Nitrogen xyz coordinates, shape [batch, 3].
+        N coords, [batch, 3]
     ca_xyz : np.ndarray
-        Carbon alpha xyz coordinates, shape [batch, 3].
+        CA coords, [batch, 3]
     c_xyz : np.ndarray
-        Carbon xyz coordinates, shape [batch, 3].
+        C coords, [batch, 3]
 
     Returns
     -------
     tuple
-        (translation, rotation) where:
-        - translation: array of shape [batch, 3] defining the translation.
-        - rotation: array of shape [batch, 3, 3] defining the rotation.
-
-        After applying the translation and rotation to all atoms in a residue:
-        * All atoms will be shifted so that CA is at the origin.
-        * All atoms will be rotated so that C is at the x-axis.
-        * All atoms will be shifted so that N is in the xy plane.
+        (translation, rotation)
+        translation: [batch, 3]
+        rotation: [batch, 3, 3]
     """
     assert len(n_xyz.shape) == 2, n_xyz.shape
     assert n_xyz.shape[-1] == 3, n_xyz.shape
@@ -276,14 +263,14 @@ def make_canonical_transform(
         n_xyz.shape, ca_xyz.shape, c_xyz.shape
     )
 
-    # Place CA at the origin.
+    # Place CA at origin
     translation = -ca_xyz
     n_xyz = n_xyz + translation
     c_xyz = c_xyz + translation
 
-    # Place C on the x-axis.
+    # Place C on x-axis
     c_x, c_y, c_z = [c_xyz[:, i] for i in range(3)]
-    # Rotate by angle c1 in the x-y plane (around the z-axis).
+    # Rotate by angle c1 in xy plane (around z-axis)
     sin_c1 = -c_y / np.sqrt(1e-20 + c_x**2 + c_y**2)
     cos_c1 = c_x / np.sqrt(1e-20 + c_x**2 + c_y**2)
     zeros = np.zeros_like(sin_c1)
@@ -294,7 +281,7 @@ def make_canonical_transform(
         np.array([zeros,    zeros,  ones])
     ])
 
-    # Rotate by angle c2 in the x-z plane (around the y-axis).
+    # Rotate by angle c2 in xz plane (around y-axis)
     sin_c2 = c_z / np.sqrt(1e-20 + c_x**2 + c_y**2 + c_z**2)
     cos_c2 = np.sqrt(c_x**2 + c_y**2) / np.sqrt(
         1e-20 + c_x**2 + c_y**2 + c_z**2
@@ -308,9 +295,9 @@ def make_canonical_transform(
     c_rot_matrix = _multiply(c2_rot_matrix, c1_rot_matrix)
     n_xyz = np.stack(apply_rot_to_vec(c_rot_matrix, n_xyz, unstack=True)).T
 
-    # Place N in the x-y plane.
+    # Place N in xy plane
     _, n_y, n_z = [n_xyz[:, i] for i in range(3)]
-    # Rotate by angle alpha in the y-z plane (around the x-axis).
+    # Rotate by angle alpha in yz plane (around x-axis)
     sin_n = -n_z / np.sqrt(1e-20 + n_y**2 + n_z**2)
     cos_n = n_y / np.sqrt(1e-20 + n_y**2 + n_z**2)
     n_rot_matrix = np.stack([
@@ -331,34 +318,26 @@ def make_transform_from_reference_np(
     c_xyz: npt.NDArray[np.float32]
 ) -> Tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
     """
-    Returns rotation and translation matrices to convert from reference.
+    Convert from reference coords via rotation/translation.
+    Inverse of make_canonical_transform - apply rotation before translation.
 
-    Note that this method does not take care of symmetries. If you provide the
-    atom positions in the non-standard way, the N atom will end up not at
-    [-0.527250, 1.359329, 0.0] but instead at [-0.527250, -1.359329, 0.0]. You
-    need to take care of such cases in your code.
+    Note: Doesn't handle symmetries (see make_canonical_transform).
 
     Parameters
     ----------
     n_xyz : np.ndarray
-        Nitrogen xyz coordinates, shape [batch, 3].
+        N coords, [batch, 3]
     ca_xyz : np.ndarray
-        Carbon alpha xyz coordinates, shape [batch, 3].
+        CA coords, [batch, 3]
     c_xyz : np.ndarray
-        Carbon xyz coordinates, shape [batch, 3].
+        C coords, [batch, 3]
 
     Returns
     -------
     tuple
-        (rotation, translation) where:
-        - rotation: array of shape [batch, 3, 3] defining the rotation.
-        - translation: array of shape [batch, 3] defining the translation.
-
-        After applying the translation and rotation to the reference backbone,
-        the coordinates will approximately equal to the input coordinates.
-        The order of translation and rotation differs from make_canonical_transform
-        because the rotation from this function should be applied before the
-        translation, unlike make_canonical_transform.
+        (rotation, translation)
+        rotation: [batch, 3, 3]
+        translation: [batch, 3]
     """
     translation, rotation = make_canonical_transform(n_xyz, ca_xyz, c_xyz)
     return np.transpose(rotation, (0, 2, 1)), -translation
@@ -366,32 +345,22 @@ def make_transform_from_reference_np(
 
 def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray]:
     """
-    Constructs denser atom positions (14 dimensions instead of 37).
+    Denser atom positions (14 dims vs 37).
 
-    Hack: including this function here so we don't have to import alphafold.relax
-    since it has some extra dependencies we don't have/need.
+    Avoids alphafold.relax import (extra dependencies).
 
     Parameters
     ----------
     prot : dict
-        Protein dictionary with keys:
-        - 'aatype': amino acid types
-        - 'all_atom_positions': atom37 positions
-        - 'all_atom_mask': atom37 mask
+        Protein dict with 'aatype', 'all_atom_positions', 'all_atom_mask'
 
     Returns
     -------
     dict
-        Updated protein dictionary with additional keys:
-        - 'atom14_atom_exists': atom14 existence mask
-        - 'atom14_gt_exists': atom14 ground truth existence mask
-        - 'atom14_gt_positions': atom14 ground truth positions
-        - 'residx_atom14_to_atom37': mapping from atom14 to atom37
-        - 'residx_atom37_to_atom14': mapping from atom37 to atom14
-        - 'atom37_atom_exists': atom37 existence mask
-        - 'atom14_alt_gt_positions': alternative atom14 positions
-        - 'atom14_alt_gt_exists': alternative atom14 existence mask
-        - 'atom14_atom_is_ambiguous': ambiguous atom mask
+        Updated protein dict with added keys:
+        atom14_atom_exists, atom14_gt_exists, atom14_gt_positions,
+        residx_atom14_to_atom37, residx_atom37_to_atom14, atom37_atom_exists,
+        atom14_alt_gt_positions, atom14_alt_gt_exists, atom14_atom_is_ambiguous
     """
     restype_atom14_to_atom37 = []  # mapping (restype, atom14) --> atom37
     restype_atom37_to_atom14 = []  # mapping (restype, atom37) --> atom14
@@ -415,7 +384,7 @@ def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray
 
         restype_atom14_mask.append([(1. if name else 0.) for name in atom_names])
 
-    # Add dummy mapping for restype 'UNK'.
+    # Add dummy mapping for 'UNK'
     restype_atom14_to_atom37.append([0] * 14)
     restype_atom37_to_atom14.append([0] * 37)
     restype_atom14_mask.append([0.] * 14)
@@ -424,17 +393,17 @@ def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray
     restype_atom37_to_atom14 = np.array(restype_atom37_to_atom14, dtype=np.int32)
     restype_atom14_mask = np.array(restype_atom14_mask, dtype=np.float32)
 
-    # Create the mapping for (residx, atom14) --> atom37, i.e. an array
-    # with shape (num_res, 14) containing the atom37 indices for this protein.
+    # Create mapping (residx, atom14) --> atom37
+    # Shape (num_res, 14) with atom37 indices
     residx_atom14_to_atom37 = restype_atom14_to_atom37[prot["aatype"]]
     residx_atom14_mask = restype_atom14_mask[prot["aatype"]]
 
-    # Create a mask for known ground truth positions.
+    # Mask for known ground truth positions
     residx_atom14_gt_mask = residx_atom14_mask * np.take_along_axis(
         prot["all_atom_mask"], residx_atom14_to_atom37, axis=1
     ).astype(np.float32)
 
-    # Gather the ground truth positions.
+    # Gather ground truth positions
     residx_atom14_gt_positions = residx_atom14_gt_mask[:, :, None] * (
         np.take_along_axis(
             prot["all_atom_positions"],
@@ -449,11 +418,11 @@ def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray
 
     prot["residx_atom14_to_atom37"] = residx_atom14_to_atom37
 
-    # Create the gather indices for mapping back.
+    # Gather indices for mapping back
     residx_atom37_to_atom14 = restype_atom37_to_atom14[prot["aatype"]]
     prot["residx_atom37_to_atom14"] = residx_atom37_to_atom14
 
-    # Create the corresponding mask.
+    # Create corresponding mask
     restype_atom37_mask = np.zeros([21, 37], dtype=np.float32)
     for restype, restype_letter in enumerate(residue_constants.restypes):
         restype_name = residue_constants.restype_1to3[restype_letter]
@@ -465,14 +434,13 @@ def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray
     residx_atom37_mask = restype_atom37_mask[prot["aatype"]]
     prot["atom37_atom_exists"] = residx_atom37_mask
 
-    # As the atom naming is ambiguous for 7 of the 20 amino acids, provide
-    # alternative ground truth coordinates where the naming is swapped
+    # Atom naming ambiguous for 7/20 AAs - provide alternative GT coords with swapped naming
     restype_3 = [
         residue_constants.restype_1to3[res] for res in residue_constants.restypes
     ]
     restype_3 += ["UNK"]
 
-    # Matrices for renaming ambiguous atoms.
+    # Matrices for renaming ambiguous atoms
     all_matrices = {res: np.eye(14, dtype=np.float32) for res in restype_3}
     for resname, swap in residue_constants.residue_atom_renaming_swaps.items():
         correspondences = np.arange(14)
@@ -491,11 +459,10 @@ def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray
         all_matrices[resname] = renaming_matrix.astype(np.float32)
     renaming_matrices = np.stack([all_matrices[restype] for restype in restype_3])
 
-    # Pick the transformation matrices for the given residue sequence
-    # shape (num_res, 14, 14).
+    # Pick transformation matrices for given residue sequence, shape (num_res, 14, 14)
     renaming_transform = renaming_matrices[prot["aatype"]]
 
-    # Apply it to the ground truth positions. shape (num_res, 14, 3).
+    # Apply to ground truth positions, shape (num_res, 14, 3)
     alternative_gt_positions = np.einsum(
         "rac,rab->rbc",
         residx_atom14_gt_positions,
@@ -503,9 +470,7 @@ def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray
     )
     prot["atom14_alt_gt_positions"] = alternative_gt_positions
 
-    # Create the mask for the alternative ground truth (differs from the
-    # ground truth mask, if only one of the atoms in an ambiguous pair has a
-    # ground truth position).
+    # Mask for alternative GT (differs if only one atom in ambiguous pair has GT position)
     alternative_gt_mask = np.einsum(
         "ra,rab->rb",
         residx_atom14_gt_mask,
@@ -514,7 +479,7 @@ def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray
 
     prot["atom14_alt_gt_exists"] = alternative_gt_mask
 
-    # Create an ambiguous atoms mask.  shape: (21, 14).
+    # Ambiguous atoms mask, shape (21, 14)
     restype_atom14_is_ambiguous = np.zeros((21, 14), dtype=np.float32)
     for resname, swap in residue_constants.residue_atom_renaming_swaps.items():
         for atom_name1, atom_name2 in swap.items():
@@ -530,7 +495,7 @@ def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray
             restype_atom14_is_ambiguous[restype, atom_idx1] = 1
             restype_atom14_is_ambiguous[restype, atom_idx2] = 1
 
-    # From this create an ambiguous_mask for the given sequence.
+    # Ambiguous mask for given sequence
     prot["atom14_atom_is_ambiguous"] = (
         restype_atom14_is_ambiguous[prot["aatype"]]
     )
@@ -538,23 +503,22 @@ def make_atom14_positions(prot: Dict[str, npt.NDArray]) -> Dict[str, npt.NDArray
     return prot
 
 
-# JAX versions of AlphaFold confidence metric functions
-# These are needed since we compute pLDDT/PAE within the binder model
+# JAX versions of AF confidence metrics (needed for computing pLDDT/PAE within binder model)
 
 
 def compute_plddt_jax(logits: jnp.ndarray) -> jnp.ndarray:
     """
-    Computes per-residue pLDDT from logits (JAX version).
+    Per-residue pLDDT from logits (JAX).
 
     Parameters
     ----------
     logits : jnp.ndarray
-        Logits from PredictedLDDTHead, shape [num_res, num_bins].
+        PredictedLDDTHead logits, [num_res, num_bins]
 
     Returns
     -------
     jnp.ndarray
-        Per-residue pLDDT scores (0-100), shape [num_res].
+        pLDDT scores (0-100), [num_res]
     """
     num_bins = logits.shape[-1]
     bin_width = 1.0 / num_bins
@@ -566,23 +530,23 @@ def compute_plddt_jax(logits: jnp.ndarray) -> jnp.ndarray:
 
 def _calculate_bin_centers_jax(breaks: jnp.ndarray) -> jnp.ndarray:
     """
-    Gets the bin centers from the bin edges (JAX version).
+    Bin centers from edges (JAX).
 
     Parameters
     ----------
     breaks : jnp.ndarray
-        Error bin edges, shape [num_bins - 1].
+        Error bin edges, [num_bins - 1]
 
     Returns
     -------
     jnp.ndarray
-        Error bin centers, shape [num_bins].
+        Error bin centers, [num_bins]
     """
     step = (breaks[1] - breaks[0])
 
-    # Add half-step to get the center
+    # Add half-step for center
     bin_centers = breaks + step / 2
-    # Add a catch-all bin at the end.
+    # Add catch-all bin at end
     bin_centers = jnp.concatenate(
         [bin_centers, jnp.array([bin_centers[-1] + step])],
         axis=0
@@ -595,27 +559,24 @@ def _calculate_expected_aligned_error_jax(
     aligned_distance_error_probs: jnp.ndarray
 ) -> Tuple[jnp.ndarray, jnp.ndarray]:
     """
-    Calculates expected aligned distance errors for every pair of residues (JAX version).
+    Expected aligned distance errors per residue pair (JAX).
 
     Parameters
     ----------
     alignment_confidence_breaks : jnp.ndarray
-        Error bin edges, shape [num_bins - 1].
+        Error bin edges, [num_bins - 1]
     aligned_distance_error_probs : jnp.ndarray
-        Predicted probs for each error bin, for each pair of residues,
-        shape [num_res, num_res, num_bins].
+        Predicted probs per bin per pair, [num_res, num_res, num_bins]
 
     Returns
     -------
     tuple
-        (predicted_aligned_error, max_predicted_aligned_error) where:
-        - predicted_aligned_error: expected aligned distance error for each
-          pair of residues, shape [num_res, num_res].
-        - max_predicted_aligned_error: maximum predicted error possible (scalar).
+        (predicted_aligned_error, max_predicted_aligned_error)
+        predicted_aligned_error: [num_res, num_res]
+        max_predicted_aligned_error: scalar
     """
     bin_centers = _calculate_bin_centers_jax(alignment_confidence_breaks)
 
-    # Tuple of expected aligned distance error and max possible error.
     return (
         jnp.sum(aligned_distance_error_probs * bin_centers, axis=-1),
         jnp.asarray(bin_centers[-1])
@@ -627,25 +588,21 @@ def compute_predicted_aligned_error_jax(
     breaks: jnp.ndarray
 ) -> Dict[str, jnp.ndarray]:
     """
-    Computes aligned confidence metrics from logits (JAX version).
+    Aligned confidence metrics from logits (JAX).
 
     Parameters
     ----------
     logits : jnp.ndarray
-        Logits from PredictedAlignedErrorHead,
-        shape [num_res, num_res, num_bins].
+        PredictedAlignedErrorHead logits, [num_res, num_res, num_bins]
     breaks : jnp.ndarray
-        Error bin edges, shape [num_bins - 1].
+        Error bin edges, [num_bins - 1]
 
     Returns
     -------
     dict
-        Dictionary with keys:
-        - 'aligned_confidence_probs': predicted aligned error probabilities
-          over bins for each residue pair, shape [num_res, num_res, num_bins].
-        - 'predicted_aligned_error': expected aligned distance error for each
-          pair of residues, shape [num_res, num_res].
-        - 'max_predicted_aligned_error': maximum predicted error possible.
+        'aligned_confidence_probs': [num_res, num_res, num_bins]
+        'predicted_aligned_error': [num_res, num_res]
+        'max_predicted_aligned_error': scalar
     """
     aligned_confidence_probs = jax.nn.softmax(logits, axis=-1)
     predicted_aligned_error, max_predicted_aligned_error = (

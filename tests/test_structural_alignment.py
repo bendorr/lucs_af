@@ -1,9 +1,4 @@
-"""
-Unit tests for degree_of_reshaping.common.structural_alignment module.
-
-Author: Ben Orr
-Date: 12.18.25
-"""
+"""Unit tests for degree_of_reshaping.common.structural_alignment module."""
 
 import pytest
 import numpy as np
@@ -17,10 +12,10 @@ from degree_of_reshaping.common.structural_alignment import (
 
 
 class TestApplyTransform:
-    """Tests for apply_transform function."""
+    """Test apply_transform function."""
 
     def test_identity_transformation(self):
-        """Test that identity transformation leaves coordinates unchanged."""
+        """Test identity transformation leaves coords unchanged."""
         # Create test coordinates
         A = torch.randn(1, 10, 3)
         # Identity rotation
@@ -64,10 +59,10 @@ class TestApplyTransform:
 
 
 class TestKabsch:
-    """Tests for Kabsch algorithm."""
+    """Test Kabsch algorithm."""
 
     def test_identical_structures(self):
-        """Test that identical structures have RMSD=0."""
+        """Test identical structures have RMSD=0."""
         A = torch.randn(1, 10, 3, dtype=torch.float64)
         B = A.clone()
 
@@ -114,7 +109,7 @@ class TestKabsch:
         assert rmsd < 1e-10
 
     def test_batch_processing(self):
-        """Test that Kabsch works with batch size > 1."""
+        """Test Kabsch works with batch size > 1."""
         batch_size = 5
         A = torch.randn(batch_size, 10, 3, dtype=torch.float64)
         B = torch.randn(batch_size, 10, 3, dtype=torch.float64)
@@ -128,7 +123,7 @@ class TestKabsch:
 
 
 class TestRMSD:
-    """Tests for RMSD calculation."""
+    """Test RMSD calculation."""
 
     def test_rmsd_identical(self):
         """Test RMSD of identical structures."""
@@ -154,7 +149,7 @@ class TestRMSD:
         assert rmsd < 1e-6
 
     def test_rmsd_output_types(self):
-        """Test that RMSD returns correct types."""
+        """Test RMSD returns correct types."""
         pred = torch.randn(1, 15, 3, dtype=torch.float64)
         true = torch.randn(1, 15, 3, dtype=torch.float64)
 

@@ -5,7 +5,78 @@ Author: Ben Orr
 Date: 10.7.24
 Adapted from https://github.com/phbradley/alphafold_finetune
 
-Run template-based AlphaFold inference on target sequences.
+Fine-tuned and Classic AF2 inference on target sequences.
+
+Parameters
+----------
+--targets : str, required
+    tsv file listing target sequences to predict
+--data_dir : str
+    AlphaFold params/ folder location
+--outfile_prefix : str
+    Prefix for output filenames
+--final_outfile_prefix : str
+    Prefix for final tsv output
+
+Model Options:
+--model_names : str+
+    AlphaFold model names
+--model_params_files : str+
+    Custom model parameter files
+--num_recycle : int
+    Recycling steps
+
+Prediction Options:
+--ignore_identities : flag
+    Ignore template alignment sequence identities
+--no_resample_msa : flag
+    Disable MSA resampling during recycling
+--completed_pred_dir : str
+    Directory with completed predictions to skip
+
+Output Options:
+--no_pdbs : flag
+    Skip pdb file output
+--terse : flag
+    Skip pdb and confidence matrix output
+
+Debugging:
+--verbose : flag
+    Verbose output
+
+Usage
+-----
+python3 run_prediction.py --targets targets.tsv --data_dir /path/to/alphafold/params \\
+    --outfile_prefix my_predictions --model_names model_2_ptm model_2_ptm_ft \\
+    --num_recycle 5
+
+Examples
+--------
+Basic prediction with single model:
+    python3 run_prediction.py \\
+        --targets sequences.tsv \\
+        --data_dir /data/alphafold/params \\
+        --outfile_prefix results \\
+        --model_names model_2_ptm
+
+With fine-tuned and classic models:
+    python3 run_prediction.py \\
+        --targets targets.tsv \\
+        --data_dir /data/alphafold/params \\
+        --outfile_prefix comparison \\
+        --model_names model_2_ptm model_2_ptm_ft \\
+        --model_params_files classic checkpoint_10000_params.pkl \\
+        --num_recycle 10
+
+Minimal output for large runs:
+    python3 run_prediction.py \\
+        --targets large_set.tsv \\
+        --data_dir /data/alphafold/params \\
+        --outfile_prefix batch_run \\
+        --model_names model_2_ptm_ft \\
+        --model_params_files finetuned_params.pkl \\
+        --terse \\
+        --completed_pred_dir /data/completed/
 """
 
 import argparse
@@ -22,7 +93,7 @@ from alphafold.common import residue_constants
 
 def mk_mock_template(query_sequence, num_temp=1):
     """
-    Create empty template features dict.
+    Empty template features dict.
 
     From Sergey Ovchinnikov's colabfold/batch.py.
     Edited to use residue_constants instead of templates.residue_constants.
@@ -30,14 +101,14 @@ def mk_mock_template(query_sequence, num_temp=1):
     Parameters
     ----------
     query_sequence : str or list
-        Query sequence(s).
-    num_temp : int, optional
-        Number of templates (default: 1).
+        Query sequence(s)
+    num_temp : int
+        Number of templates, default 1
 
     Returns
     -------
     dict
-        Template features dictionary with empty/mock values.
+        Template features with empty/mock values
     """
     ln = (
         len(query_sequence)
@@ -75,21 +146,21 @@ def mk_mock_template(query_sequence, num_temp=1):
 
 def remove_completed_targets(targets, completed_pred_dir, prefix):
     """
-    Remove completed predictions from the targets dataframe.
+    Remove completed predictions from targets dataframe.
 
     Parameters
     ----------
     targets : pd.DataFrame
-        Targets dataframe.
+        Targets dataframe
     completed_pred_dir : str
-        Directory containing completed prediction PDB files.
+        Directory with completed prediction pdbs
     prefix : str
-        Output file prefix.
+        Output file prefix
 
     Returns
     -------
     pd.DataFrame
-        Filtered targets dataframe without completed predictions.
+        Filtered targets without completed predictions
     """
     completed_ids = []
     for f in os.listdir(completed_pred_dir):
@@ -111,7 +182,7 @@ def parse_arguments():
     Returns
     -------
     argparse.Namespace
-        Parsed command-line arguments.
+        Parsed command-line arguments
     """
     parser = argparse.ArgumentParser(
         description="Run simple template-based alphafold inference",
@@ -131,13 +202,13 @@ python3 run_prediction.py \\
 
     # Required arguments
     parser.add_argument('--targets', required=True,
-                        help='File listing the targets to be modeled')
+                        help='tsv file listing the targets to be modeled')
 
     # Output configuration
     parser.add_argument('--outfile_prefix',
                         help='Prefix prepended to output filenames')
     parser.add_argument('--final_outfile_prefix',
-                        help='Prefix prepended to final output TSV filename')
+                        help='Prefix prepended to final output tsv filename')
 
     # Model configuration
     parser.add_argument('--data_dir',
@@ -159,9 +230,9 @@ python3 run_prediction.py \\
 
     # Output options
     parser.add_argument('--no_pdbs', action='store_true',
-                        help='Dont write out PDB files')
+                        help='Dont write out pdb files')
     parser.add_argument('--terse', action='store_true',
-                        help='Dont write out PDBs or confidence matrices')
+                        help='Dont write out pdbs or confidence matrices')
 
     # Logging
     parser.add_argument('--verbose', action='store_true',
@@ -177,12 +248,12 @@ def load_targets(args):
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
 
     Returns
     -------
     pd.DataFrame
-        Targets dataframe.
+        Targets dataframe
     """
     targets = pd.read_table(args.targets)
 
@@ -196,17 +267,17 @@ def load_targets(args):
 
 def calculate_crop_size(targets):
     """
-    Calculate the maximum crop size needed for all targets.
+    Max crop size for all targets.
 
     Parameters
     ----------
     targets : pd.DataFrame
-        Targets dataframe.
+        Targets dataframe
 
     Returns
     -------
     int
-        Maximum crop size.
+        Max crop size
     """
     lens = [len(x.target_chainseq.replace('/',''))
             for x in targets.itertuples()]
@@ -217,16 +288,16 @@ def calculate_crop_size(targets):
 
 def print_verbose_info(args, targets, crop_size):
     """
-    Print verbose logging information.
+    Print verbose logging info.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     targets : pd.DataFrame
-        Targets dataframe.
+        Targets dataframe
     crop_size : int
-        Crop size.
+        Crop size
     """
     if args.verbose:
         import jax
@@ -244,19 +315,19 @@ def print_verbose_info(args, targets, crop_size):
 
 def load_model_runners(args, crop_size):
     """
-    Load AlphaFold model runners.
+    Load AF model runners.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     crop_size : int
-        Crop size for models.
+        Crop size for models
 
     Returns
     -------
     dict
-        Dictionary of model runners.
+        Model runners dict
     """
     model_runners = predict_utils.load_model_runners(
         args.model_names,
@@ -277,16 +348,16 @@ def load_template_features(alignfile, query_sequence, args):
     Parameters
     ----------
     alignfile : str
-        Path to template alignment file.
+        Template alignment file path
     query_sequence : str
-        Query sequence.
+        Query sequence
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
 
     Returns
     -------
     dict
-        Compiled template features.
+        Compiled template features
     """
     data = pd.read_table(alignfile)
     template_features_list = []
@@ -312,23 +383,23 @@ def load_template_features(alignfile, query_sequence, args):
 
 def run_prediction_for_target(target, model_runners, args, crop_size):
     """
-    Run AlphaFold prediction for a single target.
+    Run AF prediction for single target.
 
     Parameters
     ----------
     target : pd.Series
-        Target row from dataframe.
+        Target row from dataframe
     model_runners : dict
-        Dictionary of model runners.
+        Model runners dict
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     crop_size : int
-        Crop size.
+        Crop size
 
     Returns
     -------
     dict
-        Prediction metrics for all models.
+        Prediction metrics for all models
     """
     query_chainseq = target.target_chainseq
     query_sequence = query_chainseq.replace('/','')
@@ -359,21 +430,21 @@ def run_prediction_for_target(target, model_runners, args, crop_size):
 
 def calculate_confidence_metrics(target, all_metrics, query_chainseq):
     """
-    Calculate pLDDT and PAE metrics from prediction results.
+    Calculate pLDDT and PAE from prediction results.
 
     Parameters
     ----------
     target : pd.Series
-        Target row from dataframe.
+        Target row from dataframe
     all_metrics : dict
-        Prediction metrics from AlphaFold.
+        Prediction metrics from AF
     query_chainseq : str
-        Query chain sequence (with '/' separators).
+        Query chain sequence (with '/' separators)
 
     Returns
     -------
     pd.Series
-        Target row with added confidence metrics.
+        Target with added confidence metrics
     """
     outl = target.copy()
     query_sequence = query_chainseq.replace('/','')
@@ -411,27 +482,27 @@ def calculate_confidence_metrics(target, all_metrics, query_chainseq):
 
 def process_single_target(target, counter, total_targets, model_runners, args, crop_size):
     """
-    Process a single target sequence.
+    Process single target sequence.
 
     Parameters
     ----------
     target : pd.Series
-        Target row from dataframe.
+        Target row from dataframe
     counter : int
-        Current target index.
+        Current target index
     total_targets : int
-        Total number of targets.
+        Total number of targets
     model_runners : dict
-        Dictionary of model runners.
+        Model runners dict
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     crop_size : int
-        Crop size.
+        Crop size
 
     Returns
     -------
     pd.Series
-        Target with calculated metrics.
+        Target with calculated metrics
     """
     print('START:', counter, 'of', total_targets)
 
@@ -484,18 +555,18 @@ def process_all_targets(targets, model_runners, args, crop_size):
     Parameters
     ----------
     targets : pd.DataFrame
-        Targets dataframe.
+        Targets dataframe
     model_runners : dict
-        Dictionary of model runners.
+        Model runners dict
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     crop_size : int
-        Crop size.
+        Crop size
 
     Returns
     -------
     list
-        List of results for all targets.
+        Results for all targets
     """
     final_results = []
     total_targets = targets.shape[0]
@@ -511,16 +582,16 @@ def process_all_targets(targets, model_runners, args, crop_size):
 
 def save_final_results(args, targets, final_results):
     """
-    Save final prediction results to TSV file.
+    Save final prediction results to tsv.
 
     Parameters
     ----------
     args : argparse.Namespace
-        Command-line arguments.
+        Command-line arguments
     targets : pd.DataFrame
-        Original targets dataframe.
+        Original targets dataframe
     final_results : list
-        List of results for all targets.
+        Results for all targets
     """
     # Determine output prefix
     if args.final_outfile_prefix:
@@ -544,7 +615,7 @@ def save_final_results(args, targets, final_results):
 
 
 def main():
-    """Main execution function for AlphaFold prediction."""
+    """Main execution for AF prediction."""
     # Parse arguments
     args = parse_arguments()
 

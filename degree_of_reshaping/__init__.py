@@ -1,7 +1,7 @@
 """
 degree_of_reshaping
 
-Analysis tools for quantifying structural reshaping in LUCS protein designs.
+Analysis tools for quantifying structural reshaping in LUCS designs.
 
 This module provides functionality for:
 - Calculating RMSD and TM-scores between structures

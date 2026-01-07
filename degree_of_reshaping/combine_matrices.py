@@ -1,17 +1,15 @@
 """
-Combines multiple incomplete all-by-all (square) matrices into a single complete matrix.
+Combines incomplete all-by-all matrices into single complete matrix.
 
 Author: Ben Orr
 Date: 6.21.23
 
-This script combines multiple incomplete all-by-all (square) matrices (such as RMSD or TM-score
-matrices) stored in separate .npy files into a single complete matrix. This is useful
-when calculations have been distributed across multiple jobs that each compute a subset
-of the full matrix.
+Combines incomplete all-by-all matrices (RMSD or TM-score) stored in separate .npy files
+into single complete matrix. Useful when calculations distributed across multiple jobs.
 
-The script supports two modes:
-1. Combining many partial matrices into a full matrix
-2. Filling in missing values in an existing full matrix
+Two modes:
+1. Combine many partial matrices into full matrix
+2. Fill missing values in existing full matrix
 
 Usage
 -----
@@ -24,17 +22,13 @@ Fill-in mode:
 Parameters
 ----------
 data_folder : str
-    Folder containing .npy files with incomplete all-by-all matrices.
-    Files should be named with consistent prefixes.
+    Folder with incomplete all-by-all .npy matrices, consistent prefixes
 
 file_prefixes : List[str]
-    List of prefixes of the .npy files to be combined.
-    For example, if files are named "rmsd_matrix_1.npy", "rmsd_matrix_2.npy",
-    the prefix would be "rmsd_matrix".
+    Prefixes of .npy files to combine (e.g., "rmsd_matrix" for rmsd_matrix_1.npy)
 
 fill_in : bool, optional
-    If specified, only combine a preexisting {file_prefix}_full.npy matrix
-    with a {file_prefix}_fill_in_mat.npy matrix to fill in missing values.
+    Only combine {file_prefix}_full.npy with {file_prefix}_fill_in_mat.npy
 
 Output
 ------
@@ -49,21 +43,21 @@ import numpy.typing as npt
 
 def get_files_to_combine(data_folder: str, file_prefix: str, fill_in: bool) -> List[str]:
     """
-    Get list of files to combine based on mode.
+    Files to combine based on mode.
 
     Parameters
     ----------
     data_folder : str
-        Folder containing matrix files.
+        Folder with matrix files
     file_prefix : str
-        Prefix of files to combine.
+        Prefix of files to combine
     fill_in : bool
-        If True, only combine full and fill-in matrices.
+        Only combine full and fill-in matrices
 
     Returns
     -------
     List[str]
-        List of filenames to combine.
+        Filenames to combine
     """
     if fill_in:
         # Fill-in mode: Only combine existing full matrix with fill-in matrix
@@ -87,18 +81,18 @@ def combine_matrices(data_folder: str, files: List[str]) -> npt.NDArray[np.float
     Parameters
     ----------
     data_folder : str
-        Folder containing matrix files.
+        Folder with matrix files
     files : List[str]
-        List of filenames to combine.
+        Filenames to combine
 
     Returns
     -------
     npt.NDArray[np.float64]
-        Combined matrix.
+        Combined matrix
 
     Notes
     -----
-    This assumes matrices have been initialized with zeros for missing values.
+    Assumes matrices initialized with zeros for missing values
     """
     curr_mat: npt.NDArray[np.float64] = None
 
@@ -118,7 +112,7 @@ def combine_matrices(data_folder: str, files: List[str]) -> npt.NDArray[np.float
 
 
 def main():
-    """Main entry point for combining matrices."""
+    """Combine matrices."""
     # Parse command line arguments
     parser = argparse.ArgumentParser(
         description='Combine incomplete all-by-all (RMSD or TM score, for example) .npy matrices.',
