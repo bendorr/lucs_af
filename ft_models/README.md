@@ -24,11 +24,7 @@ Instructions for running inference with the fine-tuned AF2 models using Google C
 
 Alternatively, inference can be run with the fine-tuned AF2 models using a local installation of [localcolabfold](https://github.com/YoshitakaMo/localcolabfold).
 
-<<<<<<< HEAD
-First, download the model parameters from [zenodo](https://zenodo.org/records/15580792) or using the command line with the following commands:
-=======
 First, download the model parameters from [zenodo](https://zenodo.org/records/15580792) (or from the publication data [repo](https://zenodo.org/records/16938925)) or using the command line with the following commands:
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
 ```
 wget https://zenodo.org/records/15580792/files/StableStructSplit_params_model_2_ptm.npz

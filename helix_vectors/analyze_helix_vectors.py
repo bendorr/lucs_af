@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
 """
-<<<<<<< HEAD
-analyze_helix_vectors.py
-
-Ben Orr
-9.9.22
-
-Adapted from XingJie Pan's measure_structure_space.py
-
-Analyze and plot 6D helix vectors calculated by calc_6d_helix_vectors.py
-
-=======
 Analyzes and visualizes 6D helix vectors from protein structures.
 
 Author: Ben Orr
@@ -120,21 +109,15 @@ The following files are saved to output_dir:
     - hashed_helix_dicts_list.json: Spatial bins with helix vectors
     - movies/<metric>/orient*.png: Oriented view images
     - movies/<metric>/movie*.png: Movie frames (if --save_movie_frames)
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 """
 
 import os
 import json
 import argparse
-<<<<<<< HEAD
-
-import numpy as np
-=======
 from typing import List, Dict, Tuple, Any, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib
@@ -142,11 +125,6 @@ import pandas as pd
 import math
 
 
-<<<<<<< HEAD
-def load_helix_coords(file_name):
-    """
-    Load helix coordinates from a json file
-=======
 def load_helix_coords(file_name: str) -> List[npt.NDArray[np.float64]]:
     """
     Load helix coordinates from a JSON file.
@@ -161,18 +139,12 @@ def load_helix_coords(file_name: str) -> List[npt.NDArray[np.float64]]:
     List[npt.NDArray[np.float64]]
         List of helix coordinate arrays, each with shape (6,) representing
         [x, y, z, vx, vy, vz] for centroid position and direction vector.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     with open(file_name, 'r') as f:
         h_coords_serial = json.load(f)
 
     return [np.array(c) for c in h_coords_serial]
 
-<<<<<<< HEAD
-def load_helix_dicts(folder, file_header, lhl_id=0):
-    """
-    Load list of helix dictionaries from a json file.
-=======
 
 def load_helix_dicts(
     folder: str,
@@ -205,7 +177,6 @@ def load_helix_dicts(
     -----
     Helix coordinates are stored as lists in JSON and converted back to
     NumPy arrays for computational efficiency.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     all_helix_dicts = []
     file_list = [f for f in os.listdir(folder) if file_header in f]
@@ -221,13 +192,6 @@ def load_helix_dicts(
 
     return all_helix_dicts
 
-<<<<<<< HEAD
-def load_sheet_coords(sheet_coords_out_dir, sheet_coords_fnames):
-    """
-    Load sheet coordinates from json files.  Each sheet_coord_fname has
-    coordinates for one beta strand.
-    Return a list of lists. Each sublist contains coordinates for one strand.
-=======
 
 def load_sheet_coords(
     sheet_coords_out_dir: str,
@@ -255,16 +219,11 @@ def load_sheet_coords(
     Notes
     -----
     Files that cannot be loaded are skipped with a warning message.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     sheet_coords = []
     for fname in sheet_coords_fnames:
         try:
-<<<<<<< HEAD
-            with open(os.path.join(sheet_coords_out_dir,fname), 'r') as f:
-=======
             with open(os.path.join(sheet_coords_out_dir, fname), 'r') as f:
->>>>>>> be02a1e (lucs_af refactor and cleanup)
                 s_coords_serial = json.load(f)
             print(f'Loaded {fname} in load_sheet_coords.')
         except:
@@ -276,11 +235,6 @@ def load_sheet_coords(
     return sheet_coords
 
 
-<<<<<<< HEAD
-def plot_helices(helix_coords, axis3d, length=1, color='blue', alpha=1):
-    """
-    Plot the helix coordinates in 3D
-=======
 def plot_helices(
     helix_coords: List[npt.NDArray[np.float64]],
     axis3d: Axes3D,
@@ -313,7 +267,6 @@ def plot_helices(
     -----
     When using a list of colors, matplotlib's quiver requires individual
     plotting per helix. Numeric color arrays don't work properly with quiver.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     if type(color) == str:
         for h in helix_coords:
@@ -334,11 +287,6 @@ def plot_helices(
         # for some reason this doesn't work with a list of colors
         axis3d.quiver(X, Y, Z, U, V, W, color=color, length=length, alpha=alpha)
 
-<<<<<<< HEAD
-def plot_sheet(sheet_coords, axis3d, color='green', cmap=None):
-    """
-    Plot each sublist in sheet_coords as a separate beta strand.
-=======
 
 def plot_sheet(
     sheet_coords: List[List[npt.NDArray[np.float64]]],
@@ -368,7 +316,6 @@ def plot_sheet(
     -----
     When using a colormap, scatter points are added with gradient colors
     while lines are drawn with low transparency for structural context.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     if cmap:
         cmap = plt.cm.get_cmap(cmap)
@@ -381,16 +328,6 @@ def plot_sheet(
             c = [cmap(i/len(strand)) for i in range(len(strand))]
             axis3d.scatter(X, Y, Z, color=c)
 
-<<<<<<< HEAD
-def bin_helix_dicts_by_hash(helix_dicts, lhl_id=0):
-    """
-    Bin the helices in the helix_dicts by hashing.
-    Return a dictionary of hashed vectors. Each dict value is a list of
-    dictionaries, each subdictionary represents a single design's helix coords.
-
-    Bin helix direction vectors by positive and negative directions 
-    for each directional component.
-=======
 
 def bin_helix_dicts_by_hash(
     helix_dicts: List[Dict[str, Any]],
@@ -429,7 +366,6 @@ def bin_helix_dicts_by_hash(
 
     This binary direction binning groups helices pointing in generally
     the same octant of 3D space, regardless of exact angle.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     position_bin_size = 2
 
@@ -459,23 +395,6 @@ def bin_helix_dicts_by_hash(
 
     return hashed_helices
 
-<<<<<<< HEAD
-def get_nonredundant_helices(hashed_helix_dicts):
-    """
-    Get one helix for each hash bin.
-    """
-    helices = []
-
-    for k in hashed_helix_dicts.keys():
-        helices.append(hashed_helix_dicts[k][0]['helix_coords'][0])
-
-    return helices
-
-def get_all_helices(hashed_helix_dicts, lhl_id=0):
-    """
-    Return a list of lists, each sublist containing the centroid coordinates
-    and direction vector of a single helix.
-=======
 
 def get_all_helices(
     hashed_helix_dicts: Dict[Tuple[int, int, int, int, int, int], List[Dict[str, Any]]],
@@ -500,7 +419,6 @@ def get_all_helices(
     -----
     Each design dictionary contains a list of helix coordinates.
     This function extracts the first (and typically only) helix from each design.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     helices = []
     for k in hashed_helix_dicts.keys():
@@ -511,12 +429,6 @@ def get_all_helices(
     # helices has shape (1,num_designs,6), so need index [0] to get (num_designs,6)
     return helices
 
-<<<<<<< HEAD
-def get_nonredundant_helices(hashed_helix_dicts, lhl_id=0):
-    """
-    Return a list of lists, each sublist containing the centroid coordinates
-    and direction vector of a single helix.
-=======
 
 def get_nonredundant_helices(
     hashed_helix_dicts: Dict[Tuple[int, int, int, int, int, int], List[Dict[str, Any]]],
@@ -545,7 +457,6 @@ def get_nonredundant_helices(
     -----
     The number of returned helices equals the number of occupied spatial bins,
     which is typically much smaller than the total number of designs.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     helices = []
     for k in hashed_helix_dicts.keys():
@@ -553,11 +464,6 @@ def get_nonredundant_helices(
 
     return helices
 
-<<<<<<< HEAD
-def get_nonredundant_color_group_helices(hashed_helix_dicts, lhl_id=0, color_group_col='id_color'):
-    """
-    Return one helix per 3D bin per unique color_group
-=======
 
 def get_nonredundant_color_group_helices(
     hashed_helix_dicts: Dict[Tuple[int, int, int, int, int, int], List[Dict[str, Any]]],
@@ -588,7 +494,6 @@ def get_nonredundant_color_group_helices(
     -----
     If a bin contains designs from multiple color groups, one representative
     from each group is included in the output.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     helices = []
     for k in hashed_helix_dicts.keys():
@@ -600,11 +505,6 @@ def get_nonredundant_color_group_helices(
 
     return helices
 
-<<<<<<< HEAD
-def get_nonredundant_color_group_colors(hashed_helix_dicts, color_group_col='id_color'):
-    """
-    Return the colors corresponding to the helices returned by get_nonredundant_color_group_helices()
-=======
 
 def get_nonredundant_color_group_colors(
     hashed_helix_dicts: Dict[Tuple[int, int, int, int, int, int], List[Dict[str, Any]]],
@@ -634,7 +534,6 @@ def get_nonredundant_color_group_colors(
     -----
     The ordering is guaranteed to match because Python 3.7+ dicts maintain
     insertion order.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     colors = []
     for k in hashed_helix_dicts.keys():
@@ -647,11 +546,6 @@ def get_nonredundant_color_group_colors(
     return colors
 
 
-<<<<<<< HEAD
-def get_nonredundant_helices_from_hashed_coords(hashed_helices):
-    """
-    Get one helix for each hash bin.
-=======
 def get_nonredundant_helices_from_hashed_coords(
     hashed_helices: Dict[Any, List[npt.NDArray[np.float64]]]
 ) -> List[npt.NDArray[np.float64]]:
@@ -667,7 +561,6 @@ def get_nonredundant_helices_from_hashed_coords(
     -------
     List[npt.NDArray[np.float64]]
         List of helix coordinate arrays, one per bin.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     helices = []
 
@@ -676,12 +569,6 @@ def get_nonredundant_helices_from_hashed_coords(
 
     return helices
 
-<<<<<<< HEAD
-def get_all_helices_from_hashed_coords(hashed_helices):
-    """
-    Return a list of lists, each sublist containing the centroid coordinates
-    and direction vector of a single helix.
-=======
 
 def get_all_helices_from_hashed_coords(
     hashed_helices: Dict[Any, List[npt.NDArray[np.float64]]]
@@ -698,7 +585,6 @@ def get_all_helices_from_hashed_coords(
     -------
     List[npt.NDArray[np.float64]]
         Flattened list of all helix coordinate arrays.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     helices = []
 
@@ -708,11 +594,6 @@ def get_all_helices_from_hashed_coords(
 
     return helices
 
-<<<<<<< HEAD
-def get_common_bins(hashed_helices1, hashed_helices2):
-    """
-    Get the keys of common bins.
-=======
 
 def get_common_bins(
     hashed_helices1: Dict[Any, Any],
@@ -736,7 +617,6 @@ def get_common_bins(
     -------
     List[Any]
         List of bin keys present in both dictionaries.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     keys1 = hashed_helices1.keys()
     keys2 = hashed_helices2.keys()
@@ -749,19 +629,6 @@ def get_common_bins(
 
     return common_bins
 
-<<<<<<< HEAD
-def make_movie_frames(ax, movie_folder, num_frames=360, elev=10):
-    # Save 360 images of the 3d plot, each at a different angle
-    print('Generating movie frames...')
-    # for ii in range(0,360,1):
-    for ii in range(0,num_frames,1):
-        print('Saving movie number %d' % ii)
-        ax.view_init(elev=elev, azim = ii)
-        plt.savefig(os.path.join(movie_folder,"movie%d.png" % ii), dpi=300)
-    print('Saved movie frames to %s' % movie_folder)
-
-def save_oriented_frames(ax, movie_folder, elev=-1, azim=-1):
-=======
 
 def make_movie_frames(
     ax: Axes3D,
@@ -841,7 +708,6 @@ def save_oriented_frames(
 
     Output files are named: orient{i}_elev{elev}_azim{azim}_roll{roll}.png
     """
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     # Save 360 images of the 3d plot, each at a different angle
     print('Generating oriented frames...')
     if args.elevation == -1 and args.azimuth == -1:
@@ -863,14 +729,6 @@ def save_oriented_frames(
         plt.savefig(outfile, dpi=300)
     print(f'Saved oriented frames to {outfile}')
 
-<<<<<<< HEAD
-def add_color_to_hashed_helices_dicts_by_bin(hashed_helix_dicts):
-    """
-    Add keys for color to each subdict in the provided list of dictionaries.
-    """
-    colors = ['blue', 'red', 'orange', 'purple', 'gold', 'magenta', 'cyan', 
-        'grey', 'black']
-=======
 
 def add_color_to_hashed_helices_dicts_by_bin(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]]
@@ -897,23 +755,10 @@ def add_color_to_hashed_helices_dicts_by_bin(
     """
     colors = ['blue', 'red', 'orange', 'purple', 'gold', 'magenta', 'cyan',
               'grey', 'black']
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     i = 0
     for k in hashed_helix_dicts.keys():
         for design_dict in hashed_helix_dicts[k]:
             design_dict['bin_color'] = colors[i]
-<<<<<<< HEAD
-        i+=1
-    return hashed_helix_dicts
-
-def add_color_to_hashed_helices_dicts_by_design_id(hashed_helix_dicts):
-    """
-    Add keys for color to each subdict in the provided list of dictionaries.
-    Color determined by design ID
-    """
-    colors = ['blue', 'red', 'orange', 'purple', 'gold', 'magenta', 'cyan', 
-        'grey', 'black']
-=======
         i += 1
     return hashed_helix_dicts
 
@@ -944,7 +789,6 @@ def add_color_to_hashed_helices_dicts_by_design_id(
     """
     colors = ['blue', 'red', 'orange', 'purple', 'gold', 'magenta', 'cyan',
               'grey', 'black']
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     cmap = plt.cm.get_cmap('Spectral')
 
     # Count the number of unique design IDs
@@ -963,17 +807,6 @@ def add_color_to_hashed_helices_dicts_by_design_id(
                 prev_design_ids[design_dict['design_id']] = cmap(len(prev_design_ids)/num_design_ids)
     return hashed_helix_dicts
 
-<<<<<<< HEAD
-def add_color_to_hashed_helices_dicts_by_folded_group(hashed_helix_dicts):
-    """
-    Add keys for color to each subdict in the provided list of dictionaries.
-    Color determined by Experimentally Validated RO2 Folded Group from
-    Xingjie Pan et al. Science (2020)
-    """
-    name_map = {1:835, 2:2061, 3:2970, 4:8464, 5:8651, 6:8761, 7:8893, 8:10585, 9:28492, 10:28983,
-            11:29125, 12:29635, 13:29835, 14:31765, 15:33368, 16:33559, 17:35006, 18:36272,
-            19:36455, 20:36830, 21:37025, 22:37749, 23:38420, 24:41516, 25:49223}
-=======
 
 def add_color_to_hashed_helices_dicts_by_folded_group(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]]
@@ -1007,7 +840,6 @@ def add_color_to_hashed_helices_dicts_by_folded_group(
     name_map = {1: 835, 2: 2061, 3: 2970, 4: 8464, 5: 8651, 6: 8761, 7: 8893, 8: 10585, 9: 28492, 10: 28983,
                 11: 29125, 12: 29635, 13: 29835, 14: 31765, 15: 33368, 16: 33559, 17: 35006, 18: 36272,
                 19: 36455, 20: 36830, 21: 37025, 22: 37749, 23: 38420, 24: 41516, 25: 49223}
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     # ro2_<ID> (paper IDs) of folded, not_folded, and low_expression groups of
     # experimentally validated RO2 designs.
     folded = [1, 5, 6, 9, 10, 15, 20, 25]
@@ -1026,12 +858,6 @@ def add_color_to_hashed_helices_dicts_by_folded_group(
                         design_dict['folded_group'] = 'low_expression'
     return hashed_helix_dicts
 
-<<<<<<< HEAD
-def add_color_to_hashed_helices_dicts_by_train_test(hashed_helix_dicts, df, metric='helix_rmsd', threshold=5, new_col='train_test'):
-    """
-    Add keys for color to each subdict in the provided list of dictionaries.
-    Color determined by train test split (thresholded metric)
-=======
 
 def add_color_to_hashed_helices_dicts_by_train_test(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]],
@@ -1070,16 +896,11 @@ def add_color_to_hashed_helices_dicts_by_train_test(
     Classification logic:
     - metric > threshold → 'test'
     - metric ≤ threshold → 'train'
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
 
     for k in hashed_helix_dicts.keys():
         for design_dict in hashed_helix_dicts[k]:
-<<<<<<< HEAD
-            df_row = df.loc[df['design_id']==design_dict['design_id']].iloc[0]
-=======
             df_row = df.loc[df['design_id'] == design_dict['design_id']].iloc[0]
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             print('\n\ndf row is:')
             print(df_row)
             if df_row['helix_rmsd'] > threshold:
@@ -1089,13 +910,6 @@ def add_color_to_hashed_helices_dicts_by_train_test(
 
     return hashed_helix_dicts
 
-<<<<<<< HEAD
-def get_color_by_dict_key(hashed_helix_dicts, key):
-    """
-    Return a list of colors that matches the order of the list returned by
-    get_all_helices(hashed_helix_dicts).  Since dicts are ordered in python3,
-    these orderings should match.
-=======
 
 def get_color_by_dict_key(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]],
@@ -1128,7 +942,6 @@ def get_color_by_dict_key(
     ------
     SystemExit
         If the specified key is not found in design dictionaries.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     colors = []
 
@@ -1143,13 +956,6 @@ def get_color_by_dict_key(
 
     return colors
 
-<<<<<<< HEAD
-def get_nonredundant_color_by_dict_key(hashed_helix_dicts, key):
-    """
-    Return a list of colors that matches the order of the list returned by
-    get_nonredundant_helices(hashed_helix_dicts).  Since dicts are ordered in python3,
-    these orderings should match.
-=======
 
 def get_nonredundant_color_by_dict_key(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]],
@@ -1176,7 +982,6 @@ def get_nonredundant_color_by_dict_key(
     Notes
     -----
     Only the first design in each bin is used for color extraction.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     colors = []
 
@@ -1185,14 +990,6 @@ def get_nonredundant_color_by_dict_key(
 
     return colors
 
-<<<<<<< HEAD
-def get_continuous_colors_by_dict_key(hashed_helix_dicts, key, 
-    min_val=None, max_val=None, cmap='viridis'):
-    """
-    Return a list of colors that matches the order of the list returned by
-    get_nonredundant_helices(hashed_helix_dicts).  Since dicts are ordered in python3,
-    these orderings should match.
-=======
 
 def get_continuous_colors_by_dict_key(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]],
@@ -1233,7 +1030,6 @@ def get_continuous_colors_by_dict_key(
     -----
     Designs with None or NaN metric values are colored as 'slategrey'.
     Color mapping is linear between min_val and max_val.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     cmap = plt.cm.get_cmap(cmap)
     values, colors = [], []
@@ -1246,11 +1042,7 @@ def get_continuous_colors_by_dict_key(
             else:
                 values.append(design_dict[key])
 
-<<<<<<< HEAD
-    if min_val==None and max_val==None:
-=======
     if min_val == None and max_val == None:
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         max_val = max(values)
         min_val = min(values)
 
@@ -1269,13 +1061,6 @@ def get_continuous_colors_by_dict_key(
 
     return colors, min_val, max_val
 
-<<<<<<< HEAD
-def get_nonredundant_continuous_colors_by_dict_key(hashed_helix_dicts, key, cmap='viridis'):
-    """
-    Return a list of colors that matches the order of the list returned by
-    get_nonredundant_helices(hashed_helix_dicts).  Since dicts are ordered in python3,
-    these orderings should match.
-=======
 
 def get_nonredundant_continuous_colors_by_dict_key(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]],
@@ -1306,7 +1091,6 @@ def get_nonredundant_continuous_colors_by_dict_key(
     -----
     Uses the first design in each bin for color extraction.
     Automatically determines min/max from all first-in-bin values.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     cmap = plt.cm.get_cmap(cmap)
     values, colors = [], []
@@ -1319,15 +1103,6 @@ def get_nonredundant_continuous_colors_by_dict_key(
 
     return colors
 
-<<<<<<< HEAD
-def get_color_by_folded_group(hashed_helix_dicts):
-    """
-    Return a list of colors by the 'folded_group' values in a dictionary with
-    keys=helix bin, values=lists of dictionaries (each subdict represents one
-    design)
-    """
-    color_map = {'folded':'blue', 'not_folded':'red', 'low_expression':'mediumorchid'}
-=======
 
 def get_color_by_folded_group(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]]
@@ -1356,20 +1131,12 @@ def get_color_by_folded_group(
     add_color_to_hashed_helices_dicts_by_folded_group() first.
     """
     color_map = {'folded': 'blue', 'not_folded': 'red', 'low_expression': 'mediumorchid'}
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     colors = []
     for k in hashed_helix_dicts.keys():
         for design_dict in hashed_helix_dicts[k]:
             colors.append(color_map[design_dict['folded_group']])
     return colors
 
-<<<<<<< HEAD
-def get_colors_by_train_test(hashed_helix_dicts):
-    """
-    Return a list of colors by the a thresholded continuous metric
-    """
-    color_map = {'train':'blue', 'test':'red'}
-=======
 
 def get_colors_by_train_test(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]]
@@ -1397,21 +1164,12 @@ def get_colors_by_train_test(
     add_color_to_hashed_helices_dicts_by_train_test() first.
     """
     color_map = {'train': 'blue', 'test': 'red'}
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     colors = []
     for k in hashed_helix_dicts.keys():
         for design_dict in hashed_helix_dicts[k]:
             colors.append(color_map[design_dict['train_test']])
     return colors
 
-<<<<<<< HEAD
-def subset_helix_dicts(helix_dicts, design_ids):
-    """
-    Return a list of dictionaries (in the same format as helix_dicts),
-    each subdictionary with a design_id value in the list of provided
-    design IDs.
-    Exclude dictionaries with design IDs not in the design_ids list.
-=======
 
 def subset_helix_dicts(
     helix_dicts: List[Dict[str, Any]],
@@ -1436,7 +1194,6 @@ def subset_helix_dicts(
     -----
     Useful for analyzing specific subsets such as stable designs or
     experimentally validated designs.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     subset_helix_dicts = []
     for d in helix_dicts:
@@ -1444,12 +1201,6 @@ def subset_helix_dicts(
             subset_helix_dicts.append(d)
     return subset_helix_dicts
 
-<<<<<<< HEAD
-def filter_helix_dicts(hashed_helix_dicts, continuous_metric):
-    """
-    Eliminate design_dicts from the hashed_helix_dicts that have None
-    values for the continuous_metric
-=======
 
 def filter_helix_dicts(
     hashed_helix_dicts: Dict[Any, List[Dict[str, Any]]],
@@ -1477,7 +1228,6 @@ def filter_helix_dicts(
     -----
     Bins may become empty after filtering. Empty bins remain as empty lists
     in the returned dictionary.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     filtered_hashed_helix_dicts = {}
     for k in hashed_helix_dicts.keys():
@@ -1487,12 +1237,6 @@ def filter_helix_dicts(
                 filtered_hashed_helix_dicts[k].append(design_dict)
     return filtered_hashed_helix_dicts
 
-<<<<<<< HEAD
-def add_color_to_helix_dict(hashed_helix_dict, df, continuous_metric):
-    """
-    Add colors to the hashed_helix_dict using the continuous_metric 
-    values in the provided df.
-=======
 
 def add_color_to_helix_dict(
     hashed_helix_dict: Dict[Any, List[Dict[str, Any]]],
@@ -1522,29 +1266,18 @@ def add_color_to_helix_dict(
     Notes
     -----
     Each design dictionary is updated in-place with the metric value.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     hashed_helix_dict_with_color = {}
     for k in hashed_helix_dict.keys():
         hashed_helix_dict_with_color[k] = []
         for design_dict in hashed_helix_dict[k]:
             # Find the df row with the corresponding design_id
-<<<<<<< HEAD
-            df_row = df.loc[df['design_id']==design_dict['design_id']].iloc[0]
-=======
             df_row = df.loc[df['design_id'] == design_dict['design_id']].iloc[0]
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             design_dict[continuous_metric] = df_row[continuous_metric]
             hashed_helix_dict_with_color[k].append(design_dict)
 
     return hashed_helix_dict_with_color
 
-<<<<<<< HEAD
-def add_color_to_hashed_helices_dicts_by_group(hashed_helix_dicts, df, new_col='color_group', color_dict = {0:'gray', 1:'blue'}, color_group_color='blue'):
-    """
-    Add colors to the hashed_helix_dict using the group label
-    in the input df
-=======
 
 def add_color_to_hashed_helices_dicts_by_group(
     hashed_helix_dict: Dict[Any, List[Dict[str, Any]]],
@@ -1580,7 +1313,6 @@ def add_color_to_hashed_helices_dicts_by_group(
     -----
     Handles column name variations ('color_group' or 'Color_Group').
     The color_group_color parameter allows runtime color customization.
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     if 'color_group' in df.columns:
         color_group_col = 'color_group'
@@ -1593,11 +1325,7 @@ def add_color_to_hashed_helices_dicts_by_group(
         hashed_helix_dict_with_color[k] = []
         for design_dict in hashed_helix_dict[k]:
             # Find the df row with the corresponding design_id
-<<<<<<< HEAD
-            df_row = df.loc[df['design_id']==design_dict['design_id']].iloc[0]
-=======
             df_row = df.loc[df['design_id'] == design_dict['design_id']].iloc[0]
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             design_dict[new_col] = color_dict[df_row[color_group_col]]
             hashed_helix_dict_with_color[k].append(design_dict)
 
@@ -1614,63 +1342,6 @@ if __name__ == '__main__':
 
     # Inputs
     parser.add_argument('--helix_coords_dir', type=str, required=True,
-<<<<<<< HEAD
-            help='Path to a directory containing helix_coords{i}.json files, including \
-            files for the starting structures helices.')
-    parser.add_argument('--sheet_coords_dir', type=str, required=True,
-            help='Path to a directory containing sheet_coords{i}.json files.')
-    parser.add_argument('--starting_structure_name', type=str, required=True,
-            help='Name of the starting structure which precedes _helix_coords_lhl{i}.json \
-            in its helix_coords, and is in sheet_coords_{args.starting_structure_name}_strand1.json \
-            in its sheet_coords files.')
-    parser.add_argument('--designs_df_path', type=str, required=True,
-            help='Path to a DataFrame (.csv) file containing a design_id column and a \
-            lucs_location column.')
-    parser.add_argument('--num_lhls', type=int, required=False, default=2,
-            help='Number of Reshaped LHLs from which to find 6D helix vectors.')
-    parser.add_argument('--num_strands', type=int, required=False, default=4,
-            help='Number of beta strands onto which to plot 6D helix vectors.')
-    parser.add_argument('--stable_only', action='store_true',
-            help='Only plot stable designs helices.')
-    parser.add_argument('--color_by', type=str, required=True,
-            help='Dataframe column by which to color helix vectors. Can have any of the \
-            following values: [indiv_<comma_separated_color_names>, color_group, design_id, \
-            folded_group, train_test, color_all_<color_name>]')
-    parser.add_argument('--color_group_color', type=str, required=False, default='blue',
-            help='Color by which to color the color_group 1 designs.')
-    parser.add_argument('--colorbar_title', type=str, required=False, default='',
-            help='Title for the 3D plot color bar. Underscores will be replaced by spaces.')
-    parser.add_argument('--no_colorbar', action='store_true',
-            help='Remove the colorbar from the plot.')
-    parser.add_argument('--plot_one_helix_per_bin', action='store_true',
-            help='Only plot one helix per helix coordinate bin.')
-    parser.add_argument('--plot_only_color_group', type=int, required=False, default=-1,
-            help='Only plot one specified color group.')
-    parser.add_argument('--hide_sheet', action='store_true',
-            help='Do not plot the underlying beta sheet.')
-    parser.add_argument('--save_movie_frames', action='store_true',
-            help='Save 360 frames for each azimuth integer value.')
-    parser.add_argument('--elevation', type=int, required=False, default=-1,
-            help='Set the elevation for the saved image.')
-    parser.add_argument('--azimuth', type=int, required=False, default=-1,
-            help='Set the azimuth for the saved image.')
-
-    # Parallelization arguments
-    parser.add_argument('--num_tasks', type=int, required=False, default=1,
-            help='Number of tasks by which to divide the calculations.')
-    parser.add_argument('--task_id', type=int, required=False, default=1,
-            help='ID of the current task (1-indexed, e.g. $SGE_TASK_ID for SGE job distributor).')
-
-    # Debugging arguments
-    parser.add_argument('--verbose', action='store_true',
-            help='Print extra print statements.')
-    parser.add_argument('--trim_df', type=int, required=False, default=0,
-            help='Trim the number of designs plotted.')
-
-    # Outputs
-    parser.add_argument('--output_dir', type=str, required=True,
-            help='Path to an output directory, which will contain a movies/color_by folder containing movie frames.')
-=======
                         help='Path to a directory containing helix_coords{i}.json files, including \
             files for the starting structures helices.')
     parser.add_argument('--sheet_coords_dir', type=str, required=True,
@@ -1726,7 +1397,6 @@ if __name__ == '__main__':
     # Outputs
     parser.add_argument('--output_dir', type=str, required=True,
                         help='Path to an output directory, which will contain a movies/color_by folder containing movie frames.')
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
     args = parser.parse_args()
 
@@ -1742,11 +1412,7 @@ if __name__ == '__main__':
         designs_df = designs_df.head(args.trim_df)
 
     if args.stable_only:
-<<<<<<< HEAD
-        stable_df = designs_df.loc[designs_df['stable_by_ec50']=='stable']
-=======
         stable_df = designs_df.loc[designs_df['stable_by_ec50'] == 'stable']
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         design_ids = stable_df['design_id'].tolist()
     else:
         design_ids = designs_df['design_id'].tolist()
@@ -1756,11 +1422,7 @@ if __name__ == '__main__':
             color_group_col = 'color_group'
         else:
             color_group_col = 'Color_Group'
-<<<<<<< HEAD
-        designs_df = designs_df.loc[designs_df[color_group_col]==args.plot_only_color_group]
-=======
         designs_df = designs_df.loc[designs_df[color_group_col] == args.plot_only_color_group]
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         design_ids = designs_df['design_id'].tolist()
 
     print(f"\nNumber of designs to plot: {len(design_ids)}")
@@ -1768,28 +1430,16 @@ if __name__ == '__main__':
     helix_dicts_list = []
     hashed_helix_dicts_list = []
     for i in range(args.num_lhls):
-<<<<<<< HEAD
-        helix_dicts = load_helix_dicts(args.helix_coords_dir, 
-            f'helix_dicts_lhl{i}_', lhl_id=i)
-        helix_dicts = subset_helix_dicts(helix_dicts, design_ids)
-        hashed_helix_dicts = bin_helix_dicts_by_hash(helix_dicts, lhl_id=i) # each key in hashed_helix_dicts is a bin (voxel)
-=======
         helix_dicts = load_helix_dicts(args.helix_coords_dir,
                                        f'helix_dicts_lhl{i}_', lhl_id=i)
         helix_dicts = subset_helix_dicts(helix_dicts, design_ids)
         hashed_helix_dicts = bin_helix_dicts_by_hash(helix_dicts, lhl_id=i)  # each key in hashed_helix_dicts is a bin (voxel)
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         helix_dicts_list.append(helix_dicts)
         hashed_helix_dicts_list.append(hashed_helix_dicts)
 
     # Print the number of bins occupied by helices in each LHL
     for i, hashed_helix_dict in enumerate(hashed_helix_dicts_list):
         print(f'Number of bins occupied by helices in LHL {i}: {len(hashed_helix_dict.keys())}')
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     # Saved the hashed helix dicts to a json file.
     hashed_helix_dicts_out_fname = os.path.join(args.output_dir, f'hashed_helix_dicts_list.json')
     # Convert the keys of each hashed helix dict to a string to make it JSON serializable.
@@ -1807,19 +1457,11 @@ if __name__ == '__main__':
         json.dump(json_hashed_helix_dicts_list, f, indent=4)
     print(f'Saved hashed helix dicts to {hashed_helix_dicts_out_fname}')
 
-<<<<<<< HEAD
-    # If coloring by "group" column in designs_df, count the number of 
-    # bins occupied by helices in each group
-    if args.color_by == 'color_group':
-        for i, hashed_helix_dict in enumerate(hashed_helix_dicts_list):
-            color_dict = {0:'gray', 1:'blue'}
-=======
     # If coloring by "group" column in designs_df, count the number of
     # bins occupied by helices in each group
     if args.color_by == 'color_group':
         for i, hashed_helix_dict in enumerate(hashed_helix_dicts_list):
             color_dict = {0: 'gray', 1: 'blue'}
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             hashed_helix_dicts_list[i] = add_color_to_hashed_helices_dicts_by_group(hashed_helix_dict, designs_df, new_col='id_color', color_dict=color_dict, color_group_color=args.color_group_color)
             for group in color_dict.values():
                 group_count = 0
@@ -1827,11 +1469,7 @@ if __name__ == '__main__':
                     for design_dict in hashed_helix_dict[k]:
                         if design_dict['id_color'] == group:
                             group_count += 1
-<<<<<<< HEAD
-                            break # go to the next key
-=======
                             break  # go to the next key
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
                 print(f'Number of bins occupied by helices in LHL {i} with color {group}: {group_count}')
 
@@ -1840,11 +1478,6 @@ if __name__ == '__main__':
         # Find bins that are occupied by both sets of hashed helices
         # Currently, this only works with 2 LHLs
         common_bins = get_common_bins(hashed_helix_dicts_list[0], hashed_helix_dicts_list[1])
-<<<<<<< HEAD
-        
-=======
-
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         print('Num bins 1 = ', len(hashed_helix_dicts_list[0].keys()))
         print('Num bins 2 = ', len(hashed_helix_dicts_list[1].keys()))
         print('Num common bins = ', len(common_bins))
@@ -1859,17 +1492,10 @@ if __name__ == '__main__':
         num1, num2 = 0, 0
         for k in hashed_helix_dicts_list[0].keys():
             for design_dict in hashed_helix_dicts_list[0][k]:
-<<<<<<< HEAD
-                num1+=1
-        for k in hashed_helix_dicts_list[1].keys():
-            for design_dict in hashed_helix_dicts_list[1][k]:
-                num2+=1
-=======
                 num1 += 1
         for k in hashed_helix_dicts_list[1].keys():
             for design_dict in hashed_helix_dicts_list[1][k]:
                 num2 += 1
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         print(num1)
         print(num2)
 
@@ -1879,27 +1505,16 @@ if __name__ == '__main__':
         for i in range(args.num_strands):
             sheet_coords_fnames.append(f'sheet_coords_{args.starting_structure_name}_strand{i}.json')
             sheet_coords_fnames.append(f'sheet_coords_strand{i}.json')
-<<<<<<< HEAD
-        
-        sheet_coords = load_sheet_coords(args.sheet_coords_dir, sheet_coords_fnames)
-
-        plot_sheet(sheet_coords, ax, color='grey', cmap='Greys') # with cmap='Greys', N-term is white and C-term is black
-=======
 
         sheet_coords = load_sheet_coords(args.sheet_coords_dir, sheet_coords_fnames)
 
         plot_sheet(sheet_coords, ax, color='grey', cmap='Greys')  # with cmap='Greys', N-term is white and C-term is black
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
 
     loaded_colors = False
 
     if 'indiv' in args.color_by:
-<<<<<<< HEAD
-        indiv_helix_colors = args.color_by.replace('indiv_','').split(',')
-=======
         indiv_helix_colors = args.color_by.replace('indiv_', '').split(',')
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         indiv_helix_colors = [c.strip() for c in indiv_helix_colors]
         if len(indiv_helix_colors) != args.num_lhls:
             print(f'Number of colors provided ({len(indiv_helix_colors)}) does not match number of LHLs ({args.num_lhls}).')
@@ -1915,11 +1530,6 @@ if __name__ == '__main__':
             for k in hashed_helix_dicts.keys():
                 for design_dict in hashed_helix_dicts[k]:
                     design_dict['id_color'] = c
-<<<<<<< HEAD
-    
-=======
-
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     # Color helices by color_group
     elif args.color_by == 'color_group':
         for i, hashed_helix_dict in enumerate(hashed_helix_dicts_list):
@@ -1944,18 +1554,6 @@ if __name__ == '__main__':
     if loaded_colors:
         if args.plot_one_helix_per_bin:
             print('\nPlotting one helix per bin.\n')
-<<<<<<< HEAD
-            plot_helices(get_nonredundant_helices(hashed_helix_dicts_list[0]), ax, length=3, \
-                color=get_nonredundant_color_by_dict_key(hashed_helix_dicts_list[0], 'id_color'))
-            plot_helices(get_nonredundant_helices(hashed_helix_dicts_list[1]), ax, length=3, \
-                color=get_nonredundant_color_by_dict_key(hashed_helix_dicts_list[1], 'id_color'))
-        else:
-            plot_helices(get_all_helices(hashed_helix_dicts_list[0]), ax, length=3, \
-                color=get_color_by_dict_key(hashed_helix_dicts_list[0], 'id_color'))
-            plot_helices(get_all_helices(hashed_helix_dicts_list[1]), ax, length=3, \
-                color=get_color_by_dict_key(hashed_helix_dicts_list[1], 'id_color'))
-    
-=======
             plot_helices(get_nonredundant_helices(hashed_helix_dicts_list[0]), ax, length=3,
                          color=get_nonredundant_color_by_dict_key(hashed_helix_dicts_list[0], 'id_color'))
             plot_helices(get_nonredundant_helices(hashed_helix_dicts_list[1]), ax, length=3,
@@ -1966,43 +1564,26 @@ if __name__ == '__main__':
             plot_helices(get_all_helices(hashed_helix_dicts_list[1]), ax, length=3,
                          color=get_color_by_dict_key(hashed_helix_dicts_list[1], 'id_color'))
 
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     else:
         # Color helices by continuous values.
         continuous_metric = args.color_by
 
-<<<<<<< HEAD
-        continuous_metric_label = args.colorbar_title.replace('_',' ')
-=======
         continuous_metric_label = args.colorbar_title.replace('_', ' ')
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
         # For coloring by a continuous metric
         if 'plddt' in args.color_by and 'rmsd' not in args.color_by:
             min_val, max_val = 60, 100
             tick_width = 10
-<<<<<<< HEAD
-            ticks = list(range(min_val,max_val+1,tick_width))
-            cmap='rainbow_r'
-            alpha=0.5
-=======
             ticks = list(range(min_val, max_val+1, tick_width))
             cmap = 'rainbow_r'
             alpha = 0.5
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
         elif 'rmsd' in args.color_by and 'plddt' not in args.color_by:
             min_val, max_val = 0, 5
             tick_width = 1
-<<<<<<< HEAD
-            ticks = list(range(min_val,max_val+1,tick_width))
-            cmap='rainbow'
-            alpha=0.5
-=======
             ticks = list(range(min_val, max_val+1, tick_width))
             cmap = 'rainbow'
             alpha = 0.5
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
         if not args.no_colorbar:
             # Display a colorbar
@@ -2012,11 +1593,7 @@ if __name__ == '__main__':
             sm = matplotlib.cm.ScalarMappable(cmap=cmap, norm=norm)
             sm.set_array([])
             cbar = fig.colorbar(sm, ticks=ticks, ax=ax)
-<<<<<<< HEAD
-            cbar.set_label(args.colorbar_title.replace('_',' '), size=15)
-=======
             cbar.set_label(args.colorbar_title.replace('_', ' '), size=15)
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             cbar.ax.set_yticklabels(ticks)
             cbar.ax.tick_params(labelsize=15)
 
@@ -2033,11 +1610,7 @@ if __name__ == '__main__':
             else:
                 min_val, max_val = None, None
                 num_ticks = 6
-<<<<<<< HEAD
-                alpha=0.1
-=======
                 alpha = 0.1
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
     filtered_hashed_helix_dicts_list = []
     for i, hashed_helix_dict in enumerate(hashed_helix_dicts_list):
@@ -2058,17 +1631,6 @@ if __name__ == '__main__':
             if args.plot_one_helix_per_bin:
                 alpha = 0.5
                 length = 10
-<<<<<<< HEAD
-                plot_helices(get_nonredundant_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=length, \
-                    color=c, alpha=alpha)
-            else:
-                plot_helices(get_all_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=length, \
-                    color=c, alpha=alpha)
-        
-        # Color helices by individual provided colors
-        elif 'indiv' in args.color_by:
-            indiv_helix_colors = args.color_by.replace('indiv_','').split(',')
-=======
                 plot_helices(get_nonredundant_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=length,
                              color=c, alpha=alpha)
             else:
@@ -2078,7 +1640,6 @@ if __name__ == '__main__':
         # Color helices by individual provided colors
         elif 'indiv' in args.color_by:
             indiv_helix_colors = args.color_by.replace('indiv_', '').split(',')
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             indiv_helix_colors = [c.strip() for c in indiv_helix_colors]
             hashed_helix_dict_with_color = hashed_helix_dict
             # With thousands of helix vectors, use these params:
@@ -2087,21 +1648,12 @@ if __name__ == '__main__':
             if args.plot_one_helix_per_bin:
                 alpha = 0.5
                 length = 10
-<<<<<<< HEAD
-                plot_helices(get_nonredundant_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=length, \
-                    color=indiv_helix_colors[i], alpha=alpha)
-            else:
-                plot_helices(get_all_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=length, \
-                    color=indiv_helix_colors[i], alpha=alpha)
-                
-=======
                 plot_helices(get_nonredundant_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=length,
                              color=indiv_helix_colors[i], alpha=alpha)
             else:
                 plot_helices(get_all_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=length,
                              color=indiv_helix_colors[i], alpha=alpha)
 
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         elif args.color_by == 'color_group':
             # With thousands of helix vectors, use these params:
             alpha = 0.5
@@ -2116,36 +1668,16 @@ if __name__ == '__main__':
             if args.plot_one_helix_per_bin:
                 alpha = 0.75
                 length = 5
-<<<<<<< HEAD
-                plot_helices(get_nonredundant_color_group_helices(hashed_helix_dict_with_color, lhl_id=i, color_group_col='id_color'), ax, length=length, \
-                    color=get_nonredundant_color_group_colors(hashed_helix_dict_with_color, color_group_col='id_color'), alpha=alpha)
-            else:
-                plot_helices(get_all_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=length, \
-                    color=get_color_by_dict_key(hashed_helix_dict_with_color, 'id_color'), alpha=alpha)
-=======
                 plot_helices(get_nonredundant_color_group_helices(hashed_helix_dict_with_color, lhl_id=i, color_group_col='id_color'), ax, length=length,
                              color=get_nonredundant_color_group_colors(hashed_helix_dict_with_color, color_group_col='id_color'), alpha=alpha)
             else:
                 plot_helices(get_all_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=length,
                              color=get_color_by_dict_key(hashed_helix_dict_with_color, 'id_color'), alpha=alpha)
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         else:
             hashed_helix_dict_with_color = add_color_to_helix_dict(hashed_helix_dict, designs_df, continuous_metric)
             if args.plot_one_helix_per_bin:
                 alpha = 0.75
                 length = 5
-<<<<<<< HEAD
-                plot_helices(get_nonredundant_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=3, \
-                    color=get_nonredundant_continuous_colors_by_dict_key(hashed_helix_dict_with_color, continuous_metric)[0], alpha=alpha)
-            else:
-                plot_helices(get_all_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=3, \
-                    color=get_continuous_colors_by_dict_key(hashed_helix_dict_with_color, \
-                        continuous_metric, min_val, max_val, cmap=cmap)[0], alpha=alpha)
-        filtered_hashed_helix_dicts_list.append(hashed_helix_dict_with_color)
-
-    # Remove the 3D axes
-    ax_lims = (-15,15)
-=======
                 plot_helices(get_nonredundant_helices(hashed_helix_dict_with_color, lhl_id=i), ax, length=3,
                              color=get_nonredundant_continuous_colors_by_dict_key(hashed_helix_dict_with_color, continuous_metric)[0], alpha=alpha)
             else:
@@ -2156,7 +1688,6 @@ if __name__ == '__main__':
 
     # Remove the 3D axes
     ax_lims = (-15, 15)
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     ax.set_xlim(ax_lims)
     ax.set_ylim(ax_lims)
     ax.set_zlim(ax_lims)

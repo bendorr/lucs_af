@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-import os
-import json
-import argparse
-import utils_degree_reshaped as utils
-=======
 """
 Computes helix RMSDs between protein designs and a reference structure.
 
@@ -108,28 +102,19 @@ import os
 import json
 import argparse
 from typing import List, Tuple, Dict, Optional, Any
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 import numpy as np
 import pandas as pd
 from natsort import natsorted
 
-<<<<<<< HEAD
-from pyrosetta import init, pose_from_file
-# init pyrosetta
-=======
 import utils_degree_reshaped as utils
 from pyrosetta import init, pose_from_file
 from pyrosetta.rosetta.core.pose import Pose
 
 # Initialize PyRosetta with muted output
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 init(options='-mute all')
 
 #####
 
-<<<<<<< HEAD
-def check_completed_files(args):
-=======
 def check_completed_files(args: argparse.Namespace) -> bool:
     """
     Check if output file for current task already exists.
@@ -149,7 +134,6 @@ def check_completed_files(args: argparse.Namespace) -> bool:
     When parallelizing with multiple tasks, output files are named with
     task identifiers: outfile_task{task_id}_of_{num_tasks}.csv
     """
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     if args.num_tasks != 1:
         fname_append = f'_task{args.task_id}_of_{args.num_tasks}'
     else:
@@ -159,9 +143,6 @@ def check_completed_files(args: argparse.Namespace) -> bool:
         return True
     return False
 
-<<<<<<< HEAD
-def get_design_paths(args):
-=======
 def get_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
     """
     Collect paths to design PDB files from specified directories.
@@ -185,7 +166,6 @@ def get_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
     If include_designs_df is provided, only designs in the 'design_id' column
     will be included.
     """
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     design_paths_ids = []
     if args.include_designs_df != None:
         include_designs_df = pd.read_csv(args.include_designs_df)
@@ -205,13 +185,6 @@ def get_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
 
     return design_paths_ids
 
-<<<<<<< HEAD
-def get_af2_design_paths(args):
-    # Return a list of tuples, containing design IDs and their AF2 subdirectories.
-
-    # Each af_file corresponds to an RO2 sequence, unless af_dir is in colabfold
-    # format, in which case each af_file is a PDB, json, or png file.
-=======
 def get_af2_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
     """
     Collect paths to AlphaFold2/3 prediction files from specified directories.
@@ -243,7 +216,6 @@ def get_af2_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
       format (separate subdirectory per design)
     - Only processes PDB files (change for AF3 .cif files)
     """
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     af2_found = False
 
     if args.af2_data_parents:
@@ -331,14 +303,6 @@ def get_af2_design_paths(args: argparse.Namespace) -> List[Tuple[str, str]]:
                 if args.test_stop != None:
                     if len(design_paths_ids) > args.test_stop:
                         return design_paths_ids
-<<<<<<< HEAD
-                    
-    return design_paths_ids
-
-def get_design_info_path(args, design_id):
-    # args.design_info_dir is a list of dirs. Find the design's
-    # subdir in one of these dirs.
-=======
 
     return design_paths_ids
 
@@ -369,7 +333,6 @@ def get_design_info_path(args: argparse.Namespace, design_id: str) -> str:
       subdirectory in one of these directories.
     - Tries multiple filename patterns: {design_id}_design_info.json and design_info.json
     """
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     for design_info_dir in args.design_info_dir:
         for subdir in os.listdir(design_info_dir):
             if subdir == design_id:
@@ -381,14 +344,6 @@ def get_design_info_path(args: argparse.Namespace, design_id: str) -> str:
                         return fname
                 raise FileNotFoundError(f"Design info file not found for {design_id}")
 
-<<<<<<< HEAD
-def get_align_residues(args, design_path1, design_path2):
-    # Look in the design's folder for a {design_id}_align_residues.json file
-    design1_align_res_file = design_path1.replace('.pdb','_align_residues.json') 
-
-    # Look in the design's folder for a {design_id}_align_residues.json file
-    design2_align_res_file = design_path2.replace('.pdb','_align_residues.json') 
-=======
 def get_align_residues(args: argparse.Namespace, design_path1: str, design_path2: str) -> Optional[List[List[List[int]]]]:
     """
     Load alignment residues from JSON files for two structures.
@@ -420,7 +375,6 @@ def get_align_residues(args: argparse.Namespace, design_path1: str, design_path2
 
     # Look in the design's folder for a {design_id}_align_residues.json file
     design2_align_res_file = design_path2.replace('.pdb', '_align_residues.json') 
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
     # Check if the files exist
     if not os.path.exists(design1_align_res_file):
@@ -437,11 +391,7 @@ def get_align_residues(args: argparse.Namespace, design_path1: str, design_path2
         design2_align_res = json.load(f)
 
     # Return a list of two lists, containing 1) the reference structure's and 2) the design's residues on which to align
-<<<<<<< HEAD
-    align_residues = [[],[]]
-=======
     align_residues = [[], []]
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     for des1_res, des2_res in zip(design1_align_res, design2_align_res):
         if len(des1_res) > len(des2_res):
             start_idx = (len(des1_res) - len(des2_res)) // 2
@@ -455,11 +405,6 @@ def get_align_residues(args: argparse.Namespace, design_path1: str, design_path2
 
     return align_residues
 
-<<<<<<< HEAD
-def calculate_helix_rmsds_to_ref(args, design_paths_ids):
-    """
-    Calculate the helix RMSDs between the designs and the reference structure.
-=======
 def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: List[Tuple[str, str]]) -> Dict[str, List[Any]]:
     """
     Calculate helix RMSDs between designs and reference structure.
@@ -509,7 +454,6 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
       * Common helix RMSD for shared helical regions
     - Automatically handles PDB to PyRosetta residue numbering conversion
     - Supports parallelization via task_id and num_tasks parameters
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     """
     # Define a results_dict to store the results
     ret = {
@@ -533,24 +477,6 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
     # Get PDB-numbered non-backbone remodeled residues
     pdb_ref_bb_remodeled_residues, pdb_ref_non_bb_remodeled_residues = \
         utils.get_remodeled_residues_from_design_info(
-<<<<<<< HEAD
-            pdb_file = ref_path,
-            design_info_file = args.reference_structure_design_info)
-    
-    if args.reference_structure_helix_residues_file:
-        pdb_ref_lhl_residues, pdb_ref_helix_residues = utils.load_ss_lhl_res_from_file(
-                                                            args.reference_structure_helix_residues_file, 
-                                                            pdb_ref_bb_remodeled_residues)
-    else:
-        # Find the helix residues of the reference structure. This list has len(num_lhls)
-        pdb_ref_lhl_residues, pdb_ref_helix_residues = utils.get_lhl_residues(
-                design_info_file = args.reference_structure_design_info,
-                seq_len = len(ref_pose.sequence()),
-                pose=ref_pose,
-                use_dssp=args.use_dssp,
-                assume_helix=args.assume_helix,
-                bb_rem_all_helical=args.bb_rem_all_helical)
-=======
             pdb_file=ref_path,
             design_info_file=args.reference_structure_design_info)
     
@@ -567,7 +493,6 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
             use_dssp=args.use_dssp,
             assume_helix=args.assume_helix,
             bb_rem_all_helical=args.bb_rem_all_helical)
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     
     if args.verbose:
         print(f'{args.reference_structure_design_info} LHL residues:')
@@ -629,15 +554,9 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
 
         # Get PDB-numbered non-backbone remodeled residues
         pdb_pose_bb_remodeled_residues, pdb_pose_non_bb_remodeled_residues = \
-<<<<<<< HEAD
-			utils.get_remodeled_residues_from_design_info(
-				pdb_file = design_path,
-				design_info_file = design_info_path)
-=======
             utils.get_remodeled_residues_from_design_info(
                 pdb_file=design_path,
                 design_info_file=design_info_path)
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         
         if args.verbose:
             print(f'{design_path} bb_remodeled_residues (PDB-numbered):')
@@ -647,21 +566,12 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
 
         # Find the helix residues of design1. This list has len(num_lhls)
         pdb_pose_lhl_residues, pdb_pose_helix_residues = utils.get_lhl_residues(
-<<<<<<< HEAD
-                design_info_file = design_info_path,
-                seq_len = len(pose.sequence()),
-                pose=pose,
-                use_dssp=args.use_dssp,
-                assume_helix=args.assume_helix,
-                bb_rem_all_helical=args.bb_rem_all_helical)
-=======
             design_info_file=design_info_path,
             seq_len=len(pose.sequence()),
             pose=pose,
             use_dssp=args.use_dssp,
             assume_helix=args.assume_helix,
             bb_rem_all_helical=args.bb_rem_all_helical)
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         
         if args.verbose:
             print(f'{design_path} LHL residues:')
@@ -745,32 +655,15 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
         if align_residues != None:
             # superimpose_poses_by_residues expects a single list of residues on which to align.
             pose, ref_pose = utils.superimpose_poses_by_residues(
-<<<<<<< HEAD
-                pose, 
-                [i for lst in align_residues[1] for i in lst], 
-                ref_pose, 
-                [i for lst in align_residues[0] for i in lst], 
-=======
                 pose,
                 [i for lst in align_residues[1] for i in lst],
                 ref_pose,
                 [i for lst in align_residues[0] for i in lst],
->>>>>>> be02a1e (lucs_af refactor and cleanup)
                 atom_types=['N', 'CA', 'C'])
 
         # If align_residues is not defined, align structures on their non-remodeled residues.
         else:
             pose, ref_pose = utils.superimpose_poses_by_residues(
-<<<<<<< HEAD
-                pose, 
-                pose_non_bb_remodeled_residues, 
-                ref_pose, 
-                ref_non_bb_remodeled_residues, 
-                atom_types=['N', 'CA', 'C'])
-    
-        helix_rmsd_atom_types = ['N','CA','C']
-        helix_rmsd, trimmed_ref_helix_residues, trimmed_pose_helix_residues = utils.calculate_bb_remodeled_region_rmsd(args,
-=======
                 pose,
                 pose_non_bb_remodeled_residues,
                 ref_pose,
@@ -780,17 +673,12 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
         helix_rmsd_atom_types = ['N', 'CA', 'C']
         helix_rmsd, trimmed_ref_helix_residues, trimmed_pose_helix_residues = utils.calculate_bb_remodeled_region_rmsd(
             args,
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             ref_path,
             design_path,
             helix_idxs=helix_idxs,
             is_af2_design=False,
             atom_types=helix_rmsd_atom_types,
-<<<<<<< HEAD
-            ref_lhl_residues=ref_lhl_residues, # 2.20.24: This may actually need to be a list of list of residues, considering that seg_i = ref_bb_remodeled_residues[helix_idx]
-=======
             ref_lhl_residues=ref_lhl_residues,  # 2.20.24: This may actually need to be a list of list of residues, considering that seg_i = ref_bb_remodeled_residues[helix_idx]
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             pose_lhl_residues=pose_lhl_residues,
             ref_helix_residues=ref_helix_residues,
             pose_helix_residues=pose_helix_residues,
@@ -804,19 +692,6 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
 
         # Calculate Helix RMSDs for each individual reshaped helix
         for helix_idx in helix_idxs:
-<<<<<<< HEAD
-            single_helix_rmsd, trimmed_pose1_single_helix_residues, trimmed_pose2_single_helix_residues = utils.calculate_bb_remodeled_region_rmsd(args,
-                    ref_path,
-                    design_path,
-                    helix_idxs=[helix_idx],
-                    is_af2_design=False,
-                    atom_types=helix_rmsd_atom_types,
-                    ref_lhl_residues=ref_lhl_residues,
-                    pose_lhl_residues=pose_lhl_residues,
-                    ref_helix_residues=ref_helix_residues,
-                    pose_helix_residues=pose_helix_residues,
-                    align_residues=align_residues)
-=======
             single_helix_rmsd, trimmed_pose1_single_helix_residues, trimmed_pose2_single_helix_residues = utils.calculate_bb_remodeled_region_rmsd(
                 args,
                 ref_path,
@@ -829,7 +704,6 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
                 ref_helix_residues=ref_helix_residues,
                 pose_helix_residues=pose_helix_residues,
                 align_residues=align_residues)
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
             if args.verbose:
                 print(f"{ref_path} to {design_path} Helix {helix_idx} RMSD (Ben's alignment and RMSD): {single_helix_rmsd}")
@@ -867,16 +741,6 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
         # Align the design and reference structures on their non-remodeled residues
         # Align pose2 to pose1
         pose, ref_pose = utils.steph_align_by_residues(
-<<<<<<< HEAD
-            pose, ref_pose, 
-            pose_align_res_str_list, ref_align_res_str_list)
-
-        # Define lists of strings of the helix residues for the design and reference structures
-        # Ensure that each list of helix residues is of the same length, for utils.steph_calculate_RMSDs_on_beta_only_helix()			
-        pose_helix_residues_str_list = [f'{res[0]}-{res[-1]}' for res in trimmed_pose_helix_residues]
-        ref_helix_residues_str_list = [f'{res[0]}-{res[-1]}' for res in trimmed_ref_helix_residues]
-        
-=======
             pose, ref_pose,
             pose_align_res_str_list, ref_align_res_str_list)
 
@@ -885,16 +749,11 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
         pose_helix_residues_str_list = [f'{res[0]}-{res[-1]}' for res in trimmed_pose_helix_residues]
         ref_helix_residues_str_list = [f'{res[0]}-{res[-1]}' for res in trimmed_ref_helix_residues]
 
->>>>>>> be02a1e (lucs_af refactor and cleanup)
         # Calculate Helix RMSDs between FastDesign and Starting Struct
         # This function uses rmsd_protein_bb_heavy_including_O
         # This function also requires that the residue selectors have the same number of residues
         helix_rmsds2 = utils.steph_calculate_RMSDs_on_beta_only_helix(
-<<<<<<< HEAD
-            pose, ref_pose, 
-=======
             pose, ref_pose,
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             pose_helix_residues_str_list, ref_helix_residues_str_list)
 
         # Save the Steph Helix RMSDs to the ret dict
@@ -910,19 +769,11 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
         # Find the longest common helix indices between the design and reference structures
 
         ###
-<<<<<<< HEAD
-        # This function returns none if no common helix residues are found!
-        ###
-        
-        pose_shared_helix_resn, ref_shared_helix_resn = utils.steph_get_shared_helical_resn(
-            pose, ref_pose, 
-=======
         # This function returns None if no common helix residues are found!
         ###
 
         pose_shared_helix_resn, ref_shared_helix_resn = utils.steph_get_shared_helical_resn(
             pose, ref_pose,
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             pose_lhl_residues, ref_lhl_residues)
 
         # Define the shared helix residues as lists of strings
@@ -931,11 +782,7 @@ def calculate_helix_rmsds_to_ref(args: argparse.Namespace, design_paths_ids: Lis
 
         # Calculate the Helix RMSDs on the longest common helices
         shared_helix_rmsds = utils.steph_calculate_RMSDs_on_beta_only_helix(
-<<<<<<< HEAD
-            pose, ref_pose, 
-=======
             pose, ref_pose,
->>>>>>> be02a1e (lucs_af refactor and cleanup)
             pose_shared_helix_resn_str_list, ref_shared_helix_resn_str_list)
 
         # Save the Indiv Common Helix RMSDs to the ret dict
@@ -965,46 +812,6 @@ if __name__ == "__main__":
 
     # I/O arguments
     parser.add_argument('--pdb_dir', nargs='*', type=str, required=True,
-<<<<<<< HEAD
-        help="Path to a directory or directories containing subdir-split designs (subdirs named by design ID)\
-            containing designs' pdb files.")
-    parser.add_argument('--design_info_dir', nargs='*', type=str, required=True,
-        help='Path to a directory or directories containing subdir-split designs (subdirs named by design ID)\
-            containing design_info.json files.')
-    parser.add_argument('--outfile', type=str, required=True, help='Path to a .csv file to save results.')
-    parser.add_argument('--design_id_suffix', type=str, required=False, default='',
-        help='Suffix added to <design_id>/<design_id><suffix>.pdb file names.')
-    parser.add_argument('--skip_completed_files', action='store_true', 
-                    help='If the output files for the current task already exist, then skip the calculations.')
-    parser.add_argument('--include_designs_df', type=str, required=False, default=None,
-			help='Path to a .csv file with a design_id column. If provided, only these design IDs '
-			'will be analyzed.')
-    
-    # AlphaFold inputs
-    parser.add_argument('--analyze_af2', action='store_true',
-			help="Instead of using the PDB files in the --pdb_dir, find these designs'\
-                associated AF2 predictions, provided in the --af2_data_dirs argument.")
-    parser.add_argument('--af2_data_parents', nargs='*', type=str, required=False, default=None,
-			help='Path to a parent directory or parent directories containing subdirectories with AF2 \
-            predictions for LUCS designs. Only used if --analyze_af2 argument is passed.')
-    parser.add_argument('--is_colabfold_format', action='store_true',
-			help='Indicate whether the AF2 data dir is in Colabfold output format (all PDB and json\
-			files for all designs in the same directory).')
-    parser.add_argument('--af2_suffixes', nargs='*', type=str, required=False, default=[''],
-			help='A list of suffixes used to name AF2 predictions, such as DESIGNID_SUFFIX, where\
-                 DESIGNIDs are the subdir names in the --pdb_dir directories. Ex. DEISGNID_mpnnSeq5')
-    parser.add_argument('--split_af2_fnames_at', type=str, required=False, default='_unrelaxed_',
-            help='String by which to split AF2 prediction files to get design_ids. Default is _unrelaxed_.\
-                Passing an empty string will not split the filenames.')
-    
-    # AlphaFold3 inputs
-    parser.add_argument('--is_af3', action='store_true',
-            help='Indicate whether the AlphaFold predictions are from AlphaFold3.')
-    parser.add_argument('--af_prefix', type=str, required=False, default='',
-            help='Prefix in front of design_id in AF2/3 predictions, such as fold_ for AF3 server outputs.')
-    parser.add_argument('--af_is_cif', action='store_true',
-            help='Indicate that the AF predictions are .cif files.')
-=======
         help="Path to a directory or directories containing subdir-split designs (subdirs named by design ID) "
              "containing designs' PDB files.")
     parser.add_argument('--design_info_dir', nargs='*', type=str, required=True,
@@ -1043,7 +850,6 @@ if __name__ == "__main__":
         help='Prefix in front of design_id in AF2/3 predictions, such as fold_ for AF3 server outputs.')
     parser.add_argument('--af_is_cif', action='store_true',
         help='Indicate that the AF predictions are .cif files.')
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
     # Alignment and RMSD arguments
     parser.add_argument('--reference_structure_path', type=str, required=False,
@@ -1054,18 +860,6 @@ if __name__ == "__main__":
         help="Path to the reference structure's insertion points file.")
     parser.add_argument('--reference_structure_res_start_idx', type=int, required=False, default=1,
         help="Index on which the reference structure's residue numbers begin.")
-<<<<<<< HEAD
-    parser.add_argument('--use_dssp', action='store_true', help='Use DSSP to find helical residues.')
-    parser.add_argument('--assume_helix', action='store_true', help='Assume all residues are helical.')
-    parser.add_argument('--bb_rem_all_helical', action='store_true', help='Consider all helical residues as bb-remodeled.')
-    parser.add_argument('--use_align_residues_file', action='store_true', help='Use align_residues.json file for structure alignment.')
-    parser.add_argument('--aligned_pdb_outdir', type=str, required=False, default=None,
-        help='If provided, then save aligned PDB files when calculating Helix RMSD to the reference structure \
-        to the specified directory.')
-    parser.add_argument('--reference_structure_helix_residues_file', type=str, required=False, default=None,
-			help='Use a provided json file containing (a list of lists of) helix residues in the Starting Structure. \
-			If not provided, then use DSSP to find reshaped helix residues in the Starting Structure.')
-=======
     parser.add_argument('--use_dssp', action='store_true',
         help='Use DSSP to find helical residues.')
     parser.add_argument('--assume_helix', action='store_true',
@@ -1080,7 +874,6 @@ if __name__ == "__main__":
     parser.add_argument('--reference_structure_helix_residues_file', type=str, required=False, default=None,
         help='Use a provided JSON file containing (a list of lists of) helix residues in the Starting Structure. '
              'If not provided, then use DSSP to find reshaped helix residues in the Starting Structure.')
->>>>>>> be02a1e (lucs_af refactor and cleanup)
 
     # Parallelization arguments
     parser.add_argument('--num_tasks', type=int, required=False, default=1,
@@ -1089,12 +882,8 @@ if __name__ == "__main__":
         help='ID of the current task (1-indexed, e.g. $SGE_TASK_ID for SGE job distributor).')
 
     # Debugging arguments
-<<<<<<< HEAD
-    parser.add_argument('--verbose', action='store_true', help='Print verbose output.')
-=======
     parser.add_argument('--verbose', action='store_true',
         help='Print verbose output.')
->>>>>>> be02a1e (lucs_af refactor and cleanup)
     parser.add_argument('--test_stop', type=int, required=False, default=None,
         help='Number of test calculations to perform.')
 
