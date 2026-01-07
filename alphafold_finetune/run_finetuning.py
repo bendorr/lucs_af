@@ -776,10 +776,6 @@ def load_finetuned_params_and_loss(FLAGS):
     return model_params, global_step, all_valid_loss, all_valid_binder_loss, all_valid_fape
 
 
-######################################################################################
-# Refactor 12.18.25 - Added main() function and organized code into logical sub-functions.
-######################################################################################
-
 def parse_arguments():
     """
     Parse command-line arguments for AF2 fine-tuning.
@@ -794,7 +790,7 @@ def parse_arguments():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    # Output and model configuration
+    # Output and model
     parser.add_argument('--outprefix', type=str, default='testrun',
                         help='Prefix for output filenames')
     parser.add_argument('--model_name', type=str, default='model_2_ptm',
@@ -802,14 +798,14 @@ def parse_arguments():
     parser.add_argument('--data_dir', type=str, required=True,
                         help='Location of AlphaFold params/ folder')
 
-    # Dataset configuration
+    # Dataset
     parser.add_argument('--train_dataset', type=str, required=True,
                         help='tsv file listing the dataset training samples. '
                         'See phbradley/alphafold_finetune github README for format.')
     parser.add_argument('--valid_dataset', type=str, required=True,
                         help='tsv file listing the dataset validation samples')
 
-    # Binder classifier configuration
+    # Binder classifier
     parser.add_argument('--plddt_binder', action='store_true', default=False,
                         help='Use pLDDT binder classifier (default: False)')
     parser.add_argument('--plddt_binder_slope', type=float, default=16.69, # from logistic regression
@@ -833,7 +829,7 @@ def parse_arguments():
     parser.add_argument('--freeze_everything', action='store_true',
                         help='Dont apply the accumulated gradients')
 
-    # Model architecture configuration
+    # Model architecture
     parser.add_argument('--crop_size', type=int, default=190,
                         help='Max size of training example; set this '
                              'as low as possible for memory and speed')
@@ -846,7 +842,7 @@ def parse_arguments():
     parser.add_argument('--struc_viol_weight', type=float, default=0.0,
                         help='Structural violation weight')
 
-    # Training configuration
+    # Training
     parser.add_argument('--num_epochs', type=int, default=20,
                         help='Number of training epochs')
     parser.add_argument('--batch_size', type=int, default=1,
@@ -860,7 +856,7 @@ def parse_arguments():
                         help='if True, set num_iter_recycling '
                         'randomly during training')
 
-    # Optimizer configuration
+    # Optimizer
     parser.add_argument('--grad_norm_clip', type=float, default=0.1,
                         help='Clip gradient L2 norm to this value per update')
     parser.add_argument('--apply_every', type=int, default=1,
