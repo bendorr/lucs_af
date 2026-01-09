@@ -8,19 +8,17 @@ Data for this manuscript can be found on [zenodo](https://zenodo.org/records/169
 
 See instructions for running fine-tuned AF2 models in ft_models/ or on [zenodo](https://zenodo.org/records/15580792).
 
-## LUCS AlphaFold Analysis Tools
+## Overview
 
 Code for analyzing LUCS (Loop-Helix-Loop Unit Combinatorial Sampling) designs (de novo designed proteins) and their predicted structures (AlphaFold2/3, RoseTTAFold2, ESMFold, etc.).
 
-## Overview
-
-The LUCS AlphaFold Analysis Suite provides tools for:
+Includes tools for:
 - Fine-tuning AlphaFold2 models on custom datasets
 - Fine-tuning classifier heads on top of AlphaFold2 for protein property prediction from sequence
 - Running classic and fine-tuned AlphaFold2 predictions with and without templates
-- Calculating structural similarity metrics (RMSD, TM-score)
-- Analyzing helix geometry/diversity and the extent to which LUCS helices were reshaped from their starting positions
-- Analyzing AlphaFold confidence metrics (pLDDT, pAE, pTM), structure-based metrics, and Rosetta metrics
+- Calculating protein structural diversity and similarity (RMSD, TM-score, helix displacement and angle)
+- Analyzing and visualizing helix geometry/diversity, e.g., the extent to which LUCS helices were reshaped from their starting positions
+- Analyzing structure prediction confidence metrics (pLDDT, pAE, pTM), structure-based metrics, and Rosetta metrics
 
 ## Directory Structure
 
