@@ -24,25 +24,25 @@ The LUCS AlphaFold Analysis Suite provides tools for:
 
 ## Directory Structure
 
-### `alphafold_finetune/`
+#### `alphafold_finetune/`
 Tools for fine-tuning AlphaFold2 models and analyzing predictions from both classic and fine-tuned models. Includes training scripts, prediction utilities, and analysis tools for evaluating model performance against ground truth (or, as in the publication, Rosetta-modeled) structures.
 
-### `data/`
+#### `data/`
 Organization of data associated with the manuscript on zenodo and descriptions of data used in each manuscript figure.
 
-### `degree_of_reshaping/`
+#### `degree_of_reshaping/`
 Analysis tools for calculating structural metrics for LUCS designs, e.g. between Rosetta models and AlphaFold predictions, or between these models and reference structures (such as LUCS starting structures, before loop-helix-loop reshaping). Includes utilities for RMSD calculations, helix geometry analysis, confidence metric evaluation, and all-by-all structural comparisons.
 
-### `env/`
+#### `env/`
 YAML files containing dependencies for alphafold fine-tuning and Rosetta/structure-based analysis.
 
-### `ft_models/`
+#### `ft_models/`
 Instructions for running fine-tuned AF2 models from the paper using localcolabfold or Google Colab.
 
-### `helix_vectors/`
+#### `helix_vectors/`
 Tools for calculating and analyzing 6D helix vectors (3D position + 3D direction) to characterize helix geometry in protein structures. Used for quantifying helix diversity through helix position and orientation.
 
-### `tests/`
+#### `tests/`
 Unit tests for configuration management, RMSD calculations, and structural alignment.
 
 ---
