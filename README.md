@@ -6,9 +6,7 @@ Data for this manuscript can be found on [zenodo](https://zenodo.org/records/169
 
 See instructions for running fine-tuned AF2 models in ft_models/ or on [zenodo](https://zenodo.org/records/15580792).
 
-# LUCS AlphaFold Software Suite
-
-Version 2.0.0
+## LUCS AlphaFold Analysis Tools
 
 Code for analyzing LUCS (Loop-Helix-Loop Unit Combinatorial Sampling) designs (de novo designed proteins) and their predicted structures (AlphaFold2/3, RoseTTAFold2, ESMFold, etc.).
 
@@ -265,6 +263,8 @@ Tests for structural alignment algorithms including Kabsch superposition. Verifi
 ## Author
 
 Ben Orr
+
+Version 2.0.0
 
 ## License
 
