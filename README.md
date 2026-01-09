@@ -2,6 +2,8 @@
 
 Authors: Benjamin Orr*, Stephanie E. Crilly*, Deniz Akpinaroglu, Eleanor Zhu, Michael J. Keiser, Tanja Kortemme
 
+[Paper](https://www.biorxiv.org/content/10.1101/2025.06.02.657515v1)
+
 Data for this manuscript can be found on [zenodo](https://zenodo.org/records/16938925).
 
 See instructions for running fine-tuned AF2 models in ft_models/ or on [zenodo](https://zenodo.org/records/15580792).
