@@ -254,7 +254,7 @@ Tests for structural alignment algorithms including Kabsch superposition. Verifi
 
 ## Dependencies
 
-### Core Requirements
+#### Core Requirements
 - Python 3.9+
 - NumPy, pandas, matplotlib
 - BioPython
@@ -262,22 +262,22 @@ Tests for structural alignment algorithms including Kabsch superposition. Verifi
 - JAX (for AlphaFold training)
 - AlphaFold (for fine-tuning and prediction)
 
-### Analysis Libraries
+#### Analysis Libraries
 - tmtools (TM-score calculation)
 - scipy (statistical analysis)
 - seaborn (visualization)
 - DSSP (secondary structure assignment)
 
-### Configuration
+#### Configuration
 - argparse (command-line interfaces)
 
-## Author
+### Author
 
 Ben Orr
 
 Version 2.0.0
 
-## License
+### License
 
 MIT License
 
