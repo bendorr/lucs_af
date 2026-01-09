@@ -47,7 +47,7 @@ Unit tests for configuration management, RMSD calculations, and structural align
 
 ---
 
-## Detailed File Documentation
+## Scripts
 
 ### `alphafold_finetune/`
 
