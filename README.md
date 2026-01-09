@@ -239,20 +239,20 @@ Analyzes helix vector data to extract geometric relationships and patterns. Proc
 
 ---
 
-### `tests/`
+#### `tests/`
 
-#### `test_config.py`
+##### `test_config.py`
 Unit tests for configuration management system. Tests YAML loading, environment variable overrides, argument parsing integration, and default value handling.
 
-#### `test_rmsd_calculations.py`
+##### `test_rmsd_calculations.py`
 Tests for RMSD calculation functions across different implementations. Validates correctness of calculations and consistency between BioPython and PyRosetta backends.
 
-#### `test_structural_alignment.py`
+##### `test_structural_alignment.py`
 Tests for structural alignment algorithms including Kabsch superposition. Verifies optimal alignment calculation and rotation/translation matrix accuracy.
 
 ---
 
-## Dependencies
+### Dependencies
 
 #### Core Requirements
 - Python 3.9+
