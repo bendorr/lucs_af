@@ -81,31 +81,25 @@ python run_prediction.py --targets targets.tsv \
 ```
 
 #### `train_utils.py`
-Training utilities:
-- Template and MSA featurization for training examples
-- Structure manipulation and coordinate transformations
-- Padding inputs
+Training utilities such as (i) input, MSA, and template featurization for training examples and (ii) structure manipulation and coordinate transformations.
 
 #### `predict_utils.py`
-Prediction utilities:
-- Template and MSA featurization for inference targets
-- Structure manipulation and coordinate transformations
-- Padding inputs
+Prediction utilities such as (i) input, MSA, and template featurization for inference targets and (ii) structure manipulation and coordinate transformations.
 
 #### `analyze_finetuned_predictions.py`
 Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tuned AlphaFold2 predictions and ground truth structures. Generates dataframes with structural metrics, confidence scores, and PDB paths for downstream analysis.
 
-**Key Analyses:**
-- RMSD calculations between predictions and ground truth
-- pLDDT and pAE confidence metric evaluation
+**Analyses in analyze_finetuned_predictions.py:**
+- RMSD calculations between predictions and ground truth structures
+- pLDDT and pAE confidence metric evaluation, for all and subsets of residues (e.g., reshaped loop-helix-loop elements in LUCS designs)
 - Helix RMSD calculations for LUCS designs
-- Comparison of classic vs. fine-tuned model performance
+- Comparison of classic vs. fine-tuned model performance w.r.t. classification tasks and structure prediction accuracy
 
 #### `analyze_checkpointed_models_metrics.py`
-Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement during fine-tuning. Includes:
-- RMSD analysis across training steps
+Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement during fine-tuning, such as:
+- RMSDs to ground truth structures across training steps
 - Confidence score distributions
-- Precision-Recall curves for stability prediction
+- Precision-Recall curves for classification tasks (e.g., stability prediction)
 - Visualization of model performance over training
 
 **Usage:**
