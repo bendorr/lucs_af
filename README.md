@@ -121,9 +121,9 @@ Primary analysis script for LUCS designs. Performs structural analyses for LUCS 
 **Analyses in degree_reshaped.py:**
 - Full backbone RMSD and reshaped region RMSD
 - Helix RMSD calculations, using multiple helix definitions and alignment methods
+- Helix displacement and angle between design models, predicted structures, and reference structures
 - TM-scores for global structural alignment
-- Helix displacement and angle deviations
-- pLDDT and pAE confidence scores
+- pLDDT and pAE confidence scores for all and subsets of residues
 - Secondary structure analysis with DSSP
 
 **Usage:**
@@ -136,14 +136,14 @@ python degree_reshaped.py --lucs_data /path/to/designs \
 ```
 
 #### `utils_degree_reshaped.py`
-Extensive utility library (2,347 lines) containing core functions for structural analysis:
+Utility functions for structural analysis:
 - PDB/structure I/O operations
-- RMSD calculation functions (multiple implementations)
+- RMSD calculation functions (using multiple alignment methods)
 - Helix and sheet geometry calculations
-- Structural alignment utilities
-- Residue selection and manipulation
+- Structural alignment functions
+- Residue selection and manipulation in PyRosetta and Biopython
 - PyRosetta helper functions
-- DataFrame manipulation for results
+- DataFrame manipulation
 
 This module is used by most analysis scripts in this directory.
 
