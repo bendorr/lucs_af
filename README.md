@@ -54,7 +54,7 @@ Fine-tune AlphaFold2 models on custom datasets. Supports training with optional 
 - Custom loss functions for structural accuracy and classification
 - Optional template-based training
 - Checkpoint saving and validation
-- Weighted sampling and data augmentation
+- Weighted sampling (for class balancing in classification tasks) and data augmentation
 
 **Usage:**
 ```bash
