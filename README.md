@@ -99,7 +99,7 @@ Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tune
 Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement over fine-tuning, such as:
 - RMSDs to ground truth structures, for all and subsets of residues
 - Confidence score distributions
-- Precision-Recall curves for classification tasks (e.g., stability prediction)\
+- Precision-Recall curves for classification tasks (e.g., stability prediction)
 
 **Usage:**
 ```bash
