@@ -90,17 +90,16 @@ Prediction utilities such as (i) input, MSA, and template featurization for infe
 Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tuned AlphaFold2 predictions and ground truth structures. Generates dataframes with structural metrics, confidence scores, and PDB paths for downstream analysis.
 
 **Analyses in analyze_finetuned_predictions.py:**
-- RMSD calculations between predictions and ground truth structures
-- pLDDT and pAE confidence metric evaluation, for all and subsets of residues (e.g., reshaped loop-helix-loop elements in LUCS designs)
+- RMSD calculations between predictions and ground truth structures, over all and subsets of residues (e.g., reshaped loop-helix-loop elements in LUCS designs)
+- pLDDT and pAE confidence metric evaluation, for all and subsets of residues
 - Helix RMSD calculations for LUCS designs
 - Comparison of classic vs. fine-tuned model performance w.r.t. classification tasks and structure prediction accuracy
 
 #### `analyze_checkpointed_models_metrics.py`
-Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement during fine-tuning, such as:
-- RMSDs to ground truth structures across training steps
+Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement over fine-tuning, such as:
+- RMSDs to ground truth structures, for all and subsets of residues
 - Confidence score distributions
-- Precision-Recall curves for classification tasks (e.g., stability prediction)
-- Visualization of model performance over training
+- Precision-Recall curves for classification tasks (e.g., stability prediction)\
 
 **Usage:**
 ```bash
@@ -117,11 +116,11 @@ Utility for parsing and analyzing training loss from log files. Extracts trainin
 ### `degree_of_reshaping/`
 
 #### `degree_reshaped.py`
-Primary analysis script for LUCS designs. Calculates comprehensive structural metrics and confidence scores by comparing Rosetta models and AlphaFold predictions against reference structures.
+Primary analysis script for LUCS designs. Performs structural analyses for LUCS designs' Rosetta models and predicted structures (from models like AlphaFold2/3, RoseTTAFold2, ESMFold, etc.). Compares LUCS designs' Rosetta models and predicted structures to reference structures (such as the starting structure used in generating the LUCS designs).
 
-**Key Metrics:**
+**Analyses in degree_reshaped.py:**
 - Full backbone RMSD and reshaped region RMSD
-- Helix-specific RMSD calculations
+- Helix RMSD calculations, using multiple helix definitions and alignment methods
 - TM-scores for global structural alignment
 - Helix displacement and angle deviations
 - pLDDT and pAE confidence scores
