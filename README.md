@@ -145,7 +145,7 @@ Utility functions for structural analysis:
 - PyRosetta helper functions
 - DataFrame manipulation
 
-This module is used by most analysis scripts in this directory.
+This module is used by most analysis scripts in degree_of_reshaping/
 
 #### `all_by_all_rmsds.py`
 Computes pairwise RMSD and TM-score matrices for all structure pairs in a dataset. Generates symmetric RMSD matrices and asymmetric TM-score matrices (normalized by each structure's length). Supports parallel processing for large datasets.
