@@ -151,10 +151,10 @@ This module is used by most analysis scripts in this directory.
 Computes pairwise RMSD and TM-score matrices for all structure pairs in a dataset. Generates symmetric RMSD matrices and asymmetric TM-score matrices (normalized by each structure's length). Supports parallel processing for large datasets.
 
 **Output Files:**
-- `rmsd.npy`: Symmetric RMSD matrix
-- `tm1.npy`: TM-scores normalized by structure 1
-- `tm2.npy`: TM-scores normalized by structure 2
-- `pdb_order.json`: Structure ordering for matrix indexing
+- `rmsd.npy`: all-by-all RMSD matrix
+- `tm1.npy`: all-by-all TM-scores normalized by structure 1 length
+- `tm2.npy`: all-by-all TM-scores normalized by structure 2 length
+- `pdb_order.json`: PDB/design name ordering for matrix indexing
 
 **Usage:**
 ```bash
