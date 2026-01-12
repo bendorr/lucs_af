@@ -35,7 +35,7 @@ Organization of data associated with the manuscript on zenodo and descriptions o
 Analysis tools for calculating structural metrics for LUCS designs, e.g. between Rosetta models and AlphaFold predictions, or between these models and reference structures (such as LUCS starting structures, before loop-helix-loop reshaping). Includes utilities for RMSD calculations, helix geometry analysis, confidence metric evaluation, and all-by-all structural comparisons.
 
 #### `env/`
-YAML files containing dependencies for alphafold fine-tuning and Rosetta/structure-based analysis.
+.yml files containing dependencies for alphafold fine-tuning and Rosetta/structure-based analysis.
 
 #### `ft_models/`
 Instructions for running fine-tuned AF2 models from the paper using localcolabfold or Google Colab.
