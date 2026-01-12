@@ -73,7 +73,7 @@ python run_finetuning.py --data_dir /path/to/af_params \
     --num_epochs 100
 ```
 
-#### `run_prediction.py`
+#### > `run_prediction.py`
 Template-based AlphaFold2 inference for predicting target sequences. Uses provided templates to guide structure prediction and outputs predicted structures with confidence metrics.
 
 **Usage:**
@@ -87,13 +87,13 @@ python run_prediction.py --targets targets.tsv \
     --ignore_identities
 ```
 
-#### `train_utils.py`
+#### > `train_utils.py`
 Training utilities including (i) input, MSA, and template featurization for training examples and (ii) structure manipulation and coordinate transformations.
 
-#### `predict_utils.py`
+#### > `predict_utils.py`
 Prediction utilities including (i) input, MSA, and template featurization for inference targets and (ii) structure manipulation and coordinate transformations.
 
-#### `analyze_finetuned_predictions.py`
+#### > `analyze_finetuned_predictions.py`
 Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tuned AlphaFold2 predictions and ground truth structures. Generates dataframes with structural metrics, confidence scores, and PDB paths for downstream analysis.
 
 **Analyses in analyze_finetuned_predictions.py:**
