@@ -259,13 +259,13 @@ python analyze_helix_vectors.py \
 
 ### `tests/`
 
-#### `test_config.py`
+#### > `test_config.py`
 Unit tests for configuration management, including .yml loading, environment variables, arg parsing, and default values.
 
-#### `test_rmsd_calculations.py`
+#### > `test_rmsd_calculations.py`
 Tests for RMSD calculation functions across different implementations (Biopython, PyRosetta, aligning residue subsets, etc.).
 
-#### `test_structural_alignment.py`
+#### > `test_structural_alignment.py`
 Tests for structural alignment algorithms.
 
 ---
