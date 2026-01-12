@@ -56,7 +56,7 @@ Unit tests for configuration management, RMSD calculations, and structural align
 
 ### `alphafold_finetune/`
 
-#### `run_finetuning.py`
+#### > `run_finetuning.py`
 Fine-tune AlphaFold2 models on custom datasets. Supports training with optional classification heads (pLDDT-based and pAE-based) for predicting experimentally determined properties such as protease resistance or protein-protein binding. Includes:
 - Custom loss functions for structural accuracy and classification
 - Optional template-based training
