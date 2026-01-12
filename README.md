@@ -102,7 +102,7 @@ Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tune
 - pLDDT and pAE confidence metric evaluation, for all and subsets of residues
 - Classic vs. fine-tuned model performance w.r.t. classification tasks and structure prediction accuracy
 
-#### `analyze_checkpointed_models_metrics.py`
+#### > `analyze_checkpointed_models_metrics.py`
 Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement over fine-tuning, such as:
 - RMSDs to ground truth structures, for all and subsets of residues
 - Confidence score distributions
@@ -117,14 +117,14 @@ python analyze_checkpointed_models_metrics.py --job_name experiment1 \
     --plot_confidence_distributions --stability_classifier --precision_recall
 ```
 
-#### `read_loss_from_txt.py`
+#### > `read_loss_from_txt.py`
 Utility for parsing and analyzing training loss from log files. Extracts training and validation losses from text logs, enabling visualization of training curves and identification of optimal checkpoints.
 
 ---
 
 ### `degree_of_reshaping/`
 
-#### `degree_reshaped.py`
+#### > `degree_reshaped.py`
 Primary analysis script for LUCS designs. Performs structural analyses for LUCS designs' Rosetta models and predicted structures (from models like AlphaFold2/3, RoseTTAFold2, ESMFold, etc.). Compares LUCS designs' Rosetta models and predicted structures to reference structures (such as the starting structure used in generating the LUCS designs).
 
 **Analyses in degree_reshaped.py:**
@@ -145,7 +145,7 @@ python degree_reshaped.py --lucs_data /path/to/designs \
 
 - Note: insertion_points.json is in the format specified in [Loop-Helix-Loop Reshaping](https://github.com/Kortemme-Lab/loop_helix_loop_reshaping)
 
-#### `utils_degree_reshaped.py`
+#### > `utils_degree_reshaped.py`
 Utility functions for protein structural analysis:
 - Helix and sheet geometry calculations
 - RMSD calculation functions (using multiple alignment methods)
@@ -157,7 +157,7 @@ Utility functions for protein structural analysis:
 
 This module is used by most analysis scripts in degree_of_reshaping/
 
-#### `all_by_all_rmsds.py`
+#### > `all_by_all_rmsds.py`
 Computes pairwise RMSD and TM-score matrices for all structure pairs in a dataset. Generates symmetric RMSD matrices and asymmetric TM-score matrices (normalized by each structure's length). Supports parallel processing for large datasets.
 
 **Output Files:**
@@ -172,7 +172,7 @@ python all_by_all_rmsds.py --pdb_dirs ./structures \
     --outdir ./matrices --num_tasks 10 --task_id $SGE_TASK_ID
 ```
 
-#### `all_by_all_helix_rmsds.py`
+#### > `all_by_all_helix_rmsds.py`
 Similar to `all_by_all_rmsds.py` but calculates RMSD and TM-score matrices specifically for helix regions. Useful for analyzing helix-specific structural diversity in LUCS design libraries.
 
 **Usage:**
@@ -182,7 +182,7 @@ python all_by_all_helix_rmsds.py --data_dir ./structures \
     --output_dir ./matrices --num_tasks 10 --task_id $SGE_TASK_ID
 ```
 
-#### `combine_matrices.py`
+#### > `combine_matrices.py`
 Combines partial all-by-all matrices from distributed calculations into complete matrices. Supports two modes:
 1. Combining multiple partial matrices from parallel jobs
 2. Filling missing values in an existing matrix
@@ -193,26 +193,26 @@ python combine_matrices.py --data_folder ./matrices \
     --file_prefixes rmsd tm1 tm2
 ```
 
-#### `helix_rmsds_to_ref.py`
+#### > `helix_rmsds_to_ref.py`
 Calculates helix-specific RMSDs between designs and a reference structure. Focuses on helix regions to evaluate reshaping quality independent of loop conformations.
 
-#### `tm_score_to_ref.py`
+#### > `tm_score_to_ref.py`
 Calculates TM-scores between designs and reference structures. TM-score is a length-independent metric better suited than RMSD for comparing structures of different sizes or evaluating global topology.
 
-#### `rmsd_LUCS_to_RosettaRelax.py`
+#### > `rmsd_LUCS_to_RosettaRelax.py`
 Compares LUCS designs to Rosetta FastRelax structures. Evaluates how well designs match Rosetta-relaxed structures, useful for validating design quality and identifying outliers.
 
 ---
 
 ### `degree_of_reshaping/common/`
 
-#### `structural_alignment.py`
+#### > `structural_alignment.py`
 Module for structural alignment operations.
 
-#### `rmsd_calculations.py`
+#### > `rmsd_calculations.py`
 Consolidated RMSD calculation functions supporting both BioPython- and PyRosetta-based alignment and RMSD calculations. Provides residue subset, backbone-only, and full-structure RMSDs.
 
-#### `pyrosetta_utils.py`
+#### > `pyrosetta_utils.py`
 PyRosetta-specific helper functions including:
 - PDB to PyRosetta residue number conversion
 - Pose manipulation utilities
@@ -222,7 +222,7 @@ PyRosetta-specific helper functions including:
 
 ### `helix_vectors/`
 
-#### `calc_6d_helix_vectors.py`
+#### > `calc_6d_helix_vectors.py`
 Calculates 6D helix vectors combining 3 cartesian coordinates (helix backbone--N, Ca, C--centroid) and 3 direction (normalized carbonyl vector sum) components for alpha helices. Coordinates are calculated in a reference frame defined by beta sheet residues or user-specified projection residues on a reference structure (to which all other structures are aligned).
 
 **Usage:**
@@ -235,7 +235,7 @@ python calc_6d_helix_vectors.py --ref_pdb reference.pdb \
     --num_tasks 10 --task_id $SGE_TASK_ID
 ```
 
-#### `analyze_helix_vectors.py`
+#### > `analyze_helix_vectors.py`
 Analyzes helix and sheet coordinates (output by `calc_6d_helix_vectors.py`) to generate 3D visualizations and compute helix diversity by binning helix vectors by their cartesian and directional components.
 
 **Usage:**
