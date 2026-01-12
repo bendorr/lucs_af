@@ -12,7 +12,7 @@ See instructions for running fine-tuned AF2 models in ft_models/ or on [zenodo](
 
 Code for (i) analyzing [LUCS](https://www.science.org/doi/10.1126/science.abc0881) (Loop-Helix-Loop Unit Combinatorial Sampling) designs (de novo designed proteins) and their predicted structures (AlphaFold2/3, RoseTTAFold2, ESMFold, etc.) and (ii) fine-tuning AlphaFold2.
 
-Functionality:
+Includes:
 - Fine-tuning AlphaFold2 models on custom datasets
 - Fine-tuning classifier heads on top of AlphaFold2 for protein property prediction from sequence
 - Running classic and fine-tuned AlphaFold2 predictions with and without templates
