@@ -141,7 +141,7 @@ With binder training and custom architecture:
         --outprefix binder_model \\
         --plddt_binder --binder_loss_weight 2.0 \\
         --crop_size 256 --num_evo_blocks 32 \\
-        --num_epochs 20 --grad_norm_clip 0.5
+        --num_epochs 20 --grad_norm_clip 10.0
 
 Resume previous training:
     python3 run_finetuning.py \\
@@ -857,7 +857,7 @@ def parse_arguments():
                         'randomly during training')
 
     # Optimizer
-    parser.add_argument('--grad_norm_clip', type=float, default=0.1,
+    parser.add_argument('--grad_norm_clip', type=float, default=10.0,
                         help='Clip gradient L2 norm to this value per update')
     parser.add_argument('--apply_every', type=int, default=1,
                         help='Accumulate gradients from this many batches before applying')
