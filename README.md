@@ -21,7 +21,11 @@ AlphaFold fine-tuning:
 - Fine-tuning AlphaFold2 models on custom datasets
 - Fine-tuning classifier heads on top of AlphaFold2 for protein property prediction
 - Running classic and fine-tuned AlphaFold2 predictions with and without templates
-- Evaluating predictions for structural and classification accuracy 
+- Evaluating predictions for structural and classification accuracy
+
+Code for generating LUCS backbones can be found in [loop_helix_loop_reshaping](https://github.com/Kortemme-Lab/loop_helix_loop_reshaping)
+
+Code for Rosetta-based sequence design and scoring can be found in [local_protein_sequence_design](https://github.com/Kortemme-Lab/local_protein_sequence_design)
 
 ## Directory Structure
 
@@ -41,7 +45,7 @@ Analysis tools for calculating structural metrics for LUCS designs, e.g. between
 Instructions for running fine-tuned AF2 models from the paper using localcolabfold or Google Colab.
 
 #### `helix_vectors/`
-Tools for calculating and analyzing 6D helix vectors (3D position + 3D direction) to characterize helix geometry in protein structures. Used for quantifying helix diversity through helix position and orientation.
+Tools for calculating and analyzing 6D helix vectors (3D position + 3D direction) to characterize helix geometry in protein structures. Used for quantifying and visualizing helix diversity through helix position and orientation.
 
 #### `tests/`
 Unit tests for configuration management, RMSD calculations, and structural alignment.
@@ -122,11 +126,10 @@ Utility for parsing and analyzing training loss from log files. Extracts trainin
 Primary analysis script for LUCS designs. Performs structural analyses for LUCS designs' Rosetta models and predicted structures (from models like AlphaFold2/3, RoseTTAFold2, ESMFold, etc.). Compares LUCS designs' Rosetta models and predicted structures to reference structures (such as the starting structure used in generating the LUCS designs).
 
 **Analyses in degree_reshaped.py:**
-- Full backbone RMSD and reshaped region RMSD
 - Helix RMSD calculations, using multiple helix definitions and alignment methods
 - Helix displacement and angle between design models, predicted structures, and reference structures
-- TM-scores for global structural alignment
-- pLDDT and pAE confidence scores for all and subsets of residues
+- Reshaped region RMSD, full backbone RMSD, and TM-score
+- Reshaped residue confidence scores (e.g., pLDDT and pAE)
 - Secondary structure analysis with DSSP
 
 **Usage:**
@@ -137,6 +140,8 @@ python degree_reshaped.py --lucs_data /path/to/designs \
     --starting_structure_insertion_points insertion_points.json \
     --outfolder ./output --outfile results.csv
 ```
+
+- Note: insertion_points.json is in the format specified in [Loop-Helix-Loop Reshaping](https://github.com/Kortemme-Lab/loop_helix_loop_reshaping)
 
 #### `utils_degree_reshaped.py`
 Utility functions for structural analysis:
