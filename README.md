@@ -144,12 +144,12 @@ python degree_reshaped.py --lucs_data /path/to/designs \
 - Note: insertion_points.json is in the format specified in [Loop-Helix-Loop Reshaping](https://github.com/Kortemme-Lab/loop_helix_loop_reshaping)
 
 #### `utils_degree_reshaped.py`
-Utility functions for structural analysis:
-- PDB/structure I/O operations
-- RMSD calculation functions (using multiple alignment methods)
+Utility functions for protein structural analysis:
 - Helix and sheet geometry calculations
-- Structural alignment functions
+- RMSD calculation functions (using multiple alignment methods)
 - Residue selection and manipulation in PyRosetta and Biopython
+- PDB/structure I/O operations
+- Structural alignment
 - PyRosetta helper functions
 - DataFrame manipulation
 
