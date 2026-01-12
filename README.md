@@ -111,8 +111,10 @@ Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improv
 **Usage:**
 ```bash
 python analyze_checkpointed_models_metrics.py --job_name experiment1 \
-    --checkpoint_model_data_folder ./checkpoints --outfolder_parent ./analysis \
-    --rmsd_analysis --stability_classifier --precision_recall
+    --checkpoint_model_data_folder ./exp1_checkpoints --outfolder_parent ./exp1_analysis \
+    --stability_data ./exp1_stability_data.csv \
+    --rmsd_thresh 1.5 --rmsd_analysis \
+    --plot_confidence_distributions --stability_classifier --precision_recall
 ```
 
 #### `read_loss_from_txt.py`
@@ -173,6 +175,13 @@ python all_by_all_rmsds.py --pdb_dirs ./structures \
 #### `all_by_all_helix_rmsds.py`
 Similar to `all_by_all_rmsds.py` but calculates RMSD and TM-score matrices specifically for helix regions. Useful for analyzing helix-specific structural diversity in LUCS design libraries.
 
+**Usage:**
+```bash
+python all_by_all_helix_rmsds.py --data_dir ./structures \
+    --include_designs_df ./designs_to_include.csv \
+    --output_dir ./matrices --num_tasks 10 --task_id $SGE_TASK_ID
+```
+
 #### `combine_matrices.py`
 Combines partial all-by-all matrices from distributed calculations into complete matrices. Supports two modes:
 1. Combining multiple partial matrices from parallel jobs
@@ -228,13 +237,32 @@ Calculates 6D helix vectors combining position (helix centroid) and direction (n
 **Usage:**
 ```bash
 python calc_6d_helix_vectors.py --ref_pdb reference.pdb \
-    --ref_insertion_points insertion_points.json \
+    --ref_insertion_points ref_insertion_points.json \
     --designs_df_path designs.csv --output_dir ./output \
-    --output_df_name helix_vectors.csv --num_lhls 2
+    --output_df_name helix_vectors.csv \
+    --num_lhls 2 --align_by_non_bb_rem \
+    --num_tasks 10 --task_id $SGE_TASK_ID
 ```
 
 #### `analyze_helix_vectors.py`
 Analyzes helix vector data to extract geometric relationships and patterns. Processes output from `calc_6d_helix_vectors.py` to generate statistics, visualizations, and comparisons between design variants.
+
+**Usage:**
+```bash
+# Color by reshaped loop-helix-loop 1 vs. 2
+python analyze_helix_vectors.py \
+    --helix_coords_dir /path/to/helix_coords/2KL8/ \
+    --sheet_coords_dir /path/to/sheet_coords/2KL8/ \
+    --starting_structure_name 2KL8 \
+    --designs_df_path /path/to/2KL8_lucs_designs.csv \
+    --num_lhls 2 --num_strands 5 \
+    --color_by indiv_#CBB2D7,#6B3E99 \
+    --no_colorbar \
+    --save_movie_frames \
+    --elevation -137 \
+    --azimuth -20 \
+    --output_dir /path/to/output/
+```
 
 ---
 
