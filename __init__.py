@@ -1,16 +1,16 @@
 """
 lucs_af
 
-LUCS (Loop-Helix-Loop Unit Combinatorial Sampling) AlphaFold Analysis Suite
+LUCS (Loop-Helix-Loop Unit Combinatorial Sampling) structural analysis 
+and AlphaFold2 fine-tuning.
 
-This package provides tools for analyzing LUCS designs and AlphaFold predictions:
-- AlphaFold fine-tuning and prediction analysis
-- Structural metrics (RMSD, TM-score) calculation
-- Helix geometry and reshaping analysis
-- Confidence metrics (pLDDT, pAE) evaluation
+Includes:
+- AlphaFold fine-tuning and evaluation
+- Structural analysis for Rosetta models and predicted structures
+- Helix geometry and loop-helix-loop reshaping analysis
 
 Author: Ben Orr
 """
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
 __author__ = "Ben Orr"
