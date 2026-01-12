@@ -14,7 +14,7 @@ Code for (i) analyzing [LUCS](https://www.science.org/doi/10.1126/science.abc088
 
 Includes:
 - Fine-tuning AlphaFold2 models on custom datasets
-- Fine-tuning classifier heads on top of AlphaFold2 for protein property prediction from sequence
+- Fine-tuning classifier heads on top of AlphaFold2 for protein property prediction
 - Running classic and fine-tuned AlphaFold2 predictions with and without templates
 - Calculating protein structural diversity and similarity (RMSD, TM-score, helix displacement and angle)
 - Analyzing and visualizing helix geometry/diversity, e.g., the extent to which LUCS helices were reshaped from their starting positions
