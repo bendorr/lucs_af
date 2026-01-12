@@ -12,13 +12,16 @@ See instructions for running fine-tuned AF2 models in ft_models/ or on [zenodo](
 
 Code for (i) analyzing [LUCS](https://www.science.org/doi/10.1126/science.abc0881) (Loop-Helix-Loop Unit Combinatorial Sampling) designs (de novo designed proteins) and their predicted structures (AlphaFold2/3, RoseTTAFold2, ESMFold, etc.) and (ii) fine-tuning AlphaFold2.
 
-Includes:
+LUCS structural analysis:
+- Calculating protein structural diversity and similarity (RMSD, TM-score, helix RMSD, helix displacement and angle)
+- Analyzing and visualizing helix geometry/diversity, e.g., the extent to which LUCS helices were reshaped from their starting positions
+- Analyzing predicted structures' confidence metrics (pLDDT, pAE, pTM), structure-based metrics, and Rosetta metrics
+
+AlphaFold fine-tuning:
 - Fine-tuning AlphaFold2 models on custom datasets
 - Fine-tuning classifier heads on top of AlphaFold2 for protein property prediction
 - Running classic and fine-tuned AlphaFold2 predictions with and without templates
-- Calculating protein structural diversity and similarity (RMSD, TM-score, helix displacement and angle)
-- Analyzing and visualizing helix geometry/diversity, e.g., the extent to which LUCS helices were reshaped from their starting positions
-- Analyzing structure prediction confidence metrics (pLDDT, pAE, pTM), structure-based metrics, and Rosetta metrics
+- Evaluating predictions for structural and classification accuracy 
 
 ## Directory Structure
 
