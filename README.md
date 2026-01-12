@@ -97,10 +97,10 @@ Prediction utilities such as (i) input, MSA, and template featurization for infe
 Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tuned AlphaFold2 predictions and ground truth structures. Generates dataframes with structural metrics, confidence scores, and PDB paths for downstream analysis.
 
 **Analyses in analyze_finetuned_predictions.py:**
-- RMSD calculations between predictions and ground truth structures, over all and subsets of residues (e.g., reshaped loop-helix-loop elements in LUCS designs)
+- RMSD between predictions and ground truth structures, over all and subsets of residues (e.g., reshaped loop-helix-loop elements in LUCS designs)
+- Helix RMSDs between predicted structures and design models/reference structures
 - pLDDT and pAE confidence metric evaluation, for all and subsets of residues
-- Helix RMSD calculations for LUCS designs
-- Comparison of classic vs. fine-tuned model performance w.r.t. classification tasks and structure prediction accuracy
+- Classic vs. fine-tuned model performance w.r.t. classification tasks and structure prediction accuracy
 
 #### `analyze_checkpointed_models_metrics.py`
 Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement over fine-tuning, such as:
