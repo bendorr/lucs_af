@@ -227,7 +227,7 @@ PyRosetta-specific helper functions including:
 ### `helix_vectors/`
 
 #### `calc_6d_helix_vectors.py`
-Calculates 6D helix vectors combining position (helix centroid) and direction (normalized carbonyl vector sum) for protein helices. All coordinates are calculated in a reference frame defined by beta sheet residues or user-specified projection residues.
+Calculates 6D helix vectors combining position (helix centroid) and direction (normalized carbonyl vector sum) components for alpha helices. Coordinates are calculated in a reference frame defined by beta sheet residues or user-specified projection residues on a reference structure (to which all other structures are aligned).
 
 **Applications:**
 - Quantitative helix geometry comparison
@@ -245,7 +245,7 @@ python calc_6d_helix_vectors.py --ref_pdb reference.pdb \
 ```
 
 #### `analyze_helix_vectors.py`
-Analyzes helix vector data to extract geometric relationships and patterns. Processes output from `calc_6d_helix_vectors.py` to generate statistics, visualizations, and comparisons between design variants.
+Analyzes helix and sheet coordinates (output by `calc_6d_helix_vectors.py`) to generate 3D visualizations and compute helix diversity by binning helix vectors by their cartesian and directional components.
 
 **Usage:**
 ```bash
