@@ -207,14 +207,10 @@ Compares LUCS designs to Rosetta FastRelax structures. Evaluates how well design
 ### `degree_of_reshaping/common/`
 
 #### `structural_alignment.py`
-Unified module for structural alignment operations. Consolidates Kabsch algorithm implementations and provides clean API for structure superposition.
+Module for structural alignment operations.
 
 #### `rmsd_calculations.py`
-Consolidated RMSD calculation functions supporting both BioPython and PyRosetta backends. Provides multiple RMSD calculation modes:
-- Full structure RMSD
-- Backbone-only RMSD
-- Residue subset RMSD
-- Segment-wise RMSD
+Consolidated RMSD calculation functions supporting both BioPython- and PyRosetta-based alignment and RMSD calculations. Provides residue subset, backbone-only, and full-structure RMSDs.
 
 #### `pyrosetta_utils.py`
 PyRosetta-specific helper functions including:
@@ -227,12 +223,7 @@ PyRosetta-specific helper functions including:
 ### `helix_vectors/`
 
 #### `calc_6d_helix_vectors.py`
-Calculates 6D helix vectors combining position (helix centroid) and direction (normalized carbonyl vector sum) components for alpha helices. Coordinates are calculated in a reference frame defined by beta sheet residues or user-specified projection residues on a reference structure (to which all other structures are aligned).
-
-**Applications:**
-- Quantitative helix geometry comparison
-- Analyzing helix repositioning in designs
-- Characterizing helix orientation changes
+Calculates 6D helix vectors combining 3 cartesian coordinates (helix backbone--N, Ca, C--centroid) and 3 direction (normalized carbonyl vector sum) components for alpha helices. Coordinates are calculated in a reference frame defined by beta sheet residues or user-specified projection residues on a reference structure (to which all other structures are aligned).
 
 **Usage:**
 ```bash
