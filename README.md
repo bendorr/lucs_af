@@ -88,10 +88,10 @@ python run_prediction.py --targets targets.tsv \
 ```
 
 #### `train_utils.py`
-Training utilities such as (i) input, MSA, and template featurization for training examples and (ii) structure manipulation and coordinate transformations.
+Training utilities including (i) input, MSA, and template featurization for training examples and (ii) structure manipulation and coordinate transformations.
 
 #### `predict_utils.py`
-Prediction utilities such as (i) input, MSA, and template featurization for inference targets and (ii) structure manipulation and coordinate transformations.
+Prediction utilities including (i) input, MSA, and template featurization for inference targets and (ii) structure manipulation and coordinate transformations.
 
 #### `analyze_finetuned_predictions.py`
 Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tuned AlphaFold2 predictions and ground truth structures. Generates dataframes with structural metrics, confidence scores, and PDB paths for downstream analysis.
