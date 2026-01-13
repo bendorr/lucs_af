@@ -1,4 +1,4 @@
-[![tests](https://github.com/<OWNER>/<REPO>/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/<OWNER>/<REPO>/actions/workflows/tests.yml)
+![tests](https://github.com/bendorr/lucs_af/actions/workflows/tests.yml/badge.svg)
 
 # Code for "An improved model for prediction of de novo designed proteins with diverse geometries"
 
