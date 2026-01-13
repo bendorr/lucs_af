@@ -50,6 +50,7 @@ finetune = [
 ]
 dev = [
   "pytest>=7.2",
+  "torch>=2.0",
 ]
 
 [tool.setuptools]
