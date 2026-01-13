@@ -26,10 +26,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f pyproject.toml ]; then pip install -e .; fi
-          pip install pytest
+          pip install .[dev]
+
+      - name: Test installation
+        run: |
+          python -c "import alphafold_finetune; import degree_of_reshaping; import helix_vectors; print('✓ All packages imported successfully')"
 
       - name: Run tests
-        run: pytest -q
+        run: pytest tests/ -v
 
