@@ -197,10 +197,7 @@ python combine_matrices.py --data_folder ./matrices \
 Calculates helix-specific RMSDs between designs and a reference structure. Focuses on helix regions to evaluate reshaping quality independent of loop conformations.
 
 #### > `tm_score_to_ref.py`
-Calculates TM-scores between designs and reference structures. TM-score is a length-independent metric better suited than RMSD for comparing structures of different sizes or evaluating global topology.
-
-#### > `rmsd_LUCS_to_RosettaRelax.py`
-Compares LUCS designs to Rosetta FastRelax structures. Evaluates how well designs match Rosetta-relaxed structures, useful for validating design quality and identifying outliers.
+Calculates TM-scores between provided PDBs and a reference structure.
 
 ---
 
