@@ -32,11 +32,6 @@ dependencies = [
   "matplotlib>=3.6",
   "seaborn>=0.12",
 ]
-urls = {
-  "Homepage" = "https://github.com/Kortemme-Lab/lucs_af",
-  "Repository" = "https://github.com/Kortemme-Lab/lucs_af",
-  "Issues" = "https://github.com/Kortemme-Lab/lucs_af/issues",
-}
 
 [project.urls]
 Homepage = "https://github.com/Kortemme-Lab/lucs_af"
