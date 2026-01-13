@@ -128,7 +128,7 @@ Utility for parsing and analyzing training loss from log files. Extracts trainin
 Primary analysis script for LUCS designs. Performs structural analyses for LUCS designs' Rosetta models and predicted structures (from models like AlphaFold2/3, RoseTTAFold2, ESMFold, etc.). Compares LUCS designs' Rosetta models and predicted structures to reference structures (such as the starting structure used in generating the LUCS designs).
 
 **Analyses in degree_reshaped.py:**
-- Helix RMSD calculations, using multiple helix definitions and alignment methods
+- Helix RMSD calculations, using multiple helix definitions and alignment methods (helix RMSD is defined as the RMSD between the longest common helical stretches of two topologically matched helices (keeping the central helical residues and trimming the C-terminal residue where necessary).)
 - Helix displacement and angle between design models, predicted structures, and reference structures
 - Reshaped region RMSD, full backbone RMSD, and TM-score
 - Reshaped residue confidence scores (e.g., pLDDT and pAE)
@@ -173,7 +173,7 @@ python all_by_all_rmsds.py --pdb_dirs ./structures \
 ```
 
 #### > `all_by_all_helix_rmsds.py`
-Similar to `all_by_all_rmsds.py` but calculates RMSD and TM-score matrices specifically for helix regions. Useful for analyzing helix-specific structural diversity in LUCS design libraries.
+Similar to `all_by_all_rmsds.py` but calculates helix RMSD matrices. Calculates helix RMSD for multiple alignment methods. Helix RMSD is defined as the RMSD between the longest common helical stretches of two topologically matched helices (keeping the central helical residues and trimming the C-terminal residue where necessary).
 
 **Usage:**
 ```bash
@@ -183,9 +183,7 @@ python all_by_all_helix_rmsds.py --data_dir ./structures \
 ```
 
 #### > `combine_matrices.py`
-Combines partial all-by-all matrices from distributed calculations into complete matrices. Supports two modes:
-1. Combining multiple partial matrices from parallel jobs
-2. Filling missing values in an existing matrix
+Combines partial all-by-all matrices from distributed calculations into complete matrices. Supports (i) combining multiple partial matrices from parallel jobs and (ii) filling missing values in an existing matrix.
 
 **Usage:**
 ```bash
