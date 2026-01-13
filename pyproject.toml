@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lucs-af"
+version = "2.0.0"
+description = "LUCS structural analysis and AlphaFold2 fine-tuning"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [{name = "Ben Orr"}]
+keywords = ["protein-design", "alphafold", "lucs", "structural-biology", "rosetta"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+  "numpy>=1.23",
+  "pandas>=1.4",
+  "scipy>=1.9",
+  "biopython>=1.79",
+  "tmtools>=0.1.4",
+  "pyyaml>=6.0",
+  "tqdm>=4.65",
+  "matplotlib>=3.6",
+  "seaborn>=0.12",
+]
+urls = {
+  "Homepage" = "https://github.com/Kortemme-Lab/lucs_af",
+  "Repository" = "https://github.com/Kortemme-Lab/lucs_af",
+  "Issues" = "https://github.com/Kortemme-Lab/lucs_af/issues",
+}
+
+[project.optional-dependencies]
+finetune = [
+  "jax>=0.4.1",
+  "jaxlib>=0.4.1",
+  "dm-haiku>=0.0.11",
+  "optax>=0.1.4",
+  "chex>=0.1.82",
+  "absl-py>=1.4",
+  "ml-collections>=0.1.1",
+]
+dev = [
+  "pytest>=7.2",
+]
+
+[tool.setuptools]
+include-package-data = true
+packages = [
+  "alphafold_finetune",
+  "degree_of_reshaping",
+  "degree_of_reshaping.common",
+  "helix_vectors",
+  "tests",
+]
+
+[tool.setuptools.package-data]
+degree_of_reshaping = ["config.yaml.example"]

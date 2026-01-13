@@ -8,6 +8,30 @@ Data for this manuscript can be found on [zenodo](https://zenodo.org/records/169
 
 See instructions for running fine-tuned AF2 models in ft_models/ or on [zenodo](https://zenodo.org/records/15580792).
 
+## Installation
+
+Install from the repo root:
+
+```bash
+pip install .
+```
+
+Install with extra packages for AlphaFold2 fine-tuning (JAX/Haiku/Optax):
+
+```bash
+pip install .[finetune]
+```
+
+Install with extra packages for dev/test functions:
+
+```bash
+pip install .[dev]
+```
+
+Notes:
+- PyRosetta is not distributed via PyPI; install it separately if you use the PyRosetta-dependent helpers in degree_of_reshaping/.
+- The fine-tuning extras install CPU wheels for JAX; follow JAX docs for GPU-specific wheels if needed.
+
 ## Overview
 
 Code for (i) analyzing [LUCS](https://www.science.org/doi/10.1126/science.abc0881) (Loop-Helix-Loop Unit Combinatorial Sampling) designs (de novo designed proteins) and their predicted structures (AlphaFold2/3, RoseTTAFold2, ESMFold, etc.) and (ii) fine-tuning AlphaFold2.
@@ -30,25 +54,25 @@ Code for Rosetta-based sequence design and scoring can be found in [local_protei
 ## Directory Structure
 
 #### `alphafold_finetune/`
-&ensp;&ensp;&ensp;&ensp;Tools for fine-tuning AlphaFold2 models and analyzing predictions from both classic and fine-tuned models. Includes training scripts, prediction utilities, and analysis tools for evaluating model performance against ground truth (or, as in the publication, Rosetta-modeled) structures.
+Tools for fine-tuning AlphaFold2 models and analyzing predictions from both classic and fine-tuned models. Includes training scripts, prediction utilities, and analysis tools for evaluating model performance against ground truth (or, as in the publication, Rosetta-modeled) structures.
 
 #### `data/`
-&ensp;&ensp;&ensp;&ensp;Organization of data associated with the manuscript on zenodo and descriptions of data used in each manuscript figure.
+Organization of data associated with the manuscript on zenodo and descriptions of data used in each manuscript figure.
 
 #### `degree_of_reshaping/`
-&ensp;&ensp;&ensp;&ensp;Analysis tools for calculating structural metrics for LUCS designs, e.g. helix RMSDs between Rosetta models and AlphaFold predictions, or between these models and reference structures (such as LUCS starting structures, before loop-helix-loop reshaping). Includes utilities for RMSD calculations, helix geometry analysis, and structural diversity calculations.
+Analysis tools for calculating structural metrics for LUCS designs, e.g. helix RMSDs between Rosetta models and AlphaFold predictions, or between these models and reference structures (such as LUCS starting structures, before loop-helix-loop reshaping). Includes utilities for RMSD calculations, helix geometry analysis, and structural diversity calculations.
 
 #### `env/`
-&ensp;&ensp;&ensp;&ensp;.yml files containing dependencies for alphafold fine-tuning and Rosetta/structure-based analysis.
+.yml files containing dependencies for alphafold fine-tuning and Rosetta/structure-based analysis.
 
 #### `ft_models/`
-&ensp;&ensp;&ensp;&ensp;Instructions for running fine-tuned AF2 models from the paper using localcolabfold or Google Colab.
+Instructions for running fine-tuned AF2 models from the paper using localcolabfold or Google Colab.
 
 #### `helix_vectors/`
-&ensp;&ensp;&ensp;&ensp;Tools for calculating and analyzing 6D helix vectors (3D position + 3D direction) to characterize helix geometry in protein structures. Used for quantifying and visualizing helix diversity through helix position and orientation.
+Tools for calculating and analyzing 6D helix vectors (3D position + 3D direction) to characterize helix geometry in protein structures. Used for quantifying and visualizing helix diversity through helix position and orientation.
 
 #### `tests/`
-&ensp;&ensp;&ensp;&ensp;Unit tests for configuration management, RMSD calculations, and structural alignment.
+Unit tests for configuration management, RMSD calculations, and structural alignment.
 
 ---
 
@@ -57,7 +81,7 @@ Code for Rosetta-based sequence design and scoring can be found in [local_protei
 ### `alphafold_finetune/`
 
 #### > `run_finetuning.py`
-&ensp;&ensp;&ensp;&ensp;Fine-tune AlphaFold2 models on custom datasets. Supports training with optional classification heads (pLDDT-based and pAE-based) for predicting experimentally determined properties such as protease resistance or protein-protein binding. Includes:
+Fine-tune AlphaFold2 models on custom datasets. Supports training with optional classification heads (pLDDT-based and pAE-based) for predicting experimentally determined properties such as protease resistance or protein-protein binding. Includes:
 - Custom loss functions for structural accuracy and classification
 - Optional template-based training
 - Checkpoint saving and validation
@@ -74,7 +98,7 @@ python run_finetuning.py --data_dir /path/to/af_params \
 ```
 
 #### > `run_prediction.py`
-&ensp;&ensp;&ensp;&ensp;Template-based AlphaFold2 inference for predicting target sequences. Uses provided templates to guide structure prediction and outputs predicted structures with confidence metrics.
+Template-based AlphaFold2 inference for predicting target sequences. Uses provided templates to guide structure prediction and outputs predicted structures with confidence metrics.
 
 **Usage:**
 ```bash
@@ -88,13 +112,13 @@ python run_prediction.py --targets targets.tsv \
 ```
 
 #### > `train_utils.py`
-&ensp;&ensp;&ensp;&ensp;Training utilities including (i) input, MSA, and template featurization for training examples and (ii) structure manipulation and coordinate transformations.
+Training utilities including (i) input, MSA, and template featurization for training examples and (ii) structure manipulation and coordinate transformations.
 
 #### > `predict_utils.py`
-&ensp;&ensp;&ensp;&ensp;Prediction utilities including (i) input, MSA, and template featurization for inference targets and (ii) structure manipulation and coordinate transformations.
+Prediction utilities including (i) input, MSA, and template featurization for inference targets and (ii) structure manipulation and coordinate transformations.
 
 #### > `analyze_finetuned_predictions.py`
-&ensp;&ensp;&ensp;&ensp;Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tuned AlphaFold2 predictions and ground truth structures. Generates dataframes with structural metrics, confidence scores, and PDB paths for downstream analysis.
+Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tuned AlphaFold2 predictions and ground truth structures. Generates dataframes with structural metrics, confidence scores, and PDB paths for downstream analysis.
 
 **Analyses in analyze_finetuned_predictions.py:**
 - RMSD between predictions and ground truth structures, over all and subsets of residues (e.g., reshaped loop-helix-loop elements in LUCS designs)
@@ -103,7 +127,7 @@ python run_prediction.py --targets targets.tsv \
 - Classic vs. fine-tuned model performance w.r.t. classification tasks and structure prediction accuracy
 
 #### > `analyze_checkpointed_models_metrics.py`
-&ensp;&ensp;&ensp;&ensp;Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement over fine-tuning, such as:
+Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement over fine-tuning, such as:
 - RMSDs to ground truth structures, for all and subsets of residues
 - Confidence score distributions
 - Precision-Recall curves for classification tasks (e.g., stability prediction)
@@ -118,14 +142,14 @@ python analyze_checkpointed_models_metrics.py --job_name experiment1 \
 ```
 
 #### > `read_loss_from_txt.py`
-&ensp;&ensp;&ensp;&ensp;Utility for parsing and analyzing training loss from log files. Extracts training and validation losses from text logs, enabling visualization of training curves and identification of optimal checkpoints.
+Utility for parsing and analyzing training loss from log files. Extracts training and validation losses from text logs, enabling visualization of training curves and identification of optimal checkpoints.
 
 ---
 
 ### `degree_of_reshaping/`
 
 #### > `degree_reshaped.py`
-&ensp;&ensp;&ensp;&ensp;Primary analysis script for LUCS designs. Performs structural analyses for LUCS designs' Rosetta models and predicted structures (from models like AlphaFold2/3, RoseTTAFold2, ESMFold, etc.). Compares LUCS designs' Rosetta models and predicted structures to reference structures (such as the starting structure used in generating the LUCS designs).
+Primary analysis script for LUCS designs. Performs structural analyses for LUCS designs' Rosetta models and predicted structures (from models like AlphaFold2/3, RoseTTAFold2, ESMFold, etc.). Compares LUCS designs' Rosetta models and predicted structures to reference structures (such as the starting structure used in generating the LUCS designs).
 
 **Analyses in degree_reshaped.py:**
 - Helix RMSD calculations, using multiple helix definitions and alignment methods (helix RMSD is defined as the RMSD between the longest common helical stretches of two topologically matched helices, keeping the central helical residues and trimming the C-terminal residue where necessary).
@@ -146,7 +170,7 @@ python degree_reshaped.py --lucs_data /path/to/designs \
 - Note: insertion_points.json is in the format specified in [Loop-Helix-Loop Reshaping](https://github.com/Kortemme-Lab/loop_helix_loop_reshaping)
 
 #### > `utils_degree_reshaped.py`
-&ensp;&ensp;&ensp;&ensp;Utility functions for protein structural analysis:
+Utility functions for protein structural analysis:
 - Helix and sheet geometry calculations
 - RMSD calculation functions (using multiple alignment methods)
 - Residue selection and manipulation in PyRosetta and Biopython
@@ -158,7 +182,7 @@ python degree_reshaped.py --lucs_data /path/to/designs \
 This module is used by most analysis scripts in degree_of_reshaping/
 
 #### > `all_by_all_rmsds.py`
-&ensp;&ensp;&ensp;&ensp;Computes pairwise RMSD and TM-score matrices for all structure pairs in a dataset. Generates symmetric RMSD matrices and asymmetric TM-score matrices (normalized by each structure's length). Supports parallel processing for large datasets.
+Computes pairwise RMSD and TM-score matrices for all structure pairs in a dataset. Generates symmetric RMSD matrices and asymmetric TM-score matrices (normalized by each structure's length). Supports parallel processing for large datasets.
 
 **Output Files:**
 - `rmsd.npy`: all-by-all RMSD matrix
@@ -173,7 +197,7 @@ python all_by_all_rmsds.py --pdb_dirs ./structures \
 ```
 
 #### > `all_by_all_helix_rmsds.py`
-&ensp;&ensp;&ensp;&ensp;Similar to `all_by_all_rmsds.py` but calculates helix RMSD matrices. Calculates helix RMSD for multiple alignment methods. Helix RMSD is defined as the RMSD between the longest common helical stretches of two topologically matched helices (keeping the central helical residues and trimming the C-terminal residue where necessary).
+Similar to `all_by_all_rmsds.py` but calculates helix RMSD matrices. Calculates helix RMSD for multiple alignment methods. Helix RMSD is defined as the RMSD between the longest common helical stretches of two topologically matched helices (keeping the central helical residues and trimming the C-terminal residue where necessary).
 
 **Usage:**
 ```bash
@@ -183,7 +207,7 @@ python all_by_all_helix_rmsds.py --data_dir ./structures \
 ```
 
 #### > `combine_matrices.py`
-&ensp;&ensp;&ensp;&ensp;Combines partial all-by-all matrices from distributed calculations into complete matrices. Supports (i) combining multiple partial matrices from parallel jobs and (ii) filling missing values in an existing matrix.
+Combines partial all-by-all matrices from distributed calculations into complete matrices. Supports (i) combining multiple partial matrices from parallel jobs and (ii) filling missing values in an existing matrix.
 
 **Usage:**
 ```bash
@@ -192,23 +216,23 @@ python combine_matrices.py --data_folder ./matrices \
 ```
 
 #### > `helix_rmsds_to_ref.py`
-&ensp;&ensp;&ensp;&ensp;Calculates helix-specific RMSDs between designs and a reference structure. Focuses on helix regions to evaluate reshaping quality independent of loop conformations.
+Calculates helix-specific RMSDs between designs and a reference structure. Focuses on helix regions to evaluate reshaping quality independent of loop conformations.
 
 #### > `tm_score_to_ref.py`
-&ensp;&ensp;&ensp;&ensp;Calculates TM-scores between provided PDBs and a reference structure.
+Calculates TM-scores between provided PDBs and a reference structure.
 
 ---
 
 ### `degree_of_reshaping/common/`
 
 #### > `structural_alignment.py`
-&ensp;&ensp;&ensp;&ensp;Module for structural alignment operations.
+Module for structural alignment operations.
 
 #### > `rmsd_calculations.py`
-&ensp;&ensp;&ensp;&ensp;Consolidated RMSD calculation functions supporting both BioPython- and PyRosetta-based alignment and RMSD calculations. Provides residue subset, backbone-only, and full-structure RMSDs.
+Consolidated RMSD calculation functions supporting both BioPython- and PyRosetta-based alignment and RMSD calculations. Provides residue subset, backbone-only, and full-structure RMSDs.
 
 #### > `pyrosetta_utils.py`
-&ensp;&ensp;&ensp;&ensp;PyRosetta-specific helper functions including:
+PyRosetta-specific helper functions including:
 - PDB to PyRosetta residue number conversion
 - Pose manipulation utilities
 - Residue selector helpers
@@ -218,7 +242,7 @@ python combine_matrices.py --data_folder ./matrices \
 ### `helix_vectors/`
 
 #### > `calc_6d_helix_vectors.py`
-&ensp;&ensp;&ensp;&ensp;Calculates 6D helix vectors combining 3 cartesian coordinates (helix backbone--N, Ca, C--centroid) and 3 direction (normalized carbonyl vector sum) components for alpha helices. Coordinates are calculated in a reference frame defined by beta sheet residues or user-specified projection residues on a reference structure (to which all other structures are aligned).
+Calculates 6D helix vectors combining 3 cartesian coordinates (helix backbone--N, Ca, C--centroid) and 3 direction (normalized carbonyl vector sum) components for alpha helices. Coordinates are calculated in a reference frame defined by beta sheet residues or user-specified projection residues on a reference structure (to which all other structures are aligned).
 
 **Usage:**
 ```bash
@@ -231,7 +255,7 @@ python calc_6d_helix_vectors.py --ref_pdb reference.pdb \
 ```
 
 #### > `analyze_helix_vectors.py`
-&ensp;&ensp;&ensp;&ensp;Analyzes helix and sheet coordinates (output by `calc_6d_helix_vectors.py`) to generate 3D visualizations and compute helix diversity by binning helix vectors by their cartesian and directional components.
+Analyzes helix and sheet coordinates (output by `calc_6d_helix_vectors.py`) to generate 3D visualizations and compute helix diversity by binning helix vectors by their cartesian and directional components.
 
 **Usage:**
 ```bash
@@ -255,13 +279,13 @@ python analyze_helix_vectors.py \
 ### `tests/`
 
 #### > `test_config.py`
-&ensp;&ensp;&ensp;&ensp;Unit tests for configuration management, including .yml loading, environment variables, arg parsing, and default values.
+Unit tests for configuration management, including .yml loading, environment variables, arg parsing, and default values.
 
 #### > `test_rmsd_calculations.py`
-&ensp;&ensp;&ensp;&ensp;Tests for RMSD calculation functions across different implementations (Biopython, PyRosetta, aligning residue subsets, etc.).
+Tests for RMSD calculation functions across different implementations (Biopython, PyRosetta, aligning residue subsets, etc.).
 
 #### > `test_structural_alignment.py`
-&ensp;&ensp;&ensp;&ensp;Tests for structural alignment algorithms.
+Tests for structural alignment algorithms.
 
 ---
 
