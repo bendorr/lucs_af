@@ -36,7 +36,7 @@ Tools for fine-tuning AlphaFold2 models and analyzing predictions from both clas
 Organization of data associated with the manuscript on zenodo and descriptions of data used in each manuscript figure.
 
 #### `degree_of_reshaping/`
-Analysis tools for calculating structural metrics for LUCS designs, e.g. between Rosetta models and AlphaFold predictions, or between these models and reference structures (such as LUCS starting structures, before loop-helix-loop reshaping). Includes utilities for RMSD calculations, helix geometry analysis, confidence metric evaluation, and all-by-all structural comparisons.
+Analysis tools for calculating structural metrics for LUCS designs, e.g. helix RMSDs between Rosetta models and AlphaFold predictions, or between these models and reference structures (such as LUCS starting structures, before loop-helix-loop reshaping). Includes utilities for RMSD calculations, helix geometry analysis, and structural diversity calculations.
 
 #### `env/`
 .yml files containing dependencies for alphafold fine-tuning and Rosetta/structure-based analysis.
@@ -129,8 +129,8 @@ Primary analysis script for LUCS designs. Performs structural analyses for LUCS 
 
 **Analyses in degree_reshaped.py:**
 - Helix RMSD calculations, using multiple helix definitions and alignment methods (helix RMSD is defined as the RMSD between the longest common helical stretches of two topologically matched helices, keeping the central helical residues and trimming the C-terminal residue where necessary).
-- Helix displacement and angle between design models, predicted structures, and reference structures
-- Reshaped region RMSD, full backbone RMSD, and TM-score
+- Helix displacement and angle (after aligning on beta sheet or non-loop-helix-loop residues) between design models, predicted structures, and reference structures
+- Reshaped region (loop-helix-loop elements) RMSD, full backbone RMSD, and TM-score
 - Reshaped residue confidence scores (e.g., pLDDT and pAE)
 - Secondary structure analysis with DSSP
 
