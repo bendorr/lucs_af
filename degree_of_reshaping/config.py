@@ -34,6 +34,7 @@ Integrating with argparse:
 
 import os
 import yaml
+import warnings
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 from dataclasses import dataclass, field, asdict
@@ -402,9 +403,15 @@ def load_config(
         config._apply_env_overrides()
         return config
 
-    raise FileNotFoundError(
+    # Issue warning but continue with defaults instead of raising error
+    warnings.warn(
         "No configuration file found. Searched:\n"
         "  - ./config.yaml\n"
         "  - ~/.lucs_af/config.yaml\n"
-        "  - <script_dir>/config.yaml"
+        "  - <script_dir>/config.yaml\n"
+        "Continuing with default configuration.",
+        UserWarning
     )
+    config = Config()
+    config._apply_env_overrides()
+    return config

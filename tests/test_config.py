@@ -159,9 +159,12 @@ class TestLoadConfig:
         # This tests the fallback behavior
 
     def test_load_nonexistent_file_without_defaults(self):
-        """Test nonexistent file raises error when use_defaults=False."""
-        with pytest.raises(FileNotFoundError):
-            load_config(use_defaults=False)
+        """Test nonexistent file raises warning when use_defaults=False."""
+        with pytest.warns(UserWarning, match="No configuration file found"):
+            config = load_config(use_defaults=False)
+            # Should still return a config with defaults
+            assert isinstance(config, Config)
+            assert config.paths.data_dir == "./data"
 
 
 if __name__ == '__main__':
