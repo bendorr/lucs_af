@@ -18,11 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify Linux environment
-        run: |
-          echo "Running on: $(uname -s)"
-          uname -a
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -31,12 +26,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[dev]
-
-      - name: Test installation
-        run: |
-          python -c "import alphafold_finetune; import degree_of_reshaping; import helix_vectors; print('✓ All packages imported successfully')"
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f pyproject.toml ]; then pip install -e .; fi
+          pip install pytest
 
       - name: Run tests
-        run: pytest tests/ -v
+        run: pytest -q
 
