@@ -1,4 +1,4 @@
-![tests](https://github.com/bendorr/lucs_af/actions/workflows/tests.yml/badge.svg?branch=master)
+![tests](https://github.com/bendorr/lucs_af/actions/workflows/tests.yml/badge.svg?branch=main)
 
 # Code for "An improved model for prediction of de novo designed proteins with diverse geometries"
 
