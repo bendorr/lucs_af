@@ -18,6 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify Linux environment
+        run: |
+          echo "Running on: $(uname -s)"
+          uname -a
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
