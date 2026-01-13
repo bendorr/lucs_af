@@ -31,8 +31,9 @@ Acta Crystallographica Section A. 32 (5): 922–923.
 
 from typing import Tuple, List, Optional, Any
 import numpy as np
-from biopandas.pdb import PandasPdb
-import pandas
+from Bio.PDB import PDBParser, PDBIO, Select
+from Bio.PDB.Structure import Structure
+from Bio.PDB.Chain import Chain
 
 
 def apply_transform(
@@ -161,19 +162,19 @@ def kabsch(A: np.ndarray, B: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.nda
 
 
 def coord_extractor(
-    df: pandas.DataFrame,
+    structure: Structure,
     chainids: Optional[List[str]] = None
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Extract coordinates from a PandasPdb ATOM dataframe.
+    Extract coordinates from a BioPython Structure object.
 
     This function extracts both C-alpha coordinates (for alignment) and
-    all-atom coordinates from a PDB ATOM dataframe.
+    all-atom coordinates from a PDB structure.
 
     Parameters
     ----------
-    df : pandas.DataFrame
-        PandasPdb ATOM dataframe containing coordinate information.
+    structure : Bio.PDB.Structure.Structure
+        BioPython Structure object containing coordinate information.
     chainids : Optional[List[str]], optional
         List of chain IDs to extract. If None, extracts all chains.
 
@@ -192,27 +193,33 @@ def coord_extractor(
 
     Examples
     --------
-    >>> from biopandas.pdb import PandasPdb
-    >>> ppdb = PandasPdb().read_pdb('structure.pdb')
-    >>> ca_coords, all_coords = coord_extractor(ppdb.df['ATOM'])
+    >>> from Bio.PDB import PDBParser
+    >>> parser = PDBParser(QUIET=True)
+    >>> structure = parser.get_structure('protein', 'structure.pdb')
+    >>> ca_coords, all_coords = coord_extractor(structure)
     >>> print(ca_coords.shape)  # [1, n_residues, 3]
     """
+    # Get the first model
+    model = structure[0]
+    
     # Extract all atom coordinates first
-    X = df['x_coord'].tolist()
-    Y = df['y_coord'].tolist()
-    Z = df['z_coord'].tolist()
-    all_atom_coords = np.array([X, Y, Z]).T[np.newaxis, :, :]
-
-    # Filter by chain IDs if specified
-    if chainids is not None:
-        df = df[df['chain_id'].isin(chainids)]
-
-    # Extract C-alpha coordinates only
-    df = df[df['atom_name'] == 'CA']
-    X = df['x_coord'].tolist()
-    Y = df['y_coord'].tolist()
-    Z = df['z_coord'].tolist()
-    coords = np.array([X, Y, Z]).T[np.newaxis, :, :]
+    all_atom_list = []
+    for chain in model:
+        for residue in chain:
+            for atom in residue:
+                all_atom_list.append(atom.get_coord())
+    all_atom_coords = np.array(all_atom_list)[np.newaxis, :, :]
+    
+    # Extract C-alpha coordinates
+    ca_list = []
+    for chain in model:
+        # Filter by chain IDs if specified
+        if chainids is not None and chain.id not in chainids:
+            continue
+        for residue in chain:
+            if 'CA' in residue:
+                ca_list.append(residue['CA'].get_coord())
+    coords = np.array(ca_list)[np.newaxis, :, :]
 
     return coords, all_atom_coords
 
@@ -272,7 +279,7 @@ def pdb_align(
     pdb2: str,
     chainids1: Optional[List[str]] = None,
     chainids2: Optional[List[str]] = None
-) -> Tuple[np.ndarray, float, PandasPdb, np.ndarray, np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, float, Structure, np.ndarray, np.ndarray, np.ndarray]:
     """
     Align two pdb structures and calculate RMSD.
 
@@ -297,8 +304,8 @@ def pdb_align(
         Aligned C-alpha coordinates of pdb2, shape [n_residues, 3].
     rmsd : float
         RMSD value after alignment.
-    ppdb2 : PandasPdb
-        PandasPdb object for pdb2 (useful for saving aligned structure).
+    structure2 : Bio.PDB.Structure.Structure
+        BioPython Structure object for pdb2 (useful for saving aligned structure).
     R : np.ndarray
         Rotation matrix used for alignment.
     t : np.ndarray
@@ -314,17 +321,18 @@ def pdb_align(
 
     Examples
     --------
-    >>> aligned, rmsd, ppdb, R, t, all_coords = pdb_align("ref.pdb", "model.pdb")
+    >>> aligned, rmsd, structure, R, t, all_coords = pdb_align("ref.pdb", "model.pdb")
     >>> print(f"RMSD: {rmsd:.2f} Å")
     >>> print(f"Aligned structure shape: {aligned.shape}")
     """
     # Load pdb files
-    ppdb1 = PandasPdb().read_pdb(pdb1)
-    ppdb2 = PandasPdb().read_pdb(pdb2)
+    parser = PDBParser(QUIET=True)
+    structure1 = parser.get_structure('ref', pdb1)
+    structure2 = parser.get_structure('mobile', pdb2)
 
     # Extract coordinates
-    coord1, all_atom_coords1 = coord_extractor(ppdb1.df['ATOM'], chainids=chainids1)
-    coord2, all_atom_coords2 = coord_extractor(ppdb2.df['ATOM'], chainids=chainids2)
+    coord1, all_atom_coords1 = coord_extractor(structure1, chainids=chainids1)
+    coord2, all_atom_coords2 = coord_extractor(structure2, chainids=chainids2)
 
     # Determine minimum length (handle structures with different lengths)
     coord1_length = coord1.shape[1]
@@ -339,7 +347,7 @@ def pdb_align(
     # Note: coord2 is aligned to coord1
     aligned_struc, rmsd, R, t = rmsd_(cropped_coord2, cropped_coord1)
 
-    return aligned_struc.squeeze(), rmsd, ppdb2, R, t, all_atom_coords2
+    return aligned_struc.squeeze(), rmsd, structure2, R, t, all_atom_coords2
 
 
 def align_and_dump_pdb(
@@ -374,8 +382,8 @@ def align_and_dump_pdb(
     Notes
     -----
     The aligned structure is saved to the same directory as pdb2 with
-    the prefix "aa_aligned_" (all-atom aligned). Only C-alpha atoms are
-    included in the output file.
+    the prefix "aa_aligned_" (all-atom aligned). All atoms are transformed
+    and saved.
 
     The transformation (R, t) computed from C-alpha alignment is applied
     to all atoms to maintain structural integrity.
@@ -388,7 +396,7 @@ def align_and_dump_pdb(
     RMSD: 2.45 Å
     """
     # Perform alignment
-    aligned_struc, rmsd, ppdb2, R, t, all_atom_coords2 = pdb_align(
+    aligned_struc, rmsd, structure2, R, t, all_atom_coords2 = pdb_align(
         pdb1, pdb2, chainids1, chainids2
     )
 
@@ -396,18 +404,22 @@ def align_and_dump_pdb(
     all_atom_aligned = apply_transform(all_atom_coords2.astype(np.float64), R, t)
     all_atom_aligned = all_atom_aligned.squeeze()
 
-    # Create new PandasPdb object with aligned coordinates
-    aa_ppdb2 = PandasPdb()
-    aa_ppdb2.df['ATOM'] = ppdb2.df['ATOM'][ppdb2.df['ATOM']['atom_name'] == 'CA']
-    aa_ppdb2.df['ATOM'].loc[:, 'x_coord'] = all_atom_aligned[:, 0].tolist()
-    aa_ppdb2.df['ATOM'].loc[:, 'y_coord'] = all_atom_aligned[:, 1].tolist()
-    aa_ppdb2.df['ATOM'].loc[:, 'z_coord'] = all_atom_aligned[:, 2].tolist()
+    # Apply transformation to all atoms in the structure
+    atom_idx = 0
+    model = structure2[0]
+    for chain in model:
+        for residue in chain:
+            for atom in residue:
+                atom.set_coord(all_atom_aligned[atom_idx])
+                atom_idx += 1
 
     # Construct output path
     aa_aligned_dest = "/".join(pdb2.split('/')[:-1]) + "/aa_aligned_" + pdb2.split('/')[-1]
 
     # Save aligned structure
     print(f"All-atom PDB destination {aa_aligned_dest}")
-    aa_ppdb2.to_pdb(path=aa_aligned_dest, records=['ATOM'])
+    io = PDBIO()
+    io.set_structure(structure2)
+    io.save(aa_aligned_dest)
 
     return rmsd
