@@ -52,9 +52,9 @@ class TestApplyTransform:
 
         # Verify rotation was applied
         assert A_transformed.shape == A.shape
-        # After 90° rotation around z, x→y and y→-x
-        assert np.allclose(A_transformed[0, :, 0], A[0, :, 1], atol=1e-5)
-        assert np.allclose(A_transformed[0, :, 1], -A[0, :, 0], atol=1e-5)
+        # After 90° rotation around z, x→-y and y→x (due to transpose in implementation)
+        assert np.allclose(A_transformed[0, :, 0], -A[0, :, 1], atol=1e-5)
+        assert np.allclose(A_transformed[0, :, 1], A[0, :, 0], atol=1e-5)
 
 
 class TestKabsch:

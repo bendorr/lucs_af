@@ -270,6 +270,10 @@ def rmsd_(
 
     # Calculate RMSD: sqrt(mean(sum(squared_distances)))
     rmsd = np.mean(np.sqrt(np.sum((pred_aligned - true)**2, -1)), -1)
+    
+    # Convert to scalar if it's an array
+    if isinstance(rmsd, np.ndarray):
+        rmsd = float(rmsd.item())
 
     return pred_aligned, rmsd, R, t
 
