@@ -74,7 +74,7 @@ python run_finetuning.py --data_dir /path/to/af_params \
 ```
 
 #### > `run_prediction.py`
-    Template-based AlphaFold2 inference for predicting target sequences. Uses provided templates to guide structure prediction and outputs predicted structures with confidence metrics.
+&ensp;Template-based AlphaFold2 inference for predicting target sequences. Uses provided templates to guide structure prediction and outputs predicted structures with confidence metrics.
 
 **Usage:**
 ```bash
