@@ -30,25 +30,25 @@ Code for Rosetta-based sequence design and scoring can be found in [local_protei
 ## Directory Structure
 
 #### `alphafold_finetune/`
-Tools for fine-tuning AlphaFold2 models and analyzing predictions from both classic and fine-tuned models. Includes training scripts, prediction utilities, and analysis tools for evaluating model performance against ground truth (or, as in the publication, Rosetta-modeled) structures.
+&ensp;&ensp;&ensp;&ensp;Tools for fine-tuning AlphaFold2 models and analyzing predictions from both classic and fine-tuned models. Includes training scripts, prediction utilities, and analysis tools for evaluating model performance against ground truth (or, as in the publication, Rosetta-modeled) structures.
 
 #### `data/`
-Organization of data associated with the manuscript on zenodo and descriptions of data used in each manuscript figure.
+&ensp;&ensp;&ensp;&ensp;Organization of data associated with the manuscript on zenodo and descriptions of data used in each manuscript figure.
 
 #### `degree_of_reshaping/`
-Analysis tools for calculating structural metrics for LUCS designs, e.g. helix RMSDs between Rosetta models and AlphaFold predictions, or between these models and reference structures (such as LUCS starting structures, before loop-helix-loop reshaping). Includes utilities for RMSD calculations, helix geometry analysis, and structural diversity calculations.
+&ensp;&ensp;&ensp;&ensp;Analysis tools for calculating structural metrics for LUCS designs, e.g. helix RMSDs between Rosetta models and AlphaFold predictions, or between these models and reference structures (such as LUCS starting structures, before loop-helix-loop reshaping). Includes utilities for RMSD calculations, helix geometry analysis, and structural diversity calculations.
 
 #### `env/`
-.yml files containing dependencies for alphafold fine-tuning and Rosetta/structure-based analysis.
+&ensp;&ensp;&ensp;&ensp;.yml files containing dependencies for alphafold fine-tuning and Rosetta/structure-based analysis.
 
 #### `ft_models/`
-Instructions for running fine-tuned AF2 models from the paper using localcolabfold or Google Colab.
+&ensp;&ensp;&ensp;&ensp;Instructions for running fine-tuned AF2 models from the paper using localcolabfold or Google Colab.
 
 #### `helix_vectors/`
-Tools for calculating and analyzing 6D helix vectors (3D position + 3D direction) to characterize helix geometry in protein structures. Used for quantifying and visualizing helix diversity through helix position and orientation.
+&ensp;&ensp;&ensp;&ensp;Tools for calculating and analyzing 6D helix vectors (3D position + 3D direction) to characterize helix geometry in protein structures. Used for quantifying and visualizing helix diversity through helix position and orientation.
 
 #### `tests/`
-Unit tests for configuration management, RMSD calculations, and structural alignment.
+&ensp;&ensp;&ensp;&ensp;Unit tests for configuration management, RMSD calculations, and structural alignment.
 
 ---
 
@@ -74,7 +74,7 @@ python run_finetuning.py --data_dir /path/to/af_params \
 ```
 
 #### > `run_prediction.py`
-&ensp;&ensp;Template-based AlphaFold2 inference for predicting target sequences. Uses provided templates to guide structure prediction and outputs predicted structures with confidence metrics.
+&ensp;&ensp;&ensp;&ensp;Template-based AlphaFold2 inference for predicting target sequences. Uses provided templates to guide structure prediction and outputs predicted structures with confidence metrics.
 
 **Usage:**
 ```bash
