@@ -1,11 +1,11 @@
 """
-Structural alignment of pdb files using the Kabsch algorithm with PyTorch.
+Structural alignment of pdb files using the Kabsch algorithm with NumPy.
 
 Author: Ben Orr
 Date: 10.22.24
 
 This module provides functions for structural alignment of pdb files using the
-Kabsch algorithm implemented with PyTorch. It uses BioPandas for pdb file I/O
+Kabsch algorithm implemented with NumPy. It uses BioPandas for pdb file I/O
 and manipulation.
 
 The module supports:
@@ -30,32 +30,31 @@ Acta Crystallographica Section A. 32 (5): 922–923.
 """
 
 from typing import Tuple, List, Optional, Any
-import torch
+import numpy as np
 from biopandas.pdb import PandasPdb
-import torch.nn.functional as F
 import pandas
 
 
 def apply_transform(
-    A: torch.Tensor,
-    R: torch.Tensor,
-    t: torch.Tensor
-) -> torch.Tensor:
+    A: np.ndarray,
+    R: np.ndarray,
+    t: np.ndarray
+) -> np.ndarray:
     """
     Apply rotation and translation transformation to coordinates.
 
     Parameters
     ----------
-    A : torch.Tensor
+    A : np.ndarray
         Input coordinates with shape [batch_size, n_atoms, 3].
-    R : torch.Tensor
+    R : np.ndarray
         Rotation matrix with shape [batch_size, 3, 3].
-    t : torch.Tensor
+    t : np.ndarray
         Translation vector with shape [batch_size, 1, 3].
 
     Returns
     -------
-    torch.Tensor
+    np.ndarray
         Transformed coordinates: A_aligned = R * A^T + t
 
     Notes
@@ -65,16 +64,16 @@ def apply_transform(
 
     Examples
     --------
-    >>> A = torch.randn(1, 10, 3)
-    >>> R = torch.eye(3).unsqueeze(0)  # Identity rotation
-    >>> t = torch.tensor([[[1.0, 2.0, 3.0]]])  # Translation
+    >>> A = np.random.randn(1, 10, 3)
+    >>> R = np.eye(3)[np.newaxis, :, :]  # Identity rotation
+    >>> t = np.array([[[1.0, 2.0, 3.0]]])  # Translation
     >>> A_transformed = apply_transform(A, R, t)
     """
-    A_aligned = torch.bmm(R, A.transpose(1, 2)).transpose(1, 2) + t
+    A_aligned = np.matmul(R, A.transpose(0, 2, 1)).transpose(0, 2, 1) + t
     return A_aligned
 
 
-def kabsch(A: torch.Tensor, B: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+def kabsch(A: np.ndarray, B: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Perform Kabsch algorithm to find optimal rotation and translation.
 
@@ -83,22 +82,22 @@ def kabsch(A: torch.Tensor, B: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor
 
     Parameters
     ----------
-    A : torch.Tensor
+    A : np.ndarray
         Source coordinate set with shape [batch_size, n_atoms, 3].
         These coordinates will be aligned to B.
-    B : torch.Tensor
+    B : np.ndarray
         Target coordinate set with shape [batch_size, n_atoms, 3].
         A will be aligned to match these coordinates.
 
     Returns
     -------
-    A_aligned : torch.Tensor
+    A_aligned : np.ndarray
         Aligned coordinates of set A with shape [batch_size, n_atoms, 3].
         These are the transformed coordinates after applying rotation R and translation t.
-    R : torch.Tensor
+    R : np.ndarray
         Rotation matrix with shape [batch_size, 3, 3].
         The optimal rotation to align A onto B.
-    t : torch.Tensor
+    t : np.ndarray
         Translation vector with shape [batch_size, 1, 3].
         The translation to apply after rotation.
 
@@ -122,17 +121,17 @@ def kabsch(A: torch.Tensor, B: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor
 
     Examples
     --------
-    >>> import torch
+    >>> import numpy as np
     >>> # Create two sets of 10 atoms in 3D space
-    >>> A = torch.randn(1, 10, 3)
-    >>> B = torch.randn(1, 10, 3)
+    >>> A = np.random.randn(1, 10, 3)
+    >>> B = np.random.randn(1, 10, 3)
     >>> A_aligned, R, t = kabsch(A, B)
     >>> # A_aligned is now optimally aligned to B
     """
     # Compute centroids of both coordinate sets
     # Using double precision for numerical stability
-    a_mean = A.mean(dim=1, keepdims=True).type('torch.DoubleTensor')
-    b_mean = B.mean(dim=1, keepdims=True).type('torch.DoubleTensor')
+    a_mean = A.mean(axis=1, keepdims=True).astype(np.float64)
+    b_mean = B.mean(axis=1, keepdims=True).astype(np.float64)
 
     # Center both coordinate sets at the origin
     A_c = A - a_mean
@@ -140,19 +139,20 @@ def kabsch(A: torch.Tensor, B: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor
 
     # Compute covariance matrix H = A_c^T * B_c
     # This matrix encodes the relationship between the two centered coordinate sets
-    H = torch.bmm(A_c.transpose(1, 2), B_c)  # Shape: [batch_size, 3, 3]
+    H = np.matmul(A_c.transpose(0, 2, 1), B_c)  # Shape: [batch_size, 3, 3]
 
     # Perform Singular Value Decomposition: H = U * S * V^T
     # The optimal rotation can be computed from U and V
-    U, S, V = torch.svd(H)
+    U, S, Vt = np.linalg.svd(H)
+    V = Vt.transpose(0, 2, 1)
 
     # Compute optimal rotation matrix: R = V * U^T
     # This rotation minimizes the RMSD between A and B
-    R = torch.bmm(V, U.transpose(1, 2))  # Shape: [batch_size, 3, 3]
+    R = np.matmul(V, U.transpose(0, 2, 1))  # Shape: [batch_size, 3, 3]
 
     # Compute optimal translation vector: t = b_mean - R * a_mean
     # This translates the rotated A to align with B's centroid
-    t = b_mean - torch.bmm(R, a_mean.transpose(1, 2)).transpose(1, 2)
+    t = b_mean - np.matmul(R, a_mean.transpose(0, 2, 1)).transpose(0, 2, 1)
 
     # Apply the transformation: A_aligned = R * A^T + t
     A_aligned = apply_transform(A, R, t)
@@ -163,7 +163,7 @@ def kabsch(A: torch.Tensor, B: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor
 def coord_extractor(
     df: pandas.DataFrame,
     chainids: Optional[List[str]] = None
-) -> Tuple[torch.Tensor, torch.Tensor]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Extract coordinates from a PandasPdb ATOM dataframe.
 
@@ -179,9 +179,9 @@ def coord_extractor(
 
     Returns
     -------
-    coords : torch.Tensor
+    coords : np.ndarray
         C-alpha coordinates with shape [1, n_residues, 3].
-    all_atom_coords : torch.Tensor
+    all_atom_coords : np.ndarray
         All atom coordinates with shape [1, n_atoms, 3].
 
     Notes
@@ -201,7 +201,7 @@ def coord_extractor(
     X = df['x_coord'].tolist()
     Y = df['y_coord'].tolist()
     Z = df['z_coord'].tolist()
-    all_atom_coords = torch.tensor([X, Y, Z]).transpose(0, 1).unsqueeze(0)
+    all_atom_coords = np.array([X, Y, Z]).T[np.newaxis, :, :]
 
     # Filter by chain IDs if specified
     if chainids is not None:
@@ -212,15 +212,15 @@ def coord_extractor(
     X = df['x_coord'].tolist()
     Y = df['y_coord'].tolist()
     Z = df['z_coord'].tolist()
-    coords = torch.tensor([X, Y, Z]).transpose(0, 1).unsqueeze(0)
+    coords = np.array([X, Y, Z]).T[np.newaxis, :, :]
 
     return coords, all_atom_coords
 
 
 def rmsd_(
-    pred: torch.Tensor,
-    true: torch.Tensor
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    pred: np.ndarray,
+    true: np.ndarray
+) -> Tuple[np.ndarray, float, np.ndarray, np.ndarray]:
     """
     Calculate RMSD after Kabsch alignment.
 
@@ -229,20 +229,20 @@ def rmsd_(
 
     Parameters
     ----------
-    pred : torch.Tensor
+    pred : np.ndarray
         Predicted/source coordinates to be aligned, shape [batch_size, n_atoms, 3].
-    true : torch.Tensor
+    true : np.ndarray
         True/target coordinates, shape [batch_size, n_atoms, 3].
 
     Returns
     -------
-    pred_aligned : torch.Tensor
+    pred_aligned : np.ndarray
         Aligned pred coordinates, shape [batch_size, n_atoms, 3].
-    rmsd : torch.Tensor
-        RMSD value after alignment, shape [batch_size].
-    R : torch.Tensor
+    rmsd : float
+        RMSD value after alignment.
+    R : np.ndarray
         Rotation matrix, shape [batch_size, 3, 3].
-    t : torch.Tensor
+    t : np.ndarray
         Translation vector, shape [batch_size, 1, 3].
 
     Notes
@@ -253,16 +253,16 @@ def rmsd_(
 
     Examples
     --------
-    >>> pred = torch.randn(1, 100, 3)
-    >>> true = torch.randn(1, 100, 3)
+    >>> pred = np.random.randn(1, 100, 3)
+    >>> true = np.random.randn(1, 100, 3)
     >>> aligned, rmsd_val, R, t = rmsd_(pred, true)
-    >>> print(f"RMSD: {rmsd_val.item():.2f} Å")
+    >>> print(f"RMSD: {rmsd_val:.2f} Å")
     """
     # Perform Kabsch alignment
-    pred_aligned, R, t = kabsch(pred.type(torch.float64), true.type(torch.float64))
+    pred_aligned, R, t = kabsch(pred.astype(np.float64), true.astype(np.float64))
 
     # Calculate RMSD: sqrt(mean(sum(squared_distances)))
-    rmsd = torch.mean(torch.sqrt(torch.sum((pred_aligned - true).pow(2), -1)), -1)
+    rmsd = np.mean(np.sqrt(np.sum((pred_aligned - true)**2, -1)), -1)
 
     return pred_aligned, rmsd, R, t
 
@@ -272,7 +272,7 @@ def pdb_align(
     pdb2: str,
     chainids1: Optional[List[str]] = None,
     chainids2: Optional[List[str]] = None
-) -> Tuple[torch.Tensor, torch.Tensor, PandasPdb, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> Tuple[np.ndarray, float, PandasPdb, np.ndarray, np.ndarray, np.ndarray]:
     """
     Align two pdb structures and calculate RMSD.
 
@@ -293,17 +293,17 @@ def pdb_align(
 
     Returns
     -------
-    aligned_struc : torch.Tensor
+    aligned_struc : np.ndarray
         Aligned C-alpha coordinates of pdb2, shape [n_residues, 3].
-    rmsd : torch.Tensor
+    rmsd : float
         RMSD value after alignment.
     ppdb2 : PandasPdb
         PandasPdb object for pdb2 (useful for saving aligned structure).
-    R : torch.Tensor
+    R : np.ndarray
         Rotation matrix used for alignment.
-    t : torch.Tensor
+    t : np.ndarray
         Translation vector used for alignment.
-    all_atom_coords2 : torch.Tensor
+    all_atom_coords2 : np.ndarray
         All atom coordinates of pdb2 before alignment.
 
     Notes
@@ -315,7 +315,7 @@ def pdb_align(
     Examples
     --------
     >>> aligned, rmsd, ppdb, R, t, all_coords = pdb_align("ref.pdb", "model.pdb")
-    >>> print(f"RMSD: {rmsd.item():.2f} Å")
+    >>> print(f"RMSD: {rmsd:.2f} Å")
     >>> print(f"Aligned structure shape: {aligned.shape}")
     """
     # Load pdb files
@@ -347,7 +347,7 @@ def align_and_dump_pdb(
     pdb2: str,
     chainids1: Optional[List[str]] = None,
     chainids2: Optional[List[str]] = None
-) -> torch.Tensor:
+) -> float:
     """
     Align two pdb structures and save the aligned structure.
 
@@ -368,7 +368,7 @@ def align_and_dump_pdb(
 
     Returns
     -------
-    torch.Tensor
+    float
         RMSD value after alignment.
 
     Notes
@@ -393,7 +393,7 @@ def align_and_dump_pdb(
     )
 
     # Apply transformation to all atoms
-    all_atom_aligned = apply_transform(all_atom_coords2.type(torch.float64), R, t)
+    all_atom_aligned = apply_transform(all_atom_coords2.astype(np.float64), R, t)
     all_atom_aligned = all_atom_aligned.squeeze()
 
     # Create new PandasPdb object with aligned coordinates
