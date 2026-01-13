@@ -128,7 +128,7 @@ Utility for parsing and analyzing training loss from log files. Extracts trainin
 Primary analysis script for LUCS designs. Performs structural analyses for LUCS designs' Rosetta models and predicted structures (from models like AlphaFold2/3, RoseTTAFold2, ESMFold, etc.). Compares LUCS designs' Rosetta models and predicted structures to reference structures (such as the starting structure used in generating the LUCS designs).
 
 **Analyses in degree_reshaped.py:**
-- Helix RMSD calculations, using multiple helix definitions and alignment methods (helix RMSD is defined as the RMSD between the longest common helical stretches of two topologically matched helices (keeping the central helical residues and trimming the C-terminal residue where necessary).)
+- Helix RMSD calculations, using multiple helix definitions and alignment methods (helix RMSD is defined as the RMSD between the longest common helical stretches of two topologically matched helices, keeping the central helical residues and trimming the C-terminal residue where necessary).
 - Helix displacement and angle between design models, predicted structures, and reference structures
 - Reshaped region RMSD, full backbone RMSD, and TM-score
 - Reshaped residue confidence scores (e.g., pLDDT and pAE)
