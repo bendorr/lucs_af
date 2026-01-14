@@ -40,7 +40,7 @@ LUCS structural analysis:
 AlphaFold fine-tuning:
 - Fine-tuning AlphaFold2 models on custom datasets
 - Fine-tuning classifier heads on top of AlphaFold2 for protein property prediction
-- Running classic and fine-tuned AlphaFold2 predictions with and without templates
+- Running classic and fine-tuned AlphaFold2 predictions with and without MSA and templates
 - Evaluating predictions for structural and classification accuracy
 
 Code for generating LUCS backbones can be found in [loop_helix_loop_reshaping](https://github.com/Kortemme-Lab/loop_helix_loop_reshaping)
@@ -77,9 +77,9 @@ Unit tests for configuration management, RMSD calculations, and structural align
 ### `alphafold_finetune/`
 
 #### > `run_finetuning.py`
-Fine-tune AlphaFold2 models on custom datasets. Supports training with optional classification heads (pLDDT-based and pAE-based) for predicting experimentally determined properties such as protease resistance or protein-protein binding. Includes:
+Fine-tune AlphaFold2 models on custom datasets. Supports training with optional classification heads (pLDDT-based and pAE-based) for predicting experimentally measured properties such as protease resistance or protein-protein binding. Includes:
 - Custom loss functions for structural accuracy and classification
-- Optional template-based training
+- Optional training with MSA and template inputs
 - Checkpoint saving and validation
 - Weighted sampling (for class balancing in classification tasks) and data augmentation
 
@@ -94,7 +94,7 @@ python run_finetuning.py --data_dir /path/to/af_params \
 ```
 
 #### > `run_prediction.py`
-Template-based AlphaFold2 inference for predicting target sequences. Uses provided templates to guide structure prediction and outputs predicted structures with confidence metrics.
+AlphaFold2 inference for predicting target sequences. Can be run with or without MSA and template inputs.
 
 **Usage:**
 ```bash
