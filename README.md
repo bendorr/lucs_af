@@ -50,7 +50,7 @@ Code for Rosetta-based sequence design and scoring can be found in [local_protei
 ## Directory Structure
 
 #### `alphafold_finetune/`
-Tools for fine-tuning AlphaFold2 models and analyzing predictions from both classic and fine-tuned models. Includes training scripts, prediction utilities, and analysis tools for evaluating model performance against ground truth (or, as in the publication, Rosetta-modeled) structures.
+Tools for fine-tuning AlphaFold2 models (adapted from [Motmaen et al. 2022](https://www.pnas.org/doi/10.1073/pnas.2216697120)) and analyzing predictions from both classic and fine-tuned models. Includes training scripts, prediction utilities, and analysis tools for evaluating model performance against ground truth (or, as in the publication, Rosetta-modeled) structures.
 
 #### `data/`
 Organization of data associated with the manuscript on zenodo and descriptions of data used in each manuscript figure.
