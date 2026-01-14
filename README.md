@@ -117,7 +117,7 @@ Prediction utilities including (i) input, MSA, and template featurization for in
 Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tuned AlphaFold2 predictions and ground truth structures. Generates dataframes with structural metrics, confidence scores, and PDB paths for downstream analysis.
 
 **Analyses in analyze_finetuned_predictions.py:**
-- RMSD between predictions and ground truth structures, over all and subsets of residues (e.g., reshaped loop-helix-loop elements in LUCS designs)
+- RMSD between predictions and "ground truth" structures, over all and subsets of residues (e.g., reshaped loop-helix-loop elements in LUCS designs)
 - Helix RMSDs between predicted structures and design models/reference structures
 - pLDDT and pAE confidence metric evaluation, for all and subsets of residues
 - Classic vs. fine-tuned model performance w.r.t. classification tasks and structure prediction accuracy
@@ -138,7 +138,7 @@ python analyze_checkpointed_models_metrics.py --job_name experiment1 \
 ```
 
 #### > `read_loss_from_txt.py`
-Utility for parsing and analyzing training loss from log files. Extracts training and validation losses from text logs, enabling visualization of training curves and identification of optimal checkpoints.
+Utility for parsing and visualizing training and validation losses from text log files.
 
 ---
 
