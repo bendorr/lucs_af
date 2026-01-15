@@ -303,9 +303,3 @@ Tests for structural alignment algorithms.
 Ben Orr
 
 Version 2.0.0
-
-## License
-
-MIT License
-
-Copyright (c) 2025 Ben Orr
