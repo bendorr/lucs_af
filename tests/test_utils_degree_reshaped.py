@@ -2,6 +2,8 @@
 
 This module tests the geometric calculation and structural similarity functions
 used for analyzing protein helix orientations and RMSD calculations.
+
+Requires: natsort (via utils_degree_reshaped dependency)
 """
 
 import pytest
@@ -11,6 +13,9 @@ import os
 
 # Add the degree_of_reshaping directory to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'degree_of_reshaping'))
+
+# Skip entire module if dependencies are not available
+pytest.importorskip("natsort", reason="natsort required for utils_degree_reshaped tests")
 
 import utils_degree_reshaped as utils
 
