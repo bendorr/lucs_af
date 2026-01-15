@@ -1,8 +1,14 @@
-"""Unit tests for degree_of_reshaping.common.structural_alignment module."""
+"""Unit tests for degree_of_reshaping.common.structural_alignment module.
+
+These tests require PyTorch to be installed. They will be skipped if torch
+is not available.
+"""
 
 import pytest
 import numpy as np
-import torch
+
+# Skip entire module if torch is not available
+torch = pytest.importorskip("torch", reason="PyTorch required for structural alignment tests")
 
 from degree_of_reshaping.common.structural_alignment import (
     apply_transform,
