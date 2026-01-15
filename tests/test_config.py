@@ -150,18 +150,19 @@ class TestLoadConfig:
         assert isinstance(config, Config)
         assert config.paths.data_dir == "./data"
 
-    def test_load_nonexistent_file_with_defaults(self):
-        """Test nonexistent file falls back to defaults."""
-        config = load_config("/nonexistent/path.yaml", use_defaults=True)
+    def test_load_nonexistent_file_raises_error(self):
+        """Test that loading a nonexistent file raises FileNotFoundError.
 
-        # Should still create config with defaults
-        # (though from_yaml will raise error for nonexistent file)
-        # This tests the fallback behavior
-
-    def test_load_nonexistent_file_without_defaults(self):
-        """Test nonexistent file raises error when use_defaults=False."""
+        Note: When an explicit yaml_path is provided, load_config always
+        tries to load that file directly - it does not fall back to defaults.
+        """
         with pytest.raises(FileNotFoundError):
-            load_config(use_defaults=False)
+            load_config("/nonexistent/path.yaml", use_defaults=True)
+
+    def test_load_from_yaml_nonexistent(self):
+        """Test Config.from_yaml raises error for nonexistent file."""
+        with pytest.raises(FileNotFoundError):
+            Config.from_yaml("/nonexistent/config.yaml")
 
 
 if __name__ == '__main__':
