@@ -298,8 +298,5 @@ Tests for structural alignment algorithms.
 - DSSP (secondary structure assignment)
 - argparse
 
-## Author
-
-Ben Orr
-
-Version 2.0.0
+Author: Ben Orr
+Version: 2.0.0
