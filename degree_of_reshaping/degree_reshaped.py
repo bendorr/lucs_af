@@ -16,9 +16,6 @@ The script performs the following analyses:
     - Helix displacement and angle calculations
     - Secondary structure analysis using DSSP
 
-Uses PyRosetta for structural alignment and RMSD calculations, and supports
-both AlphaFold2 and AlphaFold3 prediction formats.
-
 Dependencies:
     - PyRosetta: For alignment and RMSD calculations
     - Biopython: For PDB parsing and DSSP analysis
