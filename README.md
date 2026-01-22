@@ -299,4 +299,5 @@ Tests for structural alignment algorithms.
 - argparse
 
 Author: Ben Orr
+
 Version: 2.0.0
