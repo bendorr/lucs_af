@@ -8,7 +8,7 @@ This module analyzes LUCS (Loop-Helix-Loop Unit Combinatorial Sampling) designs
 by calculating structural metrics and confidence scores. It processes Rosetta models
 and AlphaFold2/3 predictions to evaluate the quality and accuracy of reshaped regions.
 
-The script performs the following analyses:
+Features:
     - RMSD calculations between designs and reference structures
     - Helix RMSD calculations
     - TM-score calculations for global structural alignment
