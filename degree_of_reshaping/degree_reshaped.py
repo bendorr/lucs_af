@@ -9,11 +9,10 @@ by calculating structural metrics and confidence scores. It processes Rosetta mo
 and AlphaFold2/3 predictions to evaluate the quality and accuracy of reshaped regions.
 
 Features:
-    - RMSD calculations between designs and reference structures
-    - Helix RMSD calculations
-    - TM-score calculations for global structural alignment
-    - AlphaFold confidence metrics (pLDDT and pAE)
-    - Helix displacement and angle calculations
+    - Structure alignment, optionally on specified residue subsets (e.g., beta sheet residues or non-LUCS-remodeled residues)
+    - RMSD and TM score calculations between design models, predicted structures, and reference structures
+    - Helix RMSD, displacement, and angle calculations
+    - AlphaFold confidence metrics for residue subsets (e.g., reshaped loop-helix-loop regions)
     - Secondary structure analysis using DSSP
 
 Dependencies:
@@ -31,6 +30,7 @@ Example:
             --starting_structure_insertion_points /path/to/insertion_points.json \\
             --outfolder /path/to/output \\
             --outfile results.csv
+
 """
 
 import argparse
