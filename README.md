@@ -35,9 +35,9 @@ Code for:
 
 Structural analysis:
 - Compare design models to reference and predicted structures (AlphaFold2/3, RoseTTAFold2, ESMFold, etc.)
-- Calculate protein structural diversity and similarity (helix RMSD, helix displacement and angle, RMSD, TM-score)
-- Analyze helix geometry and diversity (e.g., the extent to which LUCS helices were reshaped from their starting positions)
-- Compile predicted structures' confidence metrics (pLDDT, pAE, pTM), structure-based metrics, and Rosetta metrics
+- Calculate protein structural diversity, similarity, and reshaping (helix RMSD, helix displacement and angle, RMSD, TM-score)
+- Analyze helix geometry and diversity (e.g., binning helices by their centroid positions and directional components)
+- Aggregate predicted structures' confidence metrics (pLDDT, pAE, pTM), structure-based metrics, and Rosetta metrics
 
 AlphaFold fine-tuning:
 - Fine-tune AlphaFold2 models on custom datasets
