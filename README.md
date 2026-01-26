@@ -24,7 +24,7 @@ Install with extra packages for AlphaFold2 fine-tuning (JAX/Haiku/Optax):
 pip install .[finetune]
 ```
 
-- PyRosetta is not distributed via PyPI; install it separately if you use the PyRosetta-dependent helpers in degree_of_reshaping/
+- Install PyRosetta separately to use PyRosetta-dependent functions in degree_of_reshaping/
 - The fine-tuning extras install CPU wheels for JAX; follow JAX docs to install GPU-specific wheels.
 
 ## Overview
