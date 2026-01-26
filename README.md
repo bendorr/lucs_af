@@ -30,22 +30,20 @@ pip install .[finetune]
 ## Overview
 
 Code for:
-
-  (i) Structural analysis of de novo designed proteins (especially diversity and reshaping of [LUCS](https://www.science.org/doi/10.1126/science.abc0881) (Loop-Helix-Loop Unit Combinatorial Sampling) designs)
-
-  (ii) fine-tuning AlphaFold2.
+ - Structural analysis of de novo designed proteins (especially diversity and reshaping of [LUCS](https://www.science.org/doi/10.1126/science.abc0881) (Loop-Helix-Loop Unit Combinatorial Sampling) designs)
+ - Fine-tuning and adapting AlphaFold2
 
 Structural analysis:
 - Compare design models to reference and predicted structures (AlphaFold2/3, RoseTTAFold2, ESMFold, etc.)
-- Calculating protein structural diversity and similarity (helix RMSD, helix displacement and angle, RMSD, TM-score)
-- Analyzing and visualizing helix geometry/diversity, e.g., the extent to which LUCS helices were reshaped from their starting positions
-- Analyzing predicted structures' confidence metrics (pLDDT, pAE, pTM), structure-based metrics, and Rosetta metrics
+- Calculate protein structural diversity and similarity (helix RMSD, helix displacement and angle, RMSD, TM-score)
+- Analyze helix geometry and diversity (e.g., the extent to which LUCS helices were reshaped from their starting positions)
+- Compile predicted structures' confidence metrics (pLDDT, pAE, pTM), structure-based metrics, and Rosetta metrics
 
 AlphaFold fine-tuning:
 - Fine-tune AlphaFold2 models on custom datasets
 - Build and train classifier heads on AlphaFold2 for protein property prediction
-- Running classic and fine-tuned AlphaFold2 predictions with and without MSA and templates
-- Evaluating predictions for structural and classification accuracy
+- Inference with and without MSA/templates for classic and fine-tuned AlphaFold2 models 
+- Evaluate predictions for structural and classification accuracy
 
 Code for generating LUCS backbones can be found in [loop_helix_loop_reshaping](https://github.com/Kortemme-Lab/loop_helix_loop_reshaping)
 
