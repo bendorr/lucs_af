@@ -30,8 +30,8 @@ pip install .[finetune]
 ## Overview
 
 Code for:
- - Structural analysis of de novo designed proteins (especially diversity and reshaping of [LUCS](https://www.science.org/doi/10.1126/science.abc0881) (Loop-Helix-Loop Unit Combinatorial Sampling) designs)
- - Fine-tuning and transfer learning with AlphaFold2
+1. Structural analysis of de novo designed proteins (especially diversity and reshaping of [LUCS](https://www.science.org/doi/10.1126/science.abc0881) (Loop-Helix-Loop Unit Combinatorial Sampling) designs)
+2. Fine-tuning and transfer learning with AlphaFold2
 
 Structural analysis:
 - Compare design models to reference and predicted structures (AlphaFold2/3, RoseTTAFold2, ESMFold, etc.)
