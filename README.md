@@ -29,25 +29,21 @@ pip install .[finetune]
 
 ## Overview
 
-Code for:
+**Code for:**
 1. Structural analysis of de novo designed proteins (especially diversity and reshaping of [LUCS](https://www.science.org/doi/10.1126/science.abc0881) (Loop-Helix-Loop Unit Combinatorial Sampling) designs)
 2. Fine-tuning and transfer learning with AlphaFold2
 
-
-
-Structural analysis:
+**Structural analysis:**
 - Compare design models to reference and predicted structures (AlphaFold2/3, RoseTTAFold2, ESMFold, etc.)
 - Calculate protein structural diversity, similarity, and reshaping (helix RMSD, helix displacement and angle, RMSD, TM-score)
 - Analyze helix geometry and diversity (e.g., binning helices by their centroid positions and directional components)
 - Aggregate predicted structures' confidence metrics (pLDDT, pAE, pTM), structure-based metrics, and Rosetta metrics
 
-AlphaFold fine-tuning:
+**AlphaFold fine-tuning:**
 - Fine-tune AlphaFold2 models on custom datasets
 - Build and train classifier heads on AlphaFold2 for protein property prediction
 - Inference with and without MSA/templates for classic and fine-tuned AlphaFold2 models 
 - Evaluate predictions for structural and classification accuracy
-
-
 
 Code for generating LUCS backbones can be found in [loop_helix_loop_reshaping](https://github.com/Kortemme-Lab/loop_helix_loop_reshaping)
 
