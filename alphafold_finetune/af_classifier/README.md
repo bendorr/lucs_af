@@ -22,7 +22,7 @@ the pLDDT head architecture and are initialized from pLDDT head weights for tran
 
 - **`run_prediction_pEC50.py`** - run inference with the fine-tuned AF2 and store pEC50 head outputs
 
-- **`train_utils.py`**, **`predict_utils_ec50.py`** - utils for training and inference.
+- **`train_utils_pEC50.py`**, **`predict_utils_pEC50.py`** - utils for training and inference.
 
 
 ## Examples:
