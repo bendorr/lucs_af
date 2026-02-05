@@ -31,7 +31,7 @@ the pLDDT head architecture and are initialized from pLDDT head weights for tran
 
 ```bash
 python run_finetuning_pEC50.py \
-    --data_dir /path/to/af2/params \
+    --data_dir /path/to/af_classifier/params \
     --train_csv train.csv \
     --valid_csv valid.csv \
     --num_epochs 10 \
@@ -42,7 +42,7 @@ python run_finetuning_pEC50.py \
 
 ```bash
 python run_finetuning_pEC50.py \
-    --data_dir /path/to/af2/params \
+    --data_dir /path/to/af_classifier/params \
     --train_csv train.csv \
     --valid_csv valid.csv \
     --train_last_n_layers 2 \
@@ -54,7 +54,7 @@ python run_finetuning_pEC50.py \
 
 ```bash
 python run_finetuning_pEC50.py \
-    --data_dir /path/to/af2/params \
+    --data_dir /path/to/af_classifier/params \
     --train_csv train.csv \
     --valid_csv valid.csv \
     --unfreeze_af2_model \
@@ -66,7 +66,7 @@ python run_finetuning_pEC50.py \
 
 ```bash
 python run_finetuning_pEC50.py \
-    --data_dir /path/to/af2/params \
+    --data_dir /path/to/af_classifier/params \
     --train_csv train.csv \
     --valid_csv valid.csv \
     --af2_params_to_train subset_af2_params.txt \
