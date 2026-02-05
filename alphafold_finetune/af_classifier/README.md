@@ -20,7 +20,7 @@ the pLDDT head architecture and are initialized from pLDDT head weights for tran
    - `--unfreeze_af2_model` - Train both the pEC50 heads and the entire base AF2 model
    - `--af2_params_to_train <file>` - Train only specific AF2 layers/modules (haiku-style names listed in text file, one per line)
 
-- **`run_prediction_pEC50.py`** - run inference with the fine-tuned AF2, saving pEC50 head outputs.
+- **`run_prediction_pEC50.py`** - run inference with the fine-tuned AF2 and store pEC50 head outputs
 
 - **`train_utils.py`**, **`predict_utils_ec50.py`** - utils for training and inference.
 
