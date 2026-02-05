@@ -9,7 +9,13 @@ trained on any class-labeled protein sequence/structure data.
 
 Classifier heads have architectures matching pLDDT heads (and can be initialized from pLDDT weights)
 with two linear layers on top. Like the pLDDT heads, they take in the final, latent query sequence
-representation from the AlphaFold2 structure module. pLDDT head's 4 layers: input_layer_norm, act_0, act_1, logits. pEC50 head's additional two layers: act_2, act_3 (see alphafold/model/modules.py)
+representation from the AlphaFold2 structure module.
+
+**pEC50 Head Architecture:**
+```
+input_layer_norm → act_0 → act_1 → logits → act_2 → act_3
+└─────── pLDDT head (4 layers) ─────┘   └─ pEC50 addition (2 layers) ─┘
+```
 
 - **`alphafold/`** - Modified AlphaFold2 with classification heads. The classification heads imitate
 the pLDDT head architecture and are initialized from pLDDT head weights for transfer learning.
