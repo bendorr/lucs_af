@@ -15,21 +15,17 @@ representation from the AlphaFold2 structure module. pLDDT head's 4 layers: inpu
 the pLDDT head architecture and are initialized from pLDDT head weights for transfer learning.
 
 - **`run_finetuning_pEC50.py`** - train/fine-tune AlphaFold2 on class-labeled sequence/structure data
+   - `--train_last_n_layers N` - Unfreeze only the last N layers of pEC50 (classifier) heads (omit to train all layers)
+   - `--only_fit_pec50` - Only train the pEC50 heads and freeze the base AF2 model (default when no AF2 flags are used)
+   - `--unfreeze_af2_model` - Train both the pEC50 heads and the entire base AF2 model
+   - `--af2_params_to_train <file>` - Train only specific AF2 layers/modules (haiku-style names listed in text file, one per line)
 
 - **`run_prediction_pEC50.py`** - run inference with the fine-tuned AF2, saving pEC50 head outputs.
 
 - **`train_utils.py`**, **`predict_utils_ec50.py`** - utils for training and inference.
 
 
-## run_finetuning_pEC50.py
-
-- `--train_last_n_layers N` - Unfreeze only the last N layers of pEC50 (classifier) heads (omit to train all layers)
-- `--only_fit_pec50` - Only train the pEC50 heads and freeze the base AF2 model (default when no AF2 flags are used)
-- `--unfreeze_af2_model` - Train both the pEC50 heads and the entire base AF2 model
-- `--af2_params_to_train <file>` - Train only specific AF2 layers/modules (haiku-style names listed in text file, one per line)
-
-
-## Example commands:
+## Examples:
 
 ### Train pEC50 heads only, keep base AF2 frozen (default):
 
