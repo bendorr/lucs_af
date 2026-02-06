@@ -13,8 +13,8 @@ representation from the AlphaFold2 structure module.
 
 **pEC50 Head Architecture:**
 ```
-input_layer_norm → act_0 → act_1 → logits → act_2 → act_3
-└─────── pLDDT head (4 layers) ─────┘   └─ pEC50 addition (2 layers) ─┘
+input_layer_norm → act_0 → act_1 → logits → act_2 → act_3 → sigmoid
+└─────── pLDDT head (4 layers) ─────┘   └─ 2 layers ─┘
 ```
 
 - **`alphafold/`** - Modified AlphaFold2 with classification heads. The classification heads imitate
