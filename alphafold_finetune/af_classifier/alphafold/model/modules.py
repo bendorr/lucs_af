@@ -1369,20 +1369,8 @@ class PredictedTrypEC50Head(hk.Module):
 
     print(f'Shape of act after act_1 in PredictedTrypEC50Head: {act.shape}') # (190, 128)
 
-    ### 
-    ### This version of layer act_2 does not match the arch of the pLDDT head (with different initializer and relu after),
-    ### but this arch might be better for training the full pEC50 head, with its layers after the pLDDT head layers.
-    # ### Ben Orr 3.20.24: Adding a linear layer that reduces (190,128) to (190,50), as is done for pLDDT logits.
-    # act = common_modules.Linear(
-    #     self.config.num_bins, # num_output, bins=50 for pLDDT head.
-    #     initializer='relu', # in the pLDDT head, this initializer is 'zeros' with global_config.final_init=zeros
-    #     name='act_2')(
-    #         act)
-    # act = jax.nn.relu(act)
-    ###
-
     ### Ben Orr 3.20.24: The last layer of the pLDDT head that reduces (190,128) to (190,50), as is done for the pLDDT head.
-    ### The pLDDT head also uses initializer = 'zeros' with global_config.final_init=zeros
+    ### The pLDDT head also uses initializer = 'zeros' with global_config.final_init=zeros. Could also use relu initializer
     act = common_modules.Linear(
         self.config.num_bins,
         initializer=utils.final_init(self.global_config),
