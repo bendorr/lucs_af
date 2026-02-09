@@ -74,21 +74,6 @@ Unit tests for configuration management, RMSD calculations, and structural align
 
 ---
 
-## Dependencies
-
-- Python 3.9+
-- NumPy, pandas, matplotlib
-- BioPython
-- PyRosetta
-- JAX (for AlphaFold training)
-- tmtools (TM-score calculation)
-- scipy (statistical analysis)
-- seaborn (visualization)
-- DSSP (secondary structure assignment)
-- argparse
-
----
-
 Author: Ben Orr
 
 Version: 2.0.0
