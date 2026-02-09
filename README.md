@@ -78,8 +78,11 @@ Unit tests for configuration management, RMSD calculations, and structural align
 
 ### `alphafold_finetune/`
 
+#### > `af_classifier/`
+Transfer learning with AlphaFold2: classification heads adapted from pLDDT head for protein property prediction. Used to predict experimentally measured protease resistance, but easily adapted for other classification tasks.
+
 #### > `run_finetuning.py`
-Fine-tune AlphaFold2 models on custom datasets. Supports training with optional classification heads (pLDDT-based and pAE-based) for predicting experimentally measured properties such as protease resistance or protein-protein binding. Includes:
+Fine-tune AlphaFold2 models on custom datasets. For transfer learning with AlphaFold2, see `af_classifier/`. Includes:
 - Custom loss functions for structural accuracy and classification
 - Optional training with MSA and template inputs
 - Checkpoint saving and validation
