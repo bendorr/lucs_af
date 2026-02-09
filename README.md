@@ -120,14 +120,11 @@ Comprehensive analysis of RMSDs and confidence metrics between classic/fine-tune
 **Analyses in analyze_finetuned_predictions.py:**
 - RMSD between predictions and "ground truth" structures, over all and subsets of residues (e.g., reshaped loop-helix-loop elements in LUCS designs)
 - Helix RMSDs between predicted structures and design models/reference structures
-- pLDDT and pAE confidence metric evaluation, for all and subsets of residues
+- Prediction confidence evaluation, for all and subsets of residues
 - Classic vs. fine-tuned model performance w.r.t. classification tasks and structure prediction accuracy
 
 #### > `analyze_checkpointed_models_metrics.py`
-Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement over fine-tuning, such as:
-- RMSDs to ground truth structures, for all and subsets of residues
-- Confidence score distributions
-- Precision-Recall curves for classification tasks (e.g., stability prediction)
+Analyzes metrics across AlphaFold2 training checkpoints to evaluate model improvement over fine-tuning, such as (i) RMSDs to ground truth structures, for all and subsets of residues, (ii) confidence score distributions, and (iii) Precision-Recall curves for classification tasks (e.g., stability prediction)
 
 **Usage:**
 ```bash
