@@ -148,8 +148,7 @@ Primary analysis script for LUCS designs. Performs structural analyses for LUCS 
 **Analyses in degree_reshaped.py:**
 - Helix RMSD calculations, using multiple helix definitions and alignment methods (helix RMSD is defined as the RMSD between the longest common helical stretches of two topologically matched helices, keeping the central helical residues and trimming the C-terminal residue where necessary).
 - Helix displacement and angle (after aligning on beta sheet or non-loop-helix-loop residues) between design models, predicted structures, and reference structures
-- Reshaped region (loop-helix-loop elements) RMSD, full backbone RMSD, and TM-score
-- Reshaped residue confidence scores (e.g., pLDDT and pAE)
+- Reshaped region (loop-helix-loop elements) RMSD, full backbone RMSD, and TM-score and prediction confidence scores (e.g., pLDDT and pAE)
 - Secondary structure analysis with DSSP
 
 **Usage:**
@@ -165,13 +164,9 @@ python degree_reshaped.py --lucs_data /path/to/designs \
 
 #### > `utils_degree_reshaped.py`
 Utility functions for protein structural analysis:
-- Helix and sheet geometry calculations
-- RMSD calculation functions (using multiple alignment methods)
-- Residue selection and manipulation in PyRosetta and Biopython
-- PDB/structure I/O operations
-- Structural alignment
-- PyRosetta helper functions
-- DataFrame manipulation
+- Secondary structure geometric analysis
+- Structure alignment and RMSD
+- Residue selection and manipulation in PyRosetta
 
 This module is used by most analysis scripts in degree_of_reshaping/
 
@@ -223,13 +218,10 @@ Calculates TM-scores between provided PDBs and a reference structure.
 Module for structural alignment operations.
 
 #### > `rmsd_calculations.py`
-Consolidated RMSD calculation functions supporting both BioPython- and PyRosetta-based alignment and RMSD calculations. Provides residue subset, backbone-only, and full-structure RMSDs.
+RMSD calculation functions supporting both BioPython- and PyRosetta-based alignment and RMSD calculations. Provides residue subset, backbone-only, and full-structure RMSDs.
 
 #### > `pyrosetta_utils.py`
-PyRosetta-specific helper functions including:
-- PDB to PyRosetta residue number conversion
-- Pose manipulation utilities
-- Residue selector helpers
+PyRosetta-specific helper functions
 
 ---
 
