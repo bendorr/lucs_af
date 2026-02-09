@@ -147,3 +147,16 @@ Install pytest-cov:
 ```bash
 pip install pytest-cov
 ```
+
+---
+
+### `tests/`
+
+#### > `test_config.py`
+Unit tests for configuration management, including .yml loading, environment variables, arg parsing, and default values.
+
+#### > `test_rmsd_calculations.py`
+Tests for RMSD calculation functions across different implementations (Biopython, PyRosetta, aligning residue subsets, etc.).
+
+#### > `test_structural_alignment.py`
+Tests for structural alignment algorithms.
