@@ -49,7 +49,7 @@ Code for generating LUCS backbones can be found in [loop_helix_loop_reshaping](h
 
 Code for Rosetta-based sequence design and scoring can be found in [local_protein_sequence_design](https://github.com/Kortemme-Lab/local_protein_sequence_design)
 
-## Directory Structure
+## Directories
 
 #### `alphafold_finetune/`
 Tools for fine-tuning and transfer learning with AlphaFold2 models (adapted from [Motmaen et al. 2022](https://www.pnas.org/doi/10.1073/pnas.2216697120)) and analyzing predictions from both classic and fine-tuned models. Includes training scripts, prediction utilities, and analysis tools for evaluating model performance against ground truth (or, as in the publication, Rosetta-modeled) structures.
