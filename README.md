@@ -2,7 +2,7 @@
 
 # Code for "An improved model for prediction of de novo designed proteins with diverse geometries"
 
-Authors: Benjamin Orr, Stephanie E. Crilly, Deniz Akpinaroglu, Eleanor Zhu, Michael J. Keiser, Tanja Kortemme
+Authors: Benjamin Orr*, Stephanie E. Crilly*, Deniz Akpinaroglu, Eleanor Zhu, Michael J. Keiser, Tanja Kortemme
 
 [Paper](https://www.biorxiv.org/content/10.1101/2025.06.02.657515v1)
 
