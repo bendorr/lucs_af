@@ -59,8 +59,7 @@ packages = [
   "degree_of_reshaping",
   "degree_of_reshaping.common",
   "helix_vectors",
-  "tests",
 ]
 
 [tool.setuptools.package-data]
-degree_of_reshaping = ["config.yaml.example"]
+degree_of_reshaping = ["config.yml.example"]
