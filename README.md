@@ -2,7 +2,7 @@
 
 # Code for "An improved model for prediction of de novo designed proteins with diverse geometries"
 
-Authors: Benjamin Orr*, Stephanie E. Crilly*, Deniz Akpinaroglu, Eleanor Zhu, Michael J. Keiser, Tanja Kortemme
+Authors: Benjamin Orr, Stephanie E. Crilly, Deniz Akpinaroglu, Eleanor Zhu, Michael J. Keiser, Tanja Kortemme
 
 [Paper](https://www.biorxiv.org/content/10.1101/2025.06.02.657515v1)
 
@@ -71,9 +71,3 @@ Tools for calculating and analyzing 6D helix vectors (3D position + 3D direction
 
 #### `tests/`
 Unit tests for configuration management, RMSD calculations, and structural alignment.
-
----
-
-Author: Ben Orr
-
-Version: 2.0.0
