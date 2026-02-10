@@ -1,5 +1,3 @@
-![tests](https://github.com/bendorr/lucs_af/actions/workflows/tests.yml/badge.svg?branch=main)
-
 ![lucs af figure](.github/lucs_af.png)
 
 # Code for "An improved model for prediction of de novo designed proteins with diverse geometries"
@@ -11,6 +9,8 @@ Authors: Benjamin Orr*, Stephanie E. Crilly*, Deniz Akpinaroglu, Eleanor Zhu, Mi
 Data for this manuscript can be found on [zenodo](https://zenodo.org/records/16938925).
 
 See instructions for running fine-tuned AF2 models in ft_models/ or on [zenodo](https://zenodo.org/records/15580792).
+
+![tests](https://github.com/bendorr/lucs_af/actions/workflows/tests.yml/badge.svg?branch=main)
 
 ## Installation
 
