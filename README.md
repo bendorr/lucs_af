@@ -1,5 +1,7 @@
 ![tests](https://github.com/bendorr/lucs_af/actions/workflows/tests.yml/badge.svg?branch=main)
 
+![lucs af figure](.github/lucs_af.png)
+
 # Code for "An improved model for prediction of de novo designed proteins with diverse geometries"
 
 Authors: Benjamin Orr*, Stephanie E. Crilly*, Deniz Akpinaroglu, Eleanor Zhu, Michael J. Keiser, Tanja Kortemme
